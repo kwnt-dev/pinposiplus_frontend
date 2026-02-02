@@ -70,6 +70,26 @@ export default function GreenCanvas({
             fill={layer.fill}
           />
         ))}
+
+        {/* グリッド（縦線） */}
+        {Array.from({ length: 61 }, (_, i) => (
+          <Line
+            key={`grid-v-${i}`}
+            points={[ydToPx(i), 0, ydToPx(i), CANVAS_SIZE]}
+            stroke="rgba(0,0,0,0.15)"
+            strokeWidth={1}
+          />
+        ))}
+
+        {/* グリッド（横線） */}
+        {Array.from({ length: 61 }, (_, i) => (
+          <Line
+            key={`grid-h-${i}`}
+            points={[0, ydToPx(i), CANVAS_SIZE, ydToPx(i)]}
+            stroke="rgba(0,0,0,0.15)"
+            strokeWidth={1}
+          />
+        ))}
       </Layer>
     </Stage>
   );
