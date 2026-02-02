@@ -90,6 +90,14 @@ export default function GreenCanvas({
             strokeWidth={1}
           />
         ))}
+
+        {/* 外周線 */}
+        <Path
+          data={scalePathToPixels(holeData.boundary.d)}
+          stroke="#000000"
+          strokeWidth={2}
+          fill="transparent"
+        />
       </Layer>
     </Stage>
   );
