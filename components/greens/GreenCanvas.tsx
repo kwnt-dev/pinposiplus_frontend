@@ -61,7 +61,16 @@ export default function GreenCanvas({
 
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
-      <Layer></Layer>
+      <Layer>
+        {/* 背景レイヤー */}
+        {holeData.layers.map((layer, index) => (
+          <Path
+            key={`layer-${index}`}
+            data={scalePathToPixels(layer.d)}
+            fill={layer.fill}
+          />
+        ))}
+      </Layer>
     </Stage>
   );
 }
