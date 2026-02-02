@@ -111,6 +111,22 @@ export default function GreenCanvas({
             />
           );
         })}
+
+        {/* 座標線ラベル */}
+        {[0, 10, 20, 30, 40].map((depth) => {
+          const y = holeData.origin.y - depth;
+          return (
+            <Text
+              key={`label-${depth}`}
+              x={CANVAS_SIZE - 50}
+              y={ydToPx(y) - 25}
+              text={`${depth}`}
+              fontSize={25}
+              fontStyle="bold"
+              fill="#000000"
+            />
+          );
+        })}
       </Layer>
     </Stage>
   );
