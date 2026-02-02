@@ -98,6 +98,19 @@ export default function GreenCanvas({
           strokeWidth={2}
           fill="transparent"
         />
+
+        {/* 座標線 */}
+        {[0, 10, 20, 30, 40].map((depth) => {
+          const y = holeData.origin.y - depth;
+          return (
+            <Line
+              key={`depth-${depth}`}
+              points={[0, ydToPx(y), CANVAS_SIZE, ydToPx(y)]}
+              stroke="#000000"
+              strokeWidth={2}
+            />
+          );
+        })}
       </Layer>
     </Stage>
   );
