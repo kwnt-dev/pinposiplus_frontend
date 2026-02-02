@@ -154,6 +154,14 @@ export default function GreenCanvas({
           strokeWidth={2}
           dash={[10, 5]}
         />
+
+        {/* EXIT */}
+        <Circle
+          x={ydToPx(config.exit.x)}
+          y={ydToPx(config.exit.y)}
+          radius={20}
+          fill="#f97316"
+        />
       </Layer>
     </Stage>
   );
