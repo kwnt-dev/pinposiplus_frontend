@@ -45,6 +45,7 @@ interface Props {
   width?: number;
   height?: number;
   damageCells: string[];
+  onCellClick?: (cellId: string) => void;
 }
 
 // 定数
@@ -67,6 +68,7 @@ export default function GreenCanvas({
   width = 600,
   height = 600,
   damageCells = [],
+  onCellClick,
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
@@ -87,7 +89,22 @@ export default function GreenCanvas({
 
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
-      <Layer>
+      <Layer
+        onClick={(e) => {
+          if (!onCellClick) return;
+          const stage = e.target.getStage();
+          if (!stage) return;
+          const pos = stage.getPointerPosition();
+          if (!pos) return;
+          const x = Math.floor(pos.x / scale / YD_TO_PX);
+          const y = Math.floor(pos.y / scale / YD_TO_PX);
+          const cellId = `cell_${x}_${y}`;
+          const cell = holeData.cells.find((c) => c.id === cellId);
+          if (cell) {
+            onCellClick(cellId);
+          }
+        }}
+      >
         {/* 背景レイヤー */}
         {holeData.layers.map((layer, index) => (
           <Path
