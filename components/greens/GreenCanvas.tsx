@@ -54,6 +54,7 @@ interface Props {
   rainCells?: string[];
   onCellClick?: (cellId: string) => void;
   currentPin?: Pin;
+  onPinDragged?: (currentPin: Pin) => void;
 }
 
 // 定数
@@ -80,6 +81,7 @@ export default function GreenCanvas({
   rainCells = [],
   onCellClick,
   currentPin,
+  onPinDragged,
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
@@ -258,6 +260,14 @@ export default function GreenCanvas({
             y={ydToPx(currentPin.y)}
             radius={20}
             fill="#000000"
+            draggable
+            onDragEnd={(e) => {
+              onPinDragged?.({
+                id: currentPin.id,
+                x: e.target.x() / YD_TO_PX,
+                y: e.target.y() / YD_TO_PX,
+              });
+            }}
           />
         )}
       </Layer>
