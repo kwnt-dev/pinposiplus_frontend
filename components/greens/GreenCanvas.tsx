@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Stage, Layer, Path, Line, Circle, Text, Rect } from "react-konva";
+import { Fragment } from "react";
 
 // 型定義
 interface LayerData {
@@ -67,6 +68,7 @@ interface Props {
 // 定数
 const YD_TO_PX = 20;
 const CANVAS_SIZE = 60 * YD_TO_PX;
+const PAST_PIN_RESTRICTION_RADIUS = 7; // 過去ピン制限　半径yd
 
 // ユーティリティ関数
 function scalePathToPixels(d: string): string {
@@ -286,13 +288,22 @@ export default function GreenCanvas({
         {/* 過去ピン */}
         {pastPins &&
           pastPins.map((pin) => (
-            <Circle
-              key={`pastPin-${pin.id}`}
-              x={ydToPx(pin.x)}
-              y={ydToPx(pin.y)}
-              radius={20}
-              fill="#6b7280"
-            />
+            <Fragment key={`pastPin-${pin.id}`}>
+              {/* 制限円 */}
+              <Circle
+                x={ydToPx(pin.x)}
+                y={ydToPx(pin.y)}
+                radius={PAST_PIN_RESTRICTION_RADIUS * YD_TO_PX}
+                fill={`rgb(0, 0, 0, 0.08)`}
+              />
+              {/* 過去ピン */}
+              <Circle
+                x={ydToPx(pin.x)}
+                y={ydToPx(pin.y)}
+                radius={20}
+                fill="#6b7280"
+              />
+            </Fragment>
           ))}
 
         {/* 現在のピン */}
