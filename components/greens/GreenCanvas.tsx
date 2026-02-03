@@ -18,6 +18,11 @@ interface Cell {
   centerY: number;
   isInside: boolean;
 }
+interface Pin {
+  id: string;
+  x: number;
+  y: number;
+}
 
 interface HoleData {
   hole: string;
@@ -48,6 +53,7 @@ interface Props {
   banCells?: string[];
   rainCells?: string[];
   onCellClick?: (cellId: string) => void;
+  currentPin?: Pin;
 }
 
 // 定数
@@ -73,6 +79,7 @@ export default function GreenCanvas({
   banCells = [],
   rainCells = [],
   onCellClick,
+  currentPin,
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
@@ -243,6 +250,16 @@ export default function GreenCanvas({
             />
           );
         })}
+
+        {/* 現在のピン */}
+        {currentPin && (
+          <Circle
+            x={ydToPx(currentPin.x)}
+            y={ydToPx(currentPin.y)}
+            radius={20}
+            fill="#000000"
+          />
+        )}
       </Layer>
     </Stage>
   );

@@ -23,6 +23,8 @@ export default function TestPage() {
     }
   };
 
+  const currentPin = { id: "pin1", x: 30, y: 35 };
+
   return (
     <div className="p-8">
       <GreenCanvas
@@ -31,6 +33,7 @@ export default function TestPage() {
         banCells={banCells}
         rainCells={rainCells}
         onCellClick={handleCellClick}
+        currentPin={currentPin}
       />
     </div>
   );
