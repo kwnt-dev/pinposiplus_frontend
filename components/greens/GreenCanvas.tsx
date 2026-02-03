@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Stage, Layer, Path, Line, Circle, Text } from "react-konva";
+import { Stage, Layer, Path, Line, Circle, Text, Rect } from "react-konva";
 
 // 型定義
 interface LayerData {
@@ -10,11 +10,21 @@ interface LayerData {
   fill: string;
 }
 
+interface Cell {
+  id: string;
+  x: number;
+  y: number;
+  centerX: number;
+  centerY: number;
+  isInside: boolean;
+}
+
 interface HoleData {
   hole: string;
   boundary: { d: string };
   layers: LayerData[];
   origin: { x: number; y: number };
+  cells: Cell[];
 }
 
 interface HoleConfig {
@@ -34,6 +44,7 @@ interface Props {
   hole: string;
   width?: number;
   height?: number;
+  damageCells: string[];
 }
 
 // 定数
@@ -55,6 +66,7 @@ export default function GreenCanvas({
   hole,
   width = 600,
   height = 600,
+  damageCells = [],
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
@@ -162,6 +174,21 @@ export default function GreenCanvas({
           radius={20}
           fill="#f97316"
         />
+
+        {damageCells.map((cellId) => {
+          const cell = holeData.cells.find((c) => c.id === cellId);
+          if (!cell) return null;
+          return (
+            <Rect
+              key={`damage-${cellId}`}
+              x={ydToPx(cell.x)}
+              y={ydToPx(cell.y)}
+              width={YD_TO_PX}
+              height={YD_TO_PX}
+              fill="rgba(239, 68, 68, 0.7)"
+            />
+          );
+        })}
       </Layer>
     </Stage>
   );
