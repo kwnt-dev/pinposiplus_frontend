@@ -18,7 +18,7 @@ interface Cell {
   centerY: number;
   isInside: boolean;
 }
-interface Pin {
+export interface Pin {
   id: string;
   x: number;
   y: number;
@@ -70,6 +70,28 @@ function scalePathToPixels(d: string): string {
 
 function ydToPx(yd: number): number {
   return yd * YD_TO_PX;
+}
+
+/**
+ * グリーン内外判定
+ * JSONのisInsideを使用（svg→jsonで内側のセルのみ生成）
+ * エッジケース：外周線と重なるセルは四隅判定で対応
+ */
+function isInsideGreen(pin: Pin, cells: Cell[]): boolean {
+  // ピン位置の四隅のセルをチェック
+  const surroundingCells = [
+    { x: Math.floor(pin.x) - 1, y: Math.floor(pin.y) - 1 },
+    { x: Math.floor(pin.x), y: Math.floor(pin.y) - 1 },
+    { x: Math.floor(pin.x) - 1, y: Math.floor(pin.y) },
+    { x: Math.floor(pin.x), y: Math.floor(pin.y) },
+  ];
+
+  const allInside = surroundingCells.every((c) => {
+    const cell = cells.find((cell) => cell.x === c.x && cell.y === c.y);
+    return cell && cell.isInside;
+  });
+
+  return allInside;
 }
 
 export default function GreenCanvas({
@@ -262,11 +284,34 @@ export default function GreenCanvas({
             fill="#000000"
             draggable
             onDragEnd={(e) => {
-              onPinDragged?.({
-                id: currentPin.id,
-                x: e.target.x() / YD_TO_PX,
-                y: e.target.y() / YD_TO_PX,
-              });
+              const newX = e.target.x() / YD_TO_PX;
+              const newY = e.target.y() / YD_TO_PX;
+
+              console.log("newX:", newX, "newY:", newY);
+              console.log(
+                "isInside:",
+                isInsideGreen(
+                  { id: currentPin.id, x: newX, y: newY },
+                  holeData.cells,
+                ),
+              );
+
+              if (
+                isInsideGreen(
+                  { id: currentPin.id, x: newX, y: newY },
+                  holeData.cells,
+                )
+              ) {
+                onPinDragged?.({
+                  id: currentPin.id,
+                  x: newX,
+                  y: newY,
+                });
+              } else {
+                // グリーン外なら元の位置に戻す
+                e.target.x(ydToPx(currentPin.x));
+                e.target.y(ydToPx(currentPin.y));
+              }
             }}
           />
         )}
