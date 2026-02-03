@@ -44,7 +44,9 @@ interface Props {
   hole: string;
   width?: number;
   height?: number;
-  damageCells: string[];
+  damageCells?: string[];
+  banCells?: string[];
+  rainCells?: string[];
   onCellClick?: (cellId: string) => void;
 }
 
@@ -68,6 +70,8 @@ export default function GreenCanvas({
   width = 600,
   height = 600,
   damageCells = [],
+  banCells = [],
+  rainCells = [],
   onCellClick,
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
@@ -192,6 +196,7 @@ export default function GreenCanvas({
           fill="#f97316"
         />
 
+        {/* 傷みセル */}
         {damageCells.map((cellId) => {
           const cell = holeData.cells.find((c) => c.id === cellId);
           if (!cell) return null;
@@ -203,6 +208,38 @@ export default function GreenCanvas({
               width={YD_TO_PX}
               height={YD_TO_PX}
               fill="rgba(239, 68, 68, 0.7)"
+            />
+          );
+        })}
+
+        {/* 禁止セル */}
+        {banCells.map((cellId) => {
+          const cell = holeData.cells.find((c) => c.id === cellId);
+          if (!cell) return null;
+          return (
+            <Rect
+              key={`ban-${cellId}`}
+              x={ydToPx(cell.x)}
+              y={ydToPx(cell.y)}
+              width={YD_TO_PX}
+              height={YD_TO_PX}
+              fill="rgba(75, 85, 99, 0.7)"
+            />
+          );
+        })}
+
+        {/* 雨天禁止セル */}
+        {rainCells.map((cellId) => {
+          const cell = holeData.cells.find((c) => c.id === cellId);
+          if (!cell) return null;
+          return (
+            <Rect
+              key={`rain-${cellId}`}
+              x={ydToPx(cell.x)}
+              y={ydToPx(cell.y)}
+              width={YD_TO_PX}
+              height={YD_TO_PX}
+              fill="rgba(59, 130, 246, 0.7)"
             />
           );
         })}

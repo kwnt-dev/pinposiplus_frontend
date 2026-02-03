@@ -5,6 +5,14 @@ import GreenCanvas from "@/components/greens/GreenCanvas";
 
 export default function TestPage() {
   const [damageCells, setDamageCells] = useState<string[]>([]);
+  const [banCells, setBanCells] = useState<string[]>([
+    "cell_25_35",
+    "cell_26_35",
+  ]);
+  const [rainCells, setRainCells] = useState<string[]>([
+    "cell_35_40",
+    "cell_36_40",
+  ]);
 
   const handleCellClick = (cellId: string) => {
     console.log("クリックされたセル:", cellId);
@@ -17,11 +25,11 @@ export default function TestPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">GreenCanvas テスト</h1>
-      <p className="mb-4">ダメージセル: {damageCells.length}個</p>
       <GreenCanvas
         hole="1"
         damageCells={damageCells}
+        banCells={banCells}
+        rainCells={rainCells}
         onCellClick={handleCellClick}
       />
     </div>
