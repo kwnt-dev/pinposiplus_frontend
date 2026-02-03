@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Stage, Layer, Path, Line, Circle, Text } from "react-konva";
+import { Stage, Layer, Path, Line, Circle, Text, Rect } from "react-konva";
 
 // 型定義
 interface LayerData {
@@ -10,11 +10,21 @@ interface LayerData {
   fill: string;
 }
 
+interface Cell {
+  id: string;
+  x: number;
+  y: number;
+  centerX: number;
+  centerY: number;
+  isInside: boolean;
+}
+
 interface HoleData {
   hole: string;
   boundary: { d: string };
   layers: LayerData[];
   origin: { x: number; y: number };
+  cells: Cell[];
 }
 
 interface HoleConfig {
@@ -34,6 +44,10 @@ interface Props {
   hole: string;
   width?: number;
   height?: number;
+  damageCells?: string[];
+  banCells?: string[];
+  rainCells?: string[];
+  onCellClick?: (cellId: string) => void;
 }
 
 // 定数
@@ -55,6 +69,10 @@ export default function GreenCanvas({
   hole,
   width = 600,
   height = 600,
+  damageCells = [],
+  banCells = [],
+  rainCells = [],
+  onCellClick,
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
@@ -75,7 +93,22 @@ export default function GreenCanvas({
 
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
-      <Layer>
+      <Layer
+        onClick={(e) => {
+          if (!onCellClick) return;
+          const stage = e.target.getStage();
+          if (!stage) return;
+          const pos = stage.getPointerPosition();
+          if (!pos) return;
+          const x = Math.floor(pos.x / scale / YD_TO_PX);
+          const y = Math.floor(pos.y / scale / YD_TO_PX);
+          const cellId = `cell_${x}_${y}`;
+          const cell = holeData.cells.find((c) => c.id === cellId);
+          if (cell) {
+            onCellClick(cellId);
+          }
+        }}
+      >
         {/* 背景レイヤー */}
         {holeData.layers.map((layer, index) => (
           <Path
@@ -162,6 +195,54 @@ export default function GreenCanvas({
           radius={20}
           fill="#f97316"
         />
+
+        {/* 傷みセル */}
+        {damageCells.map((cellId) => {
+          const cell = holeData.cells.find((c) => c.id === cellId);
+          if (!cell) return null;
+          return (
+            <Rect
+              key={`damage-${cellId}`}
+              x={ydToPx(cell.x)}
+              y={ydToPx(cell.y)}
+              width={YD_TO_PX}
+              height={YD_TO_PX}
+              fill="rgba(239, 68, 68, 0.7)"
+            />
+          );
+        })}
+
+        {/* 禁止セル */}
+        {banCells.map((cellId) => {
+          const cell = holeData.cells.find((c) => c.id === cellId);
+          if (!cell) return null;
+          return (
+            <Rect
+              key={`ban-${cellId}`}
+              x={ydToPx(cell.x)}
+              y={ydToPx(cell.y)}
+              width={YD_TO_PX}
+              height={YD_TO_PX}
+              fill="rgba(75, 85, 99, 0.7)"
+            />
+          );
+        })}
+
+        {/* 雨天禁止セル */}
+        {rainCells.map((cellId) => {
+          const cell = holeData.cells.find((c) => c.id === cellId);
+          if (!cell) return null;
+          return (
+            <Rect
+              key={`rain-${cellId}`}
+              x={ydToPx(cell.x)}
+              y={ydToPx(cell.y)}
+              width={YD_TO_PX}
+              height={YD_TO_PX}
+              fill="rgba(59, 130, 246, 0.7)"
+            />
+          );
+        })}
       </Layer>
     </Stage>
   );
