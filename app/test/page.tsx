@@ -23,6 +23,11 @@ export default function TestPage() {
     }
   };
 
+  const pastPins = [
+    { id: "past1", x: 25, y: 30 },
+    { id: "past2", x: 35, y: 40 },
+  ];
+
   const [currentPin, setCurrentPin] = useState<Pin>({
     id: "pin1",
     x: 30,
@@ -44,6 +49,7 @@ export default function TestPage() {
         onCellClick={handleCellClick}
         currentPin={currentPin}
         onPinDragged={handlePinDragged}
+        pastPins={pastPins}
       />
     </div>
   );

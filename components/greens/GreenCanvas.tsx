@@ -24,6 +24,12 @@ export interface Pin {
   y: number;
 }
 
+interface PinHistory {
+  id: string;
+  x: number;
+  y: number;
+}
+
 interface HoleData {
   hole: string;
   boundary: { d: string };
@@ -55,6 +61,7 @@ interface Props {
   onCellClick?: (cellId: string) => void;
   currentPin?: Pin;
   onPinDragged?: (currentPin: Pin) => void;
+  pastPins?: Pin[];
 }
 
 // 定数
@@ -104,6 +111,7 @@ export default function GreenCanvas({
   onCellClick,
   currentPin,
   onPinDragged,
+  pastPins,
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
@@ -274,6 +282,18 @@ export default function GreenCanvas({
             />
           );
         })}
+
+        {/* 過去ピン */}
+        {pastPins &&
+          pastPins.map((pin) => (
+            <Circle
+              key={`pastPin-${pin.id}`}
+              x={ydToPx(pin.x)}
+              y={ydToPx(pin.y)}
+              radius={20}
+              fill="#6b7280"
+            />
+          ))}
 
         {/* 現在のピン */}
         {currentPin && (
