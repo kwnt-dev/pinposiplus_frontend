@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import GreenCanvas from "@/components/greens/GreenCanvas";
+import GreenCanvas, { Pin } from "@/components/greens/GreenCanvas";
 
 export default function TestPage() {
   const [damageCells, setDamageCells] = useState<string[]>([]);
@@ -23,6 +23,22 @@ export default function TestPage() {
     }
   };
 
+  const pastPins = [
+    { id: "past1", x: 25, y: 30 },
+    { id: "past2", x: 35, y: 40 },
+  ];
+
+  const [currentPin, setCurrentPin] = useState<Pin>({
+    id: "pin1",
+    x: 30,
+    y: 35,
+  });
+
+  function handlePinDragged(newPin: Pin) {
+    console.log("新しい座標", newPin);
+    setCurrentPin(newPin);
+  }
+
   return (
     <div className="p-8">
       <GreenCanvas
@@ -31,6 +47,9 @@ export default function TestPage() {
         banCells={banCells}
         rainCells={rainCells}
         onCellClick={handleCellClick}
+        currentPin={currentPin}
+        onPinDragged={handlePinDragged}
+        pastPins={pastPins}
       />
     </div>
   );

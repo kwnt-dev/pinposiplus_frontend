@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Stage, Layer, Path, Line, Circle, Text, Rect } from "react-konva";
+import { Fragment } from "react";
 
 // 型定義
 interface LayerData {
@@ -17,6 +18,17 @@ interface Cell {
   centerX: number;
   centerY: number;
   isInside: boolean;
+}
+export interface Pin {
+  id: string;
+  x: number;
+  y: number;
+}
+
+interface PinHistory {
+  id: string;
+  x: number;
+  y: number;
 }
 
 interface HoleData {
@@ -48,11 +60,15 @@ interface Props {
   banCells?: string[];
   rainCells?: string[];
   onCellClick?: (cellId: string) => void;
+  currentPin?: Pin;
+  onPinDragged?: (currentPin: Pin) => void;
+  pastPins?: Pin[];
 }
 
 // 定数
 const YD_TO_PX = 20;
 const CANVAS_SIZE = 60 * YD_TO_PX;
+const PAST_PIN_RESTRICTION_RADIUS = 7; // 過去ピン制限　半径yd
 
 // ユーティリティ関数
 function scalePathToPixels(d: string): string {
@@ -65,6 +81,28 @@ function ydToPx(yd: number): number {
   return yd * YD_TO_PX;
 }
 
+/**
+ * グリーン内外判定
+ * JSONのisInsideを使用（svg→jsonで内側のセルのみ生成）
+ * エッジケース：外周線と重なるセルは四隅判定で対応
+ */
+function isInsideGreen(pin: Pin, cells: Cell[]): boolean {
+  // ピン位置の四隅のセルをチェック
+  const surroundingCells = [
+    { x: Math.floor(pin.x) - 1, y: Math.floor(pin.y) - 1 },
+    { x: Math.floor(pin.x), y: Math.floor(pin.y) - 1 },
+    { x: Math.floor(pin.x) - 1, y: Math.floor(pin.y) },
+    { x: Math.floor(pin.x), y: Math.floor(pin.y) },
+  ];
+
+  const allInside = surroundingCells.every((c) => {
+    const cell = cells.find((cell) => cell.x === c.x && cell.y === c.y);
+    return cell && cell.isInside;
+  });
+
+  return allInside;
+}
+
 export default function GreenCanvas({
   hole,
   width = 600,
@@ -73,6 +111,9 @@ export default function GreenCanvas({
   banCells = [],
   rainCells = [],
   onCellClick,
+  currentPin,
+  onPinDragged,
+  pastPins,
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
@@ -243,6 +284,68 @@ export default function GreenCanvas({
             />
           );
         })}
+
+        {/* 過去ピン */}
+        {pastPins &&
+          pastPins.map((pin) => (
+            <Fragment key={`pastPin-${pin.id}`}>
+              {/* 制限円 */}
+              <Circle
+                x={ydToPx(pin.x)}
+                y={ydToPx(pin.y)}
+                radius={PAST_PIN_RESTRICTION_RADIUS * YD_TO_PX}
+                fill={`rgb(0, 0, 0, 0.08)`}
+              />
+              {/* 過去ピン */}
+              <Circle
+                x={ydToPx(pin.x)}
+                y={ydToPx(pin.y)}
+                radius={20}
+                fill="#6b7280"
+              />
+            </Fragment>
+          ))}
+
+        {/* 現在のピン */}
+        {currentPin && (
+          <Circle
+            x={ydToPx(currentPin.x)}
+            y={ydToPx(currentPin.y)}
+            radius={20}
+            fill="#000000"
+            draggable
+            onDragEnd={(e) => {
+              const newX = e.target.x() / YD_TO_PX;
+              const newY = e.target.y() / YD_TO_PX;
+
+              console.log("newX:", newX, "newY:", newY);
+              console.log(
+                "isInside:",
+                isInsideGreen(
+                  { id: currentPin.id, x: newX, y: newY },
+                  holeData.cells,
+                ),
+              );
+
+              if (
+                isInsideGreen(
+                  { id: currentPin.id, x: newX, y: newY },
+                  holeData.cells,
+                )
+              ) {
+                onPinDragged?.({
+                  id: currentPin.id,
+                  x: newX,
+                  y: newY,
+                });
+              } else {
+                // グリーン外なら元の位置に戻す
+                e.target.x(ydToPx(currentPin.x));
+                e.target.y(ydToPx(currentPin.y));
+              }
+            }}
+          />
+        )}
       </Layer>
     </Stage>
   );
