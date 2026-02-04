@@ -1,8 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Stage, Layer, Path, Line, Circle, Text, Rect } from "react-konva";
+import {
+  Stage,
+  Layer,
+  Path,
+  Line,
+  Circle,
+  Group,
+  Text,
+  Rect,
+} from "react-konva";
 import { Fragment } from "react";
+import ClipperLib from "clipper-lib";
 
 // 型定義
 interface LayerData {
@@ -69,6 +79,7 @@ interface Props {
 const YD_TO_PX = 20;
 const CANVAS_SIZE = 60 * YD_TO_PX;
 const PAST_PIN_RESTRICTION_RADIUS = 7; // 過去ピン制限　半径yd
+const BOUNDARY_BUFFER = 3.5; // 外周制限距離（ヤード）
 
 // ユーティリティ関数
 function scalePathToPixels(d: string): string {
@@ -103,6 +114,176 @@ function isInsideGreen(pin: Pin, cells: Cell[]): boolean {
   return allInside;
 }
 
+// SVGベジェ曲線上の1点の座標を計算する関数
+function calcBezierPoint(
+  t: number,
+  p0: number,
+  p1: number,
+  p2: number,
+  p3: number,
+): number {
+  const mt = 1 - t;
+  return (
+    mt * mt * mt * p0 +
+    3 * mt * mt * t * p1 +
+    3 * mt * t * t * p2 +
+    t * t * t * p3
+  );
+}
+
+// SVGパス文字列を点配列に変換する（ベジェ曲線は直線近似）関数
+function svgPathToPoints(d: string, segments = 40): { x: number; y: number }[] {
+  // パスをコマンドと数字に分解
+  const tokens = d.match(/[a-zA-Z]|-?\d*\.?\d+/g);
+  if (!tokens) return [];
+
+  const pts: { x: number; y: number }[] = [];
+  let cx = 0;
+  let cy = 0;
+  let startX = 0;
+  let startY = 0;
+  let cmd: string | null = null;
+  let i = 0;
+
+  const isLetter = (tok: string) => /^[a-zA-Z]$/.test(tok);
+
+  while (i < tokens.length) {
+    const tok = tokens[i];
+
+    if (isLetter(tok)) {
+      cmd = tok;
+      i++;
+    }
+
+    if (!cmd) break;
+
+    // M: 開始点
+    if (cmd === "m" || cmd === "M") {
+      if (i + 1 >= tokens.length) break;
+      const x = parseFloat(tokens[i++]);
+      const y = parseFloat(tokens[i++]);
+      if (cmd === "m") {
+        cx += x;
+        cy += y;
+      } else {
+        cx = x;
+        cy = y;
+      }
+      startX = cx;
+      startY = cy;
+      pts.push({ x: cx, y: cy });
+
+      // C: ベジェ曲線（segments個の点に分割）
+    } else if (cmd === "c" || cmd === "C") {
+      while (i + 5 < tokens.length && !isLetter(tokens[i])) {
+        const dx1 = parseFloat(tokens[i++]);
+        const dy1 = parseFloat(tokens[i++]);
+        const dx2 = parseFloat(tokens[i++]);
+        const dy2 = parseFloat(tokens[i++]);
+        const dx = parseFloat(tokens[i++]);
+        const dy = parseFloat(tokens[i++]);
+
+        let c1x: number,
+          c1y: number,
+          c2x: number,
+          c2y: number,
+          ex: number,
+          ey: number;
+
+        if (cmd === "c") {
+          c1x = cx + dx1;
+          c1y = cy + dy1;
+          c2x = cx + dx2;
+          c2y = cy + dy2;
+          ex = cx + dx;
+          ey = cy + dy;
+        } else {
+          c1x = dx1;
+          c1y = dy1;
+          c2x = dx2;
+          c2y = dy2;
+          ex = dx;
+          ey = dy;
+        }
+
+        for (let k = 0; k <= segments; k++) {
+          const t = k / segments;
+          const x = calcBezierPoint(t, cx, c1x, c2x, ex);
+          const y = calcBezierPoint(t, cy, c1y, c2y, ey);
+          pts.push({ x, y });
+        }
+
+        cx = ex;
+        cy = ey;
+      }
+
+      // z: パスを閉じる
+    } else if (cmd === "z" || cmd === "Z") {
+      pts.push({ x: startX, y: startY });
+      i++;
+    } else {
+      break;
+    }
+  }
+
+  return pts;
+}
+
+// 境界線から内側にオフセットした境界を生成する関数
+function getOffsetBoundary(
+  boundaryD: string,
+  offsetYd: number,
+): { x: number; y: number }[] {
+  const polygon = svgPathToPoints(boundaryD, 80);
+  if (polygon.length < 3) return [];
+
+  const SCALE = 1000;
+  const clipperPath: ClipperLib.IntPoint[] = polygon.map((p) => ({
+    X: Math.round(p.x * SCALE),
+    Y: Math.round(p.y * SCALE),
+  }));
+
+  const co = new ClipperLib.ClipperOffset();
+  co.AddPath(
+    clipperPath,
+    ClipperLib.JoinType.jtRound,
+    ClipperLib.EndType.etClosedPolygon,
+  );
+
+  const solution: ClipperLib.IntPoint[][] = [];
+  co.Execute(solution, -offsetYd * SCALE);
+
+  if (solution.length === 0 || solution[0].length === 0) return [];
+
+  return solution[0].map((p) => ({
+    x: p.X / SCALE,
+    y: p.Y / SCALE,
+  }));
+}
+
+// ポリゴン内にピンがあるか判定する関数
+function isPointInPolygon(
+  x: number,
+  y: number,
+  polygon: { x: number; y: number }[],
+): boolean {
+  if (polygon.length < 3) return false;
+
+  const SCALE = 1000;
+  const point: ClipperLib.IntPoint = {
+    X: Math.round(x * SCALE),
+    Y: Math.round(y * SCALE),
+  };
+
+  const clipperPath: ClipperLib.IntPoint[] = polygon.map((p) => ({
+    X: Math.round(p.x * SCALE),
+    Y: Math.round(p.y * SCALE),
+  }));
+
+  const result = ClipperLib.Clipper.PointInPolygon(point, clipperPath);
+  return result !== 0;
+}
+
 export default function GreenCanvas({
   hole,
   width = 600,
@@ -131,6 +312,12 @@ export default function GreenCanvas({
 
   const scale = width / CANVAS_SIZE;
   const config = HOLE_01_CONFIG;
+
+  //外周制限を計算
+  const boundaryBufferPoints = getOffsetBoundary(
+    holeData.boundary.d,
+    BOUNDARY_BUFFER,
+  );
 
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
@@ -186,6 +373,19 @@ export default function GreenCanvas({
           strokeWidth={2}
           fill="transparent"
         />
+
+        {/* 外周制限エリア */}
+        <Group
+          clipFunc={() => {
+            return [new Path2D(scalePathToPixels(holeData.boundary.d))];
+          }}
+        >
+          <Path
+            data={scalePathToPixels(holeData.boundary.d)}
+            stroke="rgba(255, 150, 150, 0.4)"
+            strokeWidth={ydToPx(BOUNDARY_BUFFER * 2)}
+          />
+        </Group>
 
         {/* 座標線 */}
         {[0, 10, 20, 30, 40].map((depth) => {
@@ -331,7 +531,8 @@ export default function GreenCanvas({
                 isInsideGreen(
                   { id: currentPin.id, x: newX, y: newY },
                   holeData.cells,
-                )
+                ) &&
+                isPointInPolygon(newX, newY, boundaryBufferPoints)
               ) {
                 onPinDragged?.({
                   id: currentPin.id,
@@ -339,7 +540,7 @@ export default function GreenCanvas({
                   y: newY,
                 });
               } else {
-                // グリーン外なら元の位置に戻す
+                // グリーン外かつ外周制限内なら元の位置に戻す
                 e.target.x(ydToPx(currentPin.x));
                 e.target.y(ydToPx(currentPin.y));
               }
