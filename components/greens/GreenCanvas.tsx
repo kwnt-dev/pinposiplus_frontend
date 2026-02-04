@@ -531,7 +531,8 @@ export default function GreenCanvas({
                 isInsideGreen(
                   { id: currentPin.id, x: newX, y: newY },
                   holeData.cells,
-                )
+                ) &&
+                isPointInPolygon(newX, newY, boundaryBufferPoints)
               ) {
                 onPinDragged?.({
                   id: currentPin.id,
@@ -539,7 +540,7 @@ export default function GreenCanvas({
                   y: newY,
                 });
               } else {
-                // グリーン外なら元の位置に戻す
+                // グリーン外かつ外周制限内なら元の位置に戻す
                 e.target.x(ydToPx(currentPin.x));
                 e.target.y(ydToPx(currentPin.y));
               }
