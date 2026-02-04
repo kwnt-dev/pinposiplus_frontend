@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Stage, Layer, Path, Line, Circle, Text, Rect } from "react-konva";
+import {
+  Stage,
+  Layer,
+  Path,
+  Line,
+  Circle,
+  Group,
+  Text,
+  Rect,
+} from "react-konva";
 import { Fragment } from "react";
 import ClipperLib from "clipper-lib";
 
@@ -70,6 +79,7 @@ interface Props {
 const YD_TO_PX = 20;
 const CANVAS_SIZE = 60 * YD_TO_PX;
 const PAST_PIN_RESTRICTION_RADIUS = 7; // 過去ピン制限　半径yd
+const BOUNDARY_BUFFER = 3.5; // 外周制限距離（ヤード）
 
 // ユーティリティ関数
 function scalePathToPixels(d: string): string {
@@ -280,6 +290,12 @@ export default function GreenCanvas({
   const scale = width / CANVAS_SIZE;
   const config = HOLE_01_CONFIG;
 
+  //外周制限を計算
+  const boundaryBufferPoints = getOffsetBoundary(
+    holeData.boundary.d,
+    BOUNDARY_BUFFER,
+  );
+
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
       <Layer
@@ -334,6 +350,19 @@ export default function GreenCanvas({
           strokeWidth={2}
           fill="transparent"
         />
+
+        {/* 外周制限エリア */}
+        <Group
+          clipFunc={(ctx) => {
+            return [new Path2D(scalePathToPixels(holeData.boundary.d))];
+          }}
+        >
+          <Path
+            data={scalePathToPixels(holeData.boundary.d)}
+            stroke="rgba(255, 150, 150, 0.4)"
+            strokeWidth={ydToPx(BOUNDARY_BUFFER * 2)}
+          />
+        </Group>
 
         {/* 座標線 */}
         {[0, 10, 20, 30, 40].map((depth) => {
