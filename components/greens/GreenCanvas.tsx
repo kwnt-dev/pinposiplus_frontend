@@ -261,6 +261,29 @@ function getOffsetBoundary(
   }));
 }
 
+// ポリゴン内にピンがあるか判定する関数
+function isPointInPolygon(
+  x: number,
+  y: number,
+  polygon: { x: number; y: number }[],
+): boolean {
+  if (polygon.length < 3) return false;
+
+  const SCALE = 1000;
+  const point: ClipperLib.IntPoint = {
+    X: Math.round(x * SCALE),
+    Y: Math.round(y * SCALE),
+  };
+
+  const clipperPath: ClipperLib.IntPoint[] = polygon.map((p) => ({
+    X: Math.round(p.x * SCALE),
+    Y: Math.round(p.y * SCALE),
+  }));
+
+  const result = ClipperLib.Clipper.PointInPolygon(point, clipperPath);
+  return result !== 0;
+}
+
 export default function GreenCanvas({
   hole,
   width = 600,
@@ -353,7 +376,7 @@ export default function GreenCanvas({
 
         {/* 外周制限エリア */}
         <Group
-          clipFunc={(ctx) => {
+          clipFunc={() => {
             return [new Path2D(scalePathToPixels(holeData.boundary.d))];
           }}
         >

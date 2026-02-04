@@ -24,4 +24,8 @@ declare module "clipper-lib" {
     Execute(solution: IntPoint[][], delta: number): void;
     Clear(): void;
   }
+
+  export class Clipper {
+    static PointInPolygon(pt: IntPoint, path: IntPoint[]): number;
+  }
 }
