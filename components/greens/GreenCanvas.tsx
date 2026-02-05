@@ -390,6 +390,15 @@ export default function GreenCanvas({
           />
         ))}
 
+        {/* グリーン上段 */}
+
+        {holeData.slope ? (
+          <Path
+            data={scalePathToPixels(holeData.slope.upper.d)}
+            fill="000000"
+          />
+        ) : null}
+
         {/* グリッド（縦線） */}
         {Array.from({ length: 61 }, (_, i) => (
           <Line
