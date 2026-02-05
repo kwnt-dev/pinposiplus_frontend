@@ -597,7 +597,7 @@ export default function GreenCanvas({
             x={ydToPx(currentPin.x)}
             y={ydToPx(currentPin.y)}
             radius={20}
-            fill="#000000"
+            fill="#ef4444"
             draggable
             onDragEnd={(e) => {
               const newX = e.target.x() / YD_TO_PX;
@@ -631,6 +631,21 @@ export default function GreenCanvas({
                 e.target.y(ydToPx(currentPin.y));
               }
             }}
+          />
+        )}
+
+        {/* 現在ピン出口線 */}
+        {currentPin && (
+          <Line
+            points={[
+              ydToPx(currentPin.x),
+              ydToPx(currentPin.y),
+              ydToPx(config.exit.x),
+              ydToPx(config.exit.y),
+            ]}
+            stroke="#ef4444"
+            strokeWidth={2}
+            dash={[10, 5]}
           />
         )}
       </Layer>
