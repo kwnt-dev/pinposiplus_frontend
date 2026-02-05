@@ -395,7 +395,16 @@ export default function GreenCanvas({
         {holeData.slope ? (
           <Path
             data={scalePathToPixels(holeData.slope.upper.d)}
-            fill="000000"
+            fill="#7ed9a0"
+          />
+        ) : null}
+
+        {/* グリーン下段 */}
+
+        {holeData.slope ? (
+          <Path
+            data={scalePathToPixels(holeData.slope.lower.d)}
+            fill="#5fb8a0"
           />
         ) : null}
 
