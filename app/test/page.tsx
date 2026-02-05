@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import GreenCanvas, { Pin } from "@/components/greens/GreenCanvas";
+import GreenCard from "@/components/greens/GreenCard";
 
 export default function TestPage() {
   const [damageCells, setDamageCells] = useState<string[]>([]);
@@ -41,7 +42,7 @@ export default function TestPage() {
 
   return (
     <div className="p-8">
-      <GreenCanvas
+      <GreenCard
         hole="4"
         damageCells={damageCells}
         banCells={banCells}
