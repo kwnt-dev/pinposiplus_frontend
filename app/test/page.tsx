@@ -42,7 +42,7 @@ export default function TestPage() {
   return (
     <div className="p-8">
       <GreenCanvas
-        hole="1"
+        hole="4"
         damageCells={damageCells}
         banCells={banCells}
         rainCells={rainCells}

@@ -47,6 +47,11 @@ interface HoleData {
   layers: LayerData[];
   origin: { x: number; y: number };
   cells: Cell[];
+  slope: {
+    upper: { d: string };
+    lower: { d: string };
+    slope: { d: string };
+  } | null;
 }
 
 interface HoleConfig {
@@ -80,6 +85,7 @@ const YD_TO_PX = 20;
 const CANVAS_SIZE = 60 * YD_TO_PX;
 const PAST_PIN_RESTRICTION_RADIUS = 7; // 過去ピン制限　半径yd
 const BOUNDARY_BUFFER = 3.5; // 外周制限距離（ヤード）
+const SLOPE_BUFFER = 3;
 
 // ユーティリティ関数
 function scalePathToPixels(d: string): string {
@@ -261,6 +267,38 @@ function getOffsetBoundary(
   }));
 }
 
+// 傾斜線から両側にオフセットした境界を生成する関数
+function getOffsetSlope(
+  slopeD: string,
+  offsetYd: number,
+): { x: number; y: number }[] {
+  const polygon = svgPathToPoints(slopeD, 80);
+  if (polygon.length < 3) return [];
+
+  const SCALE = 1000;
+  const clipperPath: ClipperLib.IntPoint[] = polygon.map((p) => ({
+    X: Math.round(p.x * SCALE),
+    Y: Math.round(p.y * SCALE),
+  }));
+
+  const co = new ClipperLib.ClipperOffset();
+  co.AddPath(
+    clipperPath,
+    ClipperLib.JoinType.jtRound,
+    ClipperLib.EndType.etOpenRound,
+  );
+
+  const solution: ClipperLib.IntPoint[][] = [];
+  co.Execute(solution, offsetYd * SCALE);
+
+  if (solution.length === 0 || solution[0].length === 0) return [];
+
+  return solution[0].map((p) => ({
+    x: p.X / SCALE,
+    y: p.Y / SCALE,
+  }));
+}
+
 // ポリゴン内にピンがあるか判定する関数
 function isPointInPolygon(
   x: number,
@@ -318,6 +356,12 @@ export default function GreenCanvas({
     holeData.boundary.d,
     BOUNDARY_BUFFER,
   );
+
+  //傾斜制限を計算
+
+  const slopeBufferPoints = holeData.slope
+    ? getOffsetSlope(holeData.slope.slope.d, SLOPE_BUFFER)
+    : [];
 
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
@@ -386,6 +430,30 @@ export default function GreenCanvas({
             strokeWidth={ydToPx(BOUNDARY_BUFFER * 2)}
           />
         </Group>
+
+        {/* 傾斜線 */}
+        <Path
+          data={scalePathToPixels(holeData.slope!.slope.d)}
+          stroke="#000000"
+          strokeWidth={2}
+          fill="transparent"
+        />
+
+        {/* 傾斜制限エリア */}
+        {holeData.slope ? (
+          <Group
+            clipFunc={() => {
+              return [new Path2D(scalePathToPixels(holeData.boundary.d))];
+            }}
+          >
+            <Path
+              data={scalePathToPixels(holeData.slope.slope.d)}
+              stroke="rgba(0, 0, 0, 0.15)"
+              strokeWidth={ydToPx(SLOPE_BUFFER * 2)}
+              lineCap="round"
+            />
+          </Group>
+        ) : null}
 
         {/* 座標線 */}
         {[0, 10, 20, 30, 40].map((depth) => {
@@ -532,7 +600,8 @@ export default function GreenCanvas({
                   { id: currentPin.id, x: newX, y: newY },
                   holeData.cells,
                 ) &&
-                isPointInPolygon(newX, newY, boundaryBufferPoints)
+                isPointInPolygon(newX, newY, boundaryBufferPoints) &&
+                !isPointInPolygon(newX, newY, slopeBufferPoints)
               ) {
                 onPinDragged?.({
                   id: currentPin.id,
@@ -540,7 +609,7 @@ export default function GreenCanvas({
                   y: newY,
                 });
               } else {
-                // グリーン外かつ外周制限内なら元の位置に戻す
+                // グリーン外または外周制限内なら元の位置に戻す
                 e.target.x(ydToPx(currentPin.x));
                 e.target.y(ydToPx(currentPin.y));
               }
