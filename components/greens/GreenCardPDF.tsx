@@ -352,6 +352,17 @@ export default function GreenCardPDF({
             )}
           </Fragment>
         )}
+        {/* 奥行き数字 */}
+        {currentPin && (
+          <Text
+            x={ydToPx(currentPin.x) + 50}
+            y={ydToPx(currentPin.y)}
+            text={`${Math.round(holeData.origin.y - currentPin.y)}`}
+            fontSize={400}
+            fontStyle="bold"
+            fill="#000000"
+          />
+        )}
       </Layer>
     </Stage>
   );
