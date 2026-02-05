@@ -267,6 +267,38 @@ function getOffsetBoundary(
   }));
 }
 
+// 傾斜線から両側にオフセットした境界を生成する関数
+function getOffsetSlope(
+  slopeD: string,
+  offsetYd: number,
+): { x: number; y: number }[] {
+  const polygon = svgPathToPoints(slopeD, 80);
+  if (polygon.length < 3) return [];
+
+  const SCALE = 1000;
+  const clipperPath: ClipperLib.IntPoint[] = polygon.map((p) => ({
+    X: Math.round(p.x * SCALE),
+    Y: Math.round(p.y * SCALE),
+  }));
+
+  const co = new ClipperLib.ClipperOffset();
+  co.AddPath(
+    clipperPath,
+    ClipperLib.JoinType.jtRound,
+    ClipperLib.EndType.etOpenRound,
+  );
+
+  const solution: ClipperLib.IntPoint[][] = [];
+  co.Execute(solution, offsetYd * SCALE);
+
+  if (solution.length === 0 || solution[0].length === 0) return [];
+
+  return solution[0].map((p) => ({
+    x: p.X / SCALE,
+    y: p.Y / SCALE,
+  }));
+}
+
 // ポリゴン内にピンがあるか判定する関数
 function isPointInPolygon(
   x: number,
@@ -324,6 +356,12 @@ export default function GreenCanvas({
     holeData.boundary.d,
     BOUNDARY_BUFFER,
   );
+
+  //傾斜制限を計算
+
+  const slopeBufferPoints = holeData.slope
+    ? getOffsetSlope(holeData.slope.slope.d, SLOPE_BUFFER)
+    : [];
 
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
@@ -562,7 +600,8 @@ export default function GreenCanvas({
                   { id: currentPin.id, x: newX, y: newY },
                   holeData.cells,
                 ) &&
-                isPointInPolygon(newX, newY, boundaryBufferPoints)
+                isPointInPolygon(newX, newY, boundaryBufferPoints) &&
+                !isPointInPolygon(newX, newY, slopeBufferPoints)
               ) {
                 onPinDragged?.({
                   id: currentPin.id,
