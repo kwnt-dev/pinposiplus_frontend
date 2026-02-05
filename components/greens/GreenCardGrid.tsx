@@ -2,9 +2,13 @@ import GreenCard from "@/components/greens/GreenCard";
 
 interface GreenCardGridProps {
   course: "out" | "in";
+  onCardClick?: (holeId: string) => void;
 }
 
-export default function GreenCardGrid({ course }: GreenCardGridProps) {
+export default function GreenCardGrid({
+  course,
+  onCardClick,
+}: GreenCardGridProps) {
   const holes =
     course === "out"
       ? [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -13,7 +17,9 @@ export default function GreenCardGrid({ course }: GreenCardGridProps) {
   return (
     <div className="grid grid-cols-3 gap-16">
       {holes.map((hole) => (
-        <GreenCard key={hole} hole={String(hole)} />
+        <div key={hole} onClick={() => onCardClick?.(String(hole))}>
+          <GreenCard hole={String(hole)} />
+        </div>
       ))}
     </div>
   );
