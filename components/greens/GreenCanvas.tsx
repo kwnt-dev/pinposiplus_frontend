@@ -47,6 +47,11 @@ interface HoleData {
   layers: LayerData[];
   origin: { x: number; y: number };
   cells: Cell[];
+  slope: {
+    upper: { d: string };
+    lower: { d: string };
+    slope: { d: string };
+  } | null;
 }
 
 interface HoleConfig {
@@ -80,6 +85,7 @@ const YD_TO_PX = 20;
 const CANVAS_SIZE = 60 * YD_TO_PX;
 const PAST_PIN_RESTRICTION_RADIUS = 7; // 過去ピン制限　半径yd
 const BOUNDARY_BUFFER = 3.5; // 外周制限距離（ヤード）
+const SLOPE_BUFFER = 3;
 
 // ユーティリティ関数
 function scalePathToPixels(d: string): string {
@@ -387,6 +393,30 @@ export default function GreenCanvas({
           />
         </Group>
 
+        {/* 傾斜線 */}
+        <Path
+          data={scalePathToPixels(holeData.slope!.slope.d)}
+          stroke="#000000"
+          strokeWidth={2}
+          fill="transparent"
+        />
+
+        {/* 傾斜制限エリア */}
+        {holeData.slope ? (
+          <Group
+            clipFunc={() => {
+              return [new Path2D(scalePathToPixels(holeData.boundary.d))];
+            }}
+          >
+            <Path
+              data={scalePathToPixels(holeData.slope.slope.d)}
+              stroke="rgba(0, 0, 0, 0.15)"
+              strokeWidth={ydToPx(SLOPE_BUFFER * 2)}
+              lineCap="round"
+            />
+          </Group>
+        ) : null}
+
         {/* 座標線 */}
         {[0, 10, 20, 30, 40].map((depth) => {
           const y = holeData.origin.y - depth;
@@ -540,7 +570,7 @@ export default function GreenCanvas({
                   y: newY,
                 });
               } else {
-                // グリーン外かつ外周制限内なら元の位置に戻す
+                // グリーン外または外周制限内なら元の位置に戻す
                 e.target.x(ydToPx(currentPin.x));
                 e.target.y(ydToPx(currentPin.y));
               }
