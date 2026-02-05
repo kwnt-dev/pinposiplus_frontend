@@ -3,6 +3,7 @@
 import { useState } from "react";
 import GreenCanvas, { Pin } from "@/components/greens/GreenCanvas";
 import GreenCard from "@/components/greens/GreenCard";
+import GreenCardGrid from "@/components/greens/GreenCardGrid";
 
 export default function TestPage() {
   const [damageCells, setDamageCells] = useState<string[]>([]);
@@ -42,16 +43,7 @@ export default function TestPage() {
 
   return (
     <div className="p-8">
-      <GreenCard
-        hole="4"
-        damageCells={damageCells}
-        banCells={banCells}
-        rainCells={rainCells}
-        onCellClick={handleCellClick}
-        currentPin={currentPin}
-        onPinDragged={handlePinDragged}
-        pastPins={pastPins}
-      />
+      <GreenCardGrid course="out" />
     </div>
   );
 }
