@@ -450,12 +450,15 @@ export default function GreenCanvas({
         </Group>
 
         {/* 傾斜線 */}
-        <Path
-          data={scalePathToPixels(holeData.slope!.slope.d)}
-          stroke="#000000"
-          strokeWidth={2}
-          fill="transparent"
-        />
+
+        {holeData.slope ? (
+          <Path
+            data={scalePathToPixels(holeData.slope.slope.d)}
+            stroke="#000000"
+            strokeWidth={2}
+            fill="transparent"
+          />
+        ) : null}
 
         {/* 傾斜制限エリア */}
         {holeData.slope ? (
