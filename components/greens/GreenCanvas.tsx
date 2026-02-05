@@ -574,13 +574,30 @@ export default function GreenCanvas({
             </Fragment>
           ))}
 
+        {/* 過去ピン出口線 */}
+        {pastPins &&
+          pastPins.map((pin) => (
+            <Line
+              key={`exit-${pin.id}`}
+              points={[
+                ydToPx(pin.x),
+                ydToPx(pin.y),
+                ydToPx(config.exit.x),
+                ydToPx(config.exit.y),
+              ]}
+              stroke="#f97316"
+              strokeWidth={2}
+              dash={[10, 5]}
+            />
+          ))}
+
         {/* 現在のピン */}
         {currentPin && (
           <Circle
             x={ydToPx(currentPin.x)}
             y={ydToPx(currentPin.y)}
             radius={20}
-            fill="#000000"
+            fill="#ef4444"
             draggable
             onDragEnd={(e) => {
               const newX = e.target.x() / YD_TO_PX;
@@ -614,6 +631,21 @@ export default function GreenCanvas({
                 e.target.y(ydToPx(currentPin.y));
               }
             }}
+          />
+        )}
+
+        {/* 現在ピン出口線 */}
+        {currentPin && (
+          <Line
+            points={[
+              ydToPx(currentPin.x),
+              ydToPx(currentPin.y),
+              ydToPx(config.exit.x),
+              ydToPx(config.exit.y),
+            ]}
+            stroke="#ef4444"
+            strokeWidth={2}
+            dash={[10, 5]}
           />
         )}
       </Layer>
