@@ -59,6 +59,8 @@ interface Props {
 // 定数
 const YD_TO_PX = 20;
 const CANVAS_SIZE = 60 * YD_TO_PX;
+const DEPTH_FONT_SIZE = 200;
+const HORIZONTAL_FONT_SIZE = 100;
 
 // ユーティリティ関数
 function scalePathToPixels(d: string): string {
@@ -246,8 +248,8 @@ export default function GreenCardPDF({
   );
 
   return (
-    <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
-      <Layer>
+    <Stage width={width} height={height}>
+      <Layer scaleX={scale} scaleY={scale}>
         {/* バンカーとウォーターハザード */}
         {holeData.layers
           .filter((layer) => layer.type === "bunker" || layer.type === "water")
@@ -352,33 +354,43 @@ export default function GreenCardPDF({
             )}
           </Fragment>
         )}
-        {/* 奥行き数字（グリーンフロントエッジからピンまでの距離） */}
+      </Layer>
+
+      {/* 数字用（scaleなし） */}
+
+      <Layer>
+        {/* 奥行き数字 */}
         {currentPin && (
           <Text
-            x={ydToPx(currentPin.x) + 50}
-            y={ydToPx(currentPin.y)}
             text={`${Math.round(holeData.origin.y - currentPin.y)}`}
-            fontSize={400}
+            fontSize={DEPTH_FONT_SIZE}
+            x={currentPin.x <= 30 ? ydToPx(45) * scale : ydToPx(15) * scale}
+            y={ydToPx(currentPin.y) * scale}
+            offsetY={DEPTH_FONT_SIZE / 2}
+            align="center"
+            width={DEPTH_FONT_SIZE * 2}
+            offsetX={DEPTH_FONT_SIZE}
             fontStyle="bold"
             fill="#000000"
           />
         )}
 
-        {/* 横数字（グリーン外周からピンまでの距離） */}
+        {/* 横数字 */}
         {currentPin && currentPin.x !== 30 && edges && (
           <Text
             x={
               currentPin.x < 30
-                ? ydToPx(edges.left) - 50
-                : ydToPx(edges.right) + 10
+                ? ydToPx(edges.left) * scale - HORIZONTAL_FONT_SIZE
+                : ydToPx(edges.right) * scale + 10
             }
-            y={ydToPx(currentPin.y)}
+            y={ydToPx(currentPin.y) * scale}
+            offsetY={HORIZONTAL_FONT_SIZE / 2}
             text={`${Math.round(
               currentPin.x < 30
                 ? currentPin.x - edges.left
                 : edges.right - currentPin.x,
             )}`}
-            fontSize={250}
+            fontSize={HORIZONTAL_FONT_SIZE}
             fontStyle="bold"
             fill="#000000"
           />
