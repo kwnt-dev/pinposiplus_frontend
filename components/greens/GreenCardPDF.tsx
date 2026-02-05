@@ -352,13 +352,33 @@ export default function GreenCardPDF({
             )}
           </Fragment>
         )}
-        {/* 奥行き数字 */}
+        {/* 奥行き数字（グリーンフロントエッジからピンまでの距離） */}
         {currentPin && (
           <Text
             x={ydToPx(currentPin.x) + 50}
             y={ydToPx(currentPin.y)}
             text={`${Math.round(holeData.origin.y - currentPin.y)}`}
             fontSize={400}
+            fontStyle="bold"
+            fill="#000000"
+          />
+        )}
+
+        {/* 横数字（グリーン外周からピンまでの距離） */}
+        {currentPin && currentPin.x !== 30 && edges && (
+          <Text
+            x={
+              currentPin.x < 30
+                ? ydToPx(edges.left) - 50
+                : ydToPx(edges.right) + 10
+            }
+            y={ydToPx(currentPin.y)}
+            text={`${Math.round(
+              currentPin.x < 30
+                ? currentPin.x - edges.left
+                : edges.right - currentPin.x,
+            )}`}
+            fontSize={250}
             fontStyle="bold"
             fill="#000000"
           />
