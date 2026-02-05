@@ -574,6 +574,23 @@ export default function GreenCanvas({
             </Fragment>
           ))}
 
+        {/* 過去ピン出口線 */}
+        {pastPins &&
+          pastPins.map((pin) => (
+            <Line
+              key={`exit-${pin.id}`}
+              points={[
+                ydToPx(pin.x),
+                ydToPx(pin.y),
+                ydToPx(config.exit.x),
+                ydToPx(config.exit.y),
+              ]}
+              stroke="#f97316"
+              strokeWidth={2}
+              dash={[10, 5]}
+            />
+          ))}
+
         {/* 現在のピン */}
         {currentPin && (
           <Circle

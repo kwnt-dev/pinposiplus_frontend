@@ -24,8 +24,8 @@ export default function TestPage() {
   };
 
   const pastPins = [
-    { id: "past1", x: 25, y: 30 },
-    { id: "past2", x: 35, y: 40 },
+    { id: "past1", x: 30, y: 20 },
+    { id: "past2", x: 35, y: 47 },
   ];
 
   const [currentPin, setCurrentPin] = useState<Pin>({
