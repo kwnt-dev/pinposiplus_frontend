@@ -36,6 +36,8 @@ export default function TestPage() {
     y: 35,
   });
 
+  const [course, setCourse] = useState<"out" | "in">("out");
+
   function handlePinDragged(newPin: Pin) {
     console.log("新しい座標", newPin);
     setCurrentPin(newPin);
@@ -43,7 +45,9 @@ export default function TestPage() {
 
   return (
     <div className="p-8">
-      <GreenCardGrid course="out" />
+      <button onClick={() => setCourse("out")}>OUT</button>
+      <button onClick={() => setCourse("in")}>IN</button>
+      <GreenCardGrid course={course} />
     </div>
   );
 }
