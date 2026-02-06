@@ -59,8 +59,8 @@ interface Props {
 // 定数
 const YD_TO_PX = 20;
 const CANVAS_SIZE = 60 * YD_TO_PX;
-const DEPTH_FONT_SIZE = 200;
-const HORIZONTAL_FONT_SIZE = 100;
+const DEPTH_FONT_SIZE = 80;
+const HORIZONTAL_FONT_SIZE = 40;
 
 // ユーティリティ関数
 function scalePathToPixels(d: string): string {
@@ -254,8 +254,8 @@ function getBoundaryIntersectionY(
 
 export default function GreenCardPDF({
   hole,
-  width = 600,
-  height = 600,
+  width = 240,
+  height = 240,
   currentPin,
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
@@ -421,7 +421,7 @@ export default function GreenCardPDF({
           {currentPin && currentPin.x === 30 && (
             <Text
               text="C"
-              fontSize={60}
+              fontSize={40}
               x={ydToPx(currentPin.x) * scale - 60}
               y={ydToPx(currentPin.y) * scale - 60}
               fontStyle="bold"

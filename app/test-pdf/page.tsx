@@ -7,7 +7,7 @@ import GreenCanvas, { Pin } from "@/components/greens/GreenCanvas";
 export default function PDFTestPage() {
   const [currentPin, setCurrentPin] = useState<Pin>({
     id: "pin1",
-    x: 40,
+    x: 30,
     y: 40,
   });
   return (
