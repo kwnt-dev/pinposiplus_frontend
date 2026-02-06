@@ -282,168 +282,175 @@ export default function GreenCardPDF({
   const centerLineEdges = getBoundaryIntersectionX(holeData.boundary.d, 30);
 
   return (
-    <Stage width={width} height={height}>
-      <Layer scaleX={scale} scaleY={scale}>
-        {/* バンカーとウォーターハザード */}
-        {holeData.layers
-          .filter((layer) => layer.type === "bunker" || layer.type === "water")
-          .map((layer, index) => (
+    <div className="w-[240]">
+      <div className="h-10 bg-gray-800 text-white font-bold text-center flex items-center justify-center">
+        Hole {hole}
+      </div>
+      <Stage width={width} height={height}>
+        <Layer scaleX={scale} scaleY={scale}>
+          {/* バンカーとウォーターハザード */}
+          {holeData.layers
+            .filter(
+              (layer) => layer.type === "bunker" || layer.type === "water",
+            )
+            .map((layer, index) => (
+              <Path
+                key={`layer-${index}`}
+                data={scalePathToPixels(layer.d)}
+                stroke="#000000"
+                strokeWidth={3}
+                fill="transparent"
+              />
+            ))}
+          {/* 外周線 */}
+          <Path
+            data={scalePathToPixels(holeData.boundary.d)}
+            stroke="#000000"
+            strokeWidth={6}
+            fill="transparent"
+          />
+          {/* 傾斜線 */}
+          {holeData.slope ? (
             <Path
-              key={`layer-${index}`}
-              data={scalePathToPixels(layer.d)}
+              data={scalePathToPixels(holeData.slope.slope.d)}
               stroke="#000000"
               strokeWidth={3}
               fill="transparent"
             />
-          ))}
-        {/* 外周線 */}
-        <Path
-          data={scalePathToPixels(holeData.boundary.d)}
-          stroke="#000000"
-          strokeWidth={6}
-          fill="transparent"
-        />
-        {/* 傾斜線 */}
-        {holeData.slope ? (
-          <Path
-            data={scalePathToPixels(holeData.slope.slope.d)}
-            stroke="#000000"
-            strokeWidth={3}
-            fill="transparent"
-          />
-        ) : null}
-        {/* 座標線 */}
-        {[0, 10, 20, 30, 40, 50].map((depth) => {
-          const y = holeData.origin.y - depth;
-          return (
-            <Line
-              key={`depth-${depth}`}
-              points={[0, ydToPx(y), CANVAS_SIZE, ydToPx(y)]}
-              stroke="#000000"
-              strokeWidth={2}
-            />
-          );
-        })}
-        {/* 座標線ラベル */}
-        {[0, 10, 20, 30, 40, 50].map((depth) => {
-          const y = holeData.origin.y - depth;
-          return (
-            <Text
-              key={`label-${depth}`}
-              x={CANVAS_SIZE - 50}
-              y={ydToPx(y) - 40}
-              text={`${depth}`}
-              fontSize={40}
-              fontStyle="bold"
-              fill="#000000"
-            />
-          );
-        })}
-        {/* 中心線 */}
-        {centerLineEdges && (
-          <Line
-            points={[
-              ydToPx(30),
-              ydToPx(centerLineEdges.top),
-              ydToPx(30),
-              ydToPx(holeData.origin.y),
-            ]}
-            stroke="#000000"
-            strokeWidth={3}
-          />
-        )}
-
-        {/* 現在のピン */}
-        {currentPin && (
-          <Circle
-            x={ydToPx(currentPin.x)}
-            y={ydToPx(currentPin.y)}
-            radius={10}
-            fill="#000000"
-          />
-        )}
-        {/* 逆L字線 */}
-
-        {currentPin && (
-          <Fragment key={`currentPin-${currentPin.id}`}>
+          ) : null}
+          {/* 座標線 */}
+          {[0, 10, 20, 30, 40, 50].map((depth) => {
+            const y = holeData.origin.y - depth;
+            return (
+              <Line
+                key={`depth-${depth}`}
+                points={[0, ydToPx(y), CANVAS_SIZE, ydToPx(y)]}
+                stroke="#000000"
+                strokeWidth={2}
+              />
+            );
+          })}
+          {/* 座標線ラベル */}
+          {[0, 10, 20, 30, 40, 50].map((depth) => {
+            const y = holeData.origin.y - depth;
+            return (
+              <Text
+                key={`label-${depth}`}
+                x={CANVAS_SIZE - 50}
+                y={ydToPx(y) - 40}
+                text={`${depth}`}
+                fontSize={40}
+                fontStyle="bold"
+                fill="#000000"
+              />
+            );
+          })}
+          {/* 中心線 */}
+          {centerLineEdges && (
             <Line
               points={[
-                ydToPx(currentPin.x),
-                ydToPx(currentPin.y),
-                ydToPx(currentPin.x),
+                ydToPx(30),
+                ydToPx(centerLineEdges.top),
+                ydToPx(30),
                 ydToPx(holeData.origin.y),
               ]}
               stroke="#000000"
-              strokeWidth={6}
+              strokeWidth={3}
             />
-            {currentPin.x !== 30 && edges && (
+          )}
+
+          {/* 現在のピン */}
+          {currentPin && (
+            <Circle
+              x={ydToPx(currentPin.x)}
+              y={ydToPx(currentPin.y)}
+              radius={10}
+              fill="#000000"
+            />
+          )}
+          {/* 逆L字線 */}
+
+          {currentPin && (
+            <Fragment key={`currentPin-${currentPin.id}`}>
               <Line
                 points={[
                   ydToPx(currentPin.x),
                   ydToPx(currentPin.y),
-                  ydToPx(currentPin.x < 30 ? edges.left : edges.right),
-                  ydToPx(currentPin.y),
+                  ydToPx(currentPin.x),
+                  ydToPx(holeData.origin.y),
                 ]}
                 stroke="#000000"
                 strokeWidth={6}
               />
-            )}
-          </Fragment>
-        )}
-      </Layer>
+              {currentPin.x !== 30 && edges && (
+                <Line
+                  points={[
+                    ydToPx(currentPin.x),
+                    ydToPx(currentPin.y),
+                    ydToPx(currentPin.x < 30 ? edges.left : edges.right),
+                    ydToPx(currentPin.y),
+                  ]}
+                  stroke="#000000"
+                  strokeWidth={6}
+                />
+              )}
+            </Fragment>
+          )}
+        </Layer>
 
-      {/* 数字用（scaleなし） */}
+        {/* 数字用（scaleなし） */}
 
-      <Layer>
-        {/* 奥行き数字 */}
-        {currentPin && (
-          <Text
-            text={`${Math.round(holeData.origin.y - currentPin.y)}`}
-            fontSize={DEPTH_FONT_SIZE}
-            x={currentPin.x <= 30 ? ydToPx(45) * scale : ydToPx(15) * scale}
-            y={ydToPx(currentPin.y) * scale}
-            offsetY={DEPTH_FONT_SIZE / 2}
-            align="center"
-            width={DEPTH_FONT_SIZE * 2}
-            offsetX={DEPTH_FONT_SIZE}
-            fontStyle="bold"
-            fill="#000000"
-          />
-        )}
+        <Layer>
+          {/* 奥行き数字 */}
+          {currentPin && (
+            <Text
+              text={`${Math.round(holeData.origin.y - currentPin.y)}`}
+              fontSize={DEPTH_FONT_SIZE}
+              x={currentPin.x <= 30 ? ydToPx(45) * scale : ydToPx(15) * scale}
+              y={ydToPx(currentPin.y) * scale}
+              offsetY={DEPTH_FONT_SIZE / 2}
+              align="center"
+              width={DEPTH_FONT_SIZE * 2}
+              offsetX={DEPTH_FONT_SIZE}
+              fontStyle="bold"
+              fill="#000000"
+            />
+          )}
 
-        {/* 中心線上の表示「C」 */}
-        {currentPin && currentPin.x === 30 && (
-          <Text
-            text="C"
-            fontSize={60}
-            x={ydToPx(currentPin.x) * scale - 60}
-            y={ydToPx(currentPin.y) * scale - 60}
-            fontStyle="bold"
-            fill="#000000"
-          />
-        )}
+          {/* 中心線上の表示「C」 */}
+          {currentPin && currentPin.x === 30 && (
+            <Text
+              text="C"
+              fontSize={60}
+              x={ydToPx(currentPin.x) * scale - 60}
+              y={ydToPx(currentPin.y) * scale - 60}
+              fontStyle="bold"
+              fill="#000000"
+            />
+          )}
 
-        {/* 横数字 */}
-        {currentPin && currentPin.x !== 30 && edges && (
-          <Text
-            x={
-              currentPin.x < 30
-                ? ydToPx(edges.left) * scale - HORIZONTAL_FONT_SIZE
-                : ydToPx(edges.right) * scale + 10
-            }
-            y={ydToPx(currentPin.y) * scale}
-            offsetY={HORIZONTAL_FONT_SIZE / 2}
-            text={`${Math.round(
-              currentPin.x < 30
-                ? currentPin.x - edges.left
-                : edges.right - currentPin.x,
-            )}`}
-            fontSize={HORIZONTAL_FONT_SIZE}
-            fontStyle="bold"
-            fill="#000000"
-          />
-        )}
-      </Layer>
-    </Stage>
+          {/* 横数字 */}
+          {currentPin && currentPin.x !== 30 && edges && (
+            <Text
+              x={
+                currentPin.x < 30
+                  ? ydToPx(edges.left) * scale - HORIZONTAL_FONT_SIZE
+                  : ydToPx(edges.right) * scale + 10
+              }
+              y={ydToPx(currentPin.y) * scale}
+              offsetY={HORIZONTAL_FONT_SIZE / 2}
+              text={`${Math.round(
+                currentPin.x < 30
+                  ? currentPin.x - edges.left
+                  : edges.right - currentPin.x,
+              )}`}
+              fontSize={HORIZONTAL_FONT_SIZE}
+              fontStyle="bold"
+              fill="#000000"
+            />
+          )}
+        </Layer>
+      </Stage>
+    </div>
   );
 }
