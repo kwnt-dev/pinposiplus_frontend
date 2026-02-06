@@ -375,6 +375,18 @@ export default function GreenCardPDF({
           />
         )}
 
+        {/* 中心線の「C」 */}
+        {currentPin && currentPin.x === 30 && (
+          <Text
+            text="C"
+            fontSize={60}
+            x={ydToPx(currentPin.x) * scale - 60}
+            y={ydToPx(currentPin.y) * scale - 60}
+            fontStyle="bold"
+            fill="#000000"
+          />
+        )}
+
         {/* 横数字 */}
         {currentPin && currentPin.x !== 30 && edges && (
           <Text
