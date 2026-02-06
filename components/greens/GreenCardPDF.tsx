@@ -436,25 +436,49 @@ export default function GreenCardPDF({
             )}
 
             {/* 横数字 */}
-            {currentPin && currentPin.x !== 30 && edges && (
-              <Text
-                x={
-                  currentPin.x < 30
-                    ? ydToPx(edges.left) * scale - HORIZONTAL_FONT_SIZE
-                    : ydToPx(edges.right) * scale + 10
-                }
-                y={ydToPx(currentPin.y) * scale}
-                offsetY={HORIZONTAL_FONT_SIZE / 2}
-                text={`${Math.round(
+            {currentPin &&
+              currentPin.x !== 30 &&
+              edges &&
+              (() => {
+                const distance = Math.round(
                   currentPin.x < 30
                     ? currentPin.x - edges.left
                     : edges.right - currentPin.x,
-                )}`}
-                fontSize={HORIZONTAL_FONT_SIZE}
-                fontStyle="bold"
-                fill="#000000"
-              />
-            )}
+                );
+                const text = `${distance}`;
+                const textWidth = HORIZONTAL_FONT_SIZE * text.length * 0.6;
+                const margin = 5;
+                const cardWidth = width;
+
+                let x: number;
+                let y = ydToPx(currentPin.y) * scale;
+
+                if (currentPin.x < 30) {
+                  x = ydToPx(edges.left) * scale - margin - textWidth;
+                  if (x < 0) {
+                    x = margin;
+                    y = y - HORIZONTAL_FONT_SIZE;
+                  }
+                } else {
+                  x = ydToPx(edges.right) * scale + margin;
+                  if (x + textWidth > cardWidth) {
+                    x = cardWidth - textWidth - margin;
+                    y = y - HORIZONTAL_FONT_SIZE;
+                  }
+                }
+
+                return (
+                  <Text
+                    x={x}
+                    y={y}
+                    offsetY={HORIZONTAL_FONT_SIZE / 2}
+                    text={text}
+                    fontSize={HORIZONTAL_FONT_SIZE}
+                    fontStyle="bold"
+                    fill="#000000"
+                  />
+                );
+              })()}
           </Layer>
         </Stage>
       </div>
