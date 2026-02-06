@@ -46,7 +46,7 @@ interface HoleConfig {
 
 const HOLE_01_CONFIG: HoleConfig = {
   exit: { x: 10, y: 16 },
-  centerLineMarks: { front: { x: 30, y: 57 }, back: { x: 30, y: 17 } },
+  centerLineMarks: { front: { x: 30, y: 57 }, back: { x: 30, y: 10 } },
 };
 
 interface Props {
@@ -188,6 +188,38 @@ function svgPathToPoints(d: string, segments = 40): { x: number; y: number }[] {
   return pts;
 }
 
+function getBoundaryIntersectionX(
+  d: string,
+  pinX: number,
+): { top: number; bottom: number } | null {
+  const polygon = svgPathToPoints(d, 80);
+  if (polygon.length < 3) return null;
+
+  const intersections: number[] = [];
+
+  for (let i = 0; i < polygon.length - 1; i++) {
+    const p1 = polygon[i];
+    const p2 = polygon[i + 1];
+
+    if ((p1.x <= pinX && p2.x >= pinX) || (p1.x >= pinX && p2.x <= pinX)) {
+      if (Math.abs(p2.x - p1.x) < 0.001) {
+        intersections.push(p1.y, p2.y);
+      } else {
+        const t = (pinX - p1.x) / (p2.x - p1.x);
+        const y = p1.y + t * (p2.y - p1.y);
+        intersections.push(y);
+      }
+    }
+  }
+
+  if (intersections.length < 2) return null;
+
+  const top = Math.min(...intersections);
+  const bottom = Math.max(...intersections);
+
+  return { top, bottom };
+}
+
 function getBoundaryIntersectionY(
   d: string,
   pinY: number,
@@ -247,6 +279,8 @@ export default function GreenCardPDF({
     currentPin?.y ?? 0,
   );
 
+  const centerLineEdges = getBoundaryIntersectionX(holeData.boundary.d, 30);
+
   return (
     <Stage width={width} height={height}>
       <Layer scaleX={scale} scaleY={scale}>
@@ -258,7 +292,7 @@ export default function GreenCardPDF({
               key={`layer-${index}`}
               data={scalePathToPixels(layer.d)}
               stroke="#000000"
-              strokeWidth={2}
+              strokeWidth={3}
               fill="transparent"
             />
           ))}
@@ -266,7 +300,7 @@ export default function GreenCardPDF({
         <Path
           data={scalePathToPixels(holeData.boundary.d)}
           stroke="#000000"
-          strokeWidth={2}
+          strokeWidth={6}
           fill="transparent"
         />
         {/* 傾斜線 */}
@@ -274,12 +308,12 @@ export default function GreenCardPDF({
           <Path
             data={scalePathToPixels(holeData.slope.slope.d)}
             stroke="#000000"
-            strokeWidth={2}
+            strokeWidth={3}
             fill="transparent"
           />
         ) : null}
         {/* 座標線 */}
-        {[0, 10, 20, 30, 40].map((depth) => {
+        {[0, 10, 20, 30, 40, 50].map((depth) => {
           const y = holeData.origin.y - depth;
           return (
             <Line
@@ -291,39 +325,41 @@ export default function GreenCardPDF({
           );
         })}
         {/* 座標線ラベル */}
-        {[0, 10, 20, 30, 40].map((depth) => {
+        {[0, 10, 20, 30, 40, 50].map((depth) => {
           const y = holeData.origin.y - depth;
           return (
             <Text
               key={`label-${depth}`}
               x={CANVAS_SIZE - 50}
-              y={ydToPx(y) - 25}
+              y={ydToPx(y) - 40}
               text={`${depth}`}
-              fontSize={25}
+              fontSize={40}
               fontStyle="bold"
               fill="#000000"
             />
           );
         })}
         {/* 中心線 */}
-        <Line
-          points={[
-            ydToPx(config.centerLineMarks.front.x),
-            ydToPx(config.centerLineMarks.front.y),
-            ydToPx(config.centerLineMarks.back.x),
-            ydToPx(config.centerLineMarks.back.y),
-          ]}
-          stroke="#000000"
-          strokeWidth={2}
-          dash={[10, 5]}
-        />
+        {centerLineEdges && (
+          <Line
+            points={[
+              ydToPx(30),
+              ydToPx(centerLineEdges.top),
+              ydToPx(30),
+              ydToPx(holeData.origin.y),
+            ]}
+            stroke="#000000"
+            strokeWidth={3}
+          />
+        )}
+
         {/* 現在のピン */}
         {currentPin && (
           <Circle
             x={ydToPx(currentPin.x)}
             y={ydToPx(currentPin.y)}
-            radius={20}
-            fill="#ef4444"
+            radius={10}
+            fill="#000000"
           />
         )}
         {/* 逆L字線 */}
@@ -338,7 +374,7 @@ export default function GreenCardPDF({
                 ydToPx(holeData.origin.y),
               ]}
               stroke="#000000"
-              strokeWidth={2}
+              strokeWidth={6}
             />
             {currentPin.x !== 30 && edges && (
               <Line
@@ -349,7 +385,7 @@ export default function GreenCardPDF({
                   ydToPx(currentPin.y),
                 ]}
                 stroke="#000000"
-                strokeWidth={2}
+                strokeWidth={6}
               />
             )}
           </Fragment>
@@ -375,7 +411,7 @@ export default function GreenCardPDF({
           />
         )}
 
-        {/* 中心線の「C」 */}
+        {/* 中心線上の表示「C」 */}
         {currentPin && currentPin.x === 30 && (
           <Text
             text="C"
