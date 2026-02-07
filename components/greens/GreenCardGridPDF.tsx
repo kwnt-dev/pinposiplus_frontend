@@ -3,7 +3,7 @@ import GreenCardPDF from "@/components/greens/GreenCardPDF";
 interface GreenCardGridPDFProps {
   course: "out" | "in";
   onCardClick?: (holeId: string) => void;
-  testPins: HolePin[];
+  pins?: HolePin[];
 }
 
 export interface HolePin {
@@ -15,7 +15,7 @@ export interface HolePin {
 export default function GreenCardGridPDF({
   course,
   onCardClick,
-  testPins,
+  pins,
 }: GreenCardGridPDFProps) {
   const holes =
     course === "out"
@@ -25,7 +25,7 @@ export default function GreenCardGridPDF({
   return (
     <div className="grid grid-cols-3 gap-16">
       {holes.map((hole) => {
-        const pin = testPins.find((p) => p.hole === hole);
+        const pin = pins?.find((p) => p.hole === hole);
         return (
           <div key={hole} onClick={() => onCardClick?.(String(hole))}>
             <GreenCardPDF
