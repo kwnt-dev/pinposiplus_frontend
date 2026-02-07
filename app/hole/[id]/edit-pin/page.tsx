@@ -13,10 +13,10 @@ export default function PinEditPage() {
     { id: "past2", x: 35, y: 47 },
   ];
 
-  const [currentPin, setCurrentPin] = useState<Pin>({
-    id: "pin1",
-    x: 30,
-    y: 35,
+  const [currentPin, setCurrentPin] = useState<Pin>(() => {
+    if (typeof window === "undefined") return { id: "pin1", x: 30, y: 35 };
+    const data = localStorage.getItem(`pin_${hole}`);
+    return data ? JSON.parse(data) : { id: "pin1", x: 30, y: 35 };
   });
 
   function handlePinDragged(newPin: Pin) {
