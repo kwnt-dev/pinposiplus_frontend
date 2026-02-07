@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const menuItems = [
-  { label: "ダッシュボード", href: "/overview" },
+  { label: "ダッシュボード", href: "admin/overview" },
   { label: "自動提案", href: "/admin/auto-suggest" },
   { label: "セル設定", href: "/admin/cells" },
   { label: "予定表", href: "/admin/schedule" },
