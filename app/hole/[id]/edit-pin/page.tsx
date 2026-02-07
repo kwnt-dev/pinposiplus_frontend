@@ -187,6 +187,7 @@ export default function PinEditPage() {
     return <div>読み込み中...</div>;
   }
 
+  // 0.5刻みに丸める（例: 3.1→3.0, 3.3→3.5, 3.8→4.0）
   const roundToHalf = (value: number) => Math.round(value * 2) / 2;
 
   const depth = Math.round(holeData.origin.y - currentPin.y);
@@ -206,6 +207,14 @@ export default function PinEditPage() {
   return (
     <div>
       {`奥行${Math.round(holeData.origin.y - currentPin.y)}yd, ${horizontal}`}
+      <button
+        onClick={() => {
+          console.log("保存クリック");
+          localStorage.setItem(`pin_${hole}`, JSON.stringify(currentPin));
+        }}
+      >
+        保存
+      </button>
       <GreenCanvas
         hole={hole}
         currentPin={currentPin}
