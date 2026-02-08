@@ -144,6 +144,22 @@ export function generateCourseProposal(
       );
       if (filtered.length > 0) pool = filtered;
     }
+
+    // ルール5: ランダム選択
+    const selected = pool[Math.floor(Math.random() * pool.length)];
+
+    // カウント更新
+    const selectedDepth = getDepthPosition(selected.y, hole.cells);
+    currentDepth[selectedDepth]++;
+
+    if (hole.isShortHole) {
+      usedShortHoleDepths.push(selectedDepth);
+    }
+
+    result.push({
+      holeNumber: hole.holeNumber,
+      selectedPin: selected,
+    });
   }
 
   return { holes: result };
