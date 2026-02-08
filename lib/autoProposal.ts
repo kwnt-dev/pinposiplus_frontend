@@ -129,6 +129,26 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
     return true;
   });
 
+  // 2-7 導線被り
+  const excludedRoute = excludedPastPin.filter((c) => {
+    if (input.pastPins.length === 0) return true;
+
+    const candidateAngle =
+      Math.atan2(input.exit.y - c.y, input.exit.x - c.x) * (180 / Math.PI);
+
+    const recentPins = input.pastPins.slice(0, 2);
+    for (const past of recentPins) {
+      const pastAngle =
+        Math.atan2(input.exit.y - past.y, input.exit.x - past.x) *
+        (180 / Math.PI);
+      let angleDiff = Math.abs(candidateAngle - pastAngle);
+      if (angleDiff > 180) angleDiff = 360 - angleDiff;
+
+      if (angleDiff < 10) return false;
+    }
+    return true;
+  });
+
   // Step 3: フォールバック
   return [];
 }
