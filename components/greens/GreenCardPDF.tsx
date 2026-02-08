@@ -281,6 +281,11 @@ export default function GreenCardPDF({
 
   const centerLineEdges = getBoundaryIntersectionX(holeData.boundary.d, 30);
 
+  console.log(
+    "damage for hole 1:",
+    holeDamageCells?.find((c) => c.hole === 1),
+  );
+
   return (
     <div className="w-[240px]">
       <div

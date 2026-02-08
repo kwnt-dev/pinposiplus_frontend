@@ -21,7 +21,7 @@ interface LayerData {
   fill: string;
 }
 
-interface Cell {
+export interface Cell {
   id: string;
   x: number;
   y: number;
@@ -41,7 +41,7 @@ interface PinHistory {
   y: number;
 }
 
-interface HoleData {
+export interface HoleData {
   hole: string;
   boundary: { d: string };
   layers: LayerData[];
@@ -363,6 +363,7 @@ export default function GreenCanvas({
     ? getOffsetSlope(holeData.slope.slope.d, SLOPE_BUFFER)
     : [];
 
+  console.log("GreenCanvas ban:", banCells, "rain:", rainCells, "hole:", hole);
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
       <Layer
