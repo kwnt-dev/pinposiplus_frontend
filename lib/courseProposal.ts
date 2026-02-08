@@ -8,6 +8,7 @@ export interface HoleCandidates {
   holeNumber: number;
   candidates: Candidate[];
   isShortHole: boolean;
+  cells: { x: number; y: number; isInside: boolean }[];
 }
 
 export interface CourseProposalInput {
@@ -88,8 +89,26 @@ function getHorizontalPosition(
 export function generateCourseProposal(
   input: CourseProposalInput,
 ): CourseProposalResult {
-  // Step A: 奥行き分布
+  const target = DEPTH_DISTRIBUTION[input.courseDifficulty];
+  const currentDepth = { back: 0, middle: 0, front: 0 };
+  const usedShortHoleDepths: DepthPosition[] = [];
+  const result: CourseProposalResult["holes"] = [];
 
-  // Step B: 各ホール順にバランス選択
+  for (const hole of input.holes) {
+    let pool = [...hole.candidates];
+    if (pool.length === 0) continue;
+
+    // ルール1〜5 をここに書いていく
+
+    // ルール1: ショートホール段分散
+    if (hole.isShortHole) {
+      const filtered = pool.filter(
+        (c) =>
+          !usedShortHoleDepths.includes(getDepthPosition(c.y, hole.candidates)),
+      );
+      if (filtered.length > 0) pool = filtered;
+    }
+  }
+
   return { holes: [] };
 }
