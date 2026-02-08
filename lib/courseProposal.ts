@@ -103,11 +103,23 @@ export function generateCourseProposal(
     // ルール1: ショートホール段分散
     if (hole.isShortHole) {
       const filtered = pool.filter(
-        (c) =>
-          !usedShortHoleDepths.includes(getDepthPosition(c.y, hole.candidates)),
+        (c) => !usedShortHoleDepths.includes(getDepthPosition(c.y, hole.cells)),
       );
       if (filtered.length > 0) pool = filtered;
     }
+  }
+
+  // ルール2: 前ホールと同じ奥行きを除外
+  if (result.length > 0) {
+    const prevPin = result[result.length - 1].selectedPin;
+    const prevDepth = getDepthPosition(
+      prevPin.y,
+      input.holes[result.length - 1].cells,
+    );
+    const filtered = pool.filter(
+      (c) => getDepthPosition(c.y, hole.cells) !== prevDepth,
+    );
+    if (filtered.length > 0) pool = filtered;
   }
 
   return { holes: [] };
