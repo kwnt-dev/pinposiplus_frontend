@@ -98,8 +98,6 @@ export function generateCourseProposal(
     let pool = [...hole.candidates];
     if (pool.length === 0) continue;
 
-    // ルール1〜5 をここに書いていく
-
     // ルール1: ショートホール段分散
     if (hole.isShortHole) {
       const filtered = pool.filter(
@@ -107,20 +105,46 @@ export function generateCourseProposal(
       );
       if (filtered.length > 0) pool = filtered;
     }
+
+    // ルール2: 前ホールと同じ奥行きを除外
+    if (result.length > 0) {
+      const prevPin = result[result.length - 1].selectedPin;
+      const prevDepth = getDepthPosition(
+        prevPin.y,
+        input.holes[result.length - 1].cells,
+      );
+      const filtered = pool.filter(
+        (c) => getDepthPosition(c.y, hole.cells) !== prevDepth,
+      );
+      if (filtered.length > 0) pool = filtered;
+    }
+
+    // ルール3: 枠が空いてる位置を優先
+    // 例: 目標が{ back:3, middle:3, front:3 }でここまでが{ back:2, middle:3, front:1 }なら
+    // backとfrontが空き枠 → その位置の候補を優先
+    const openDepths = (Object.keys(target) as DepthPosition[]).filter(
+      (d) => currentDepth[d] < target[d],
+    );
+    if (openDepths.length > 0) {
+      const filtered = pool.filter((c) =>
+        openDepths.includes(getDepthPosition(c.y, hole.cells)),
+      );
+      if (filtered.length > 0) pool = filtered;
+    }
+
+    // ルール4: 前ホールと異なる左右位置を優先
+    if (result.length > 0) {
+      const prevPin = result[result.length - 1].selectedPin;
+      const prevHorizontal = getHorizontalPosition(
+        prevPin.x,
+        input.holes[result.length - 1].cells,
+      );
+      const filtered = pool.filter(
+        (c) => getHorizontalPosition(c.x, hole.cells) !== prevHorizontal,
+      );
+      if (filtered.length > 0) pool = filtered;
+    }
   }
 
-  // ルール2: 前ホールと同じ奥行きを除外
-  if (result.length > 0) {
-    const prevPin = result[result.length - 1].selectedPin;
-    const prevDepth = getDepthPosition(
-      prevPin.y,
-      input.holes[result.length - 1].cells,
-    );
-    const filtered = pool.filter(
-      (c) => getDepthPosition(c.y, hole.cells) !== prevDepth,
-    );
-    if (filtered.length > 0) pool = filtered;
-  }
-
-  return { holes: [] };
+  return { holes: result };
 }
