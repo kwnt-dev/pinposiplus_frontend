@@ -1,4 +1,9 @@
 import { Cell, Pin, HoleData } from "@/components/greens/GreenCanvas";
+import {
+  getOffsetBoundary,
+  getOffsetSlope,
+  isPointInPolygon,
+} from "@/components/greens/GreenCanvas";
 
 // 型定義
 
@@ -16,6 +21,8 @@ export interface Candidate {
   x: number;
   y: number;
 }
+
+const SLOPE_BUFFER = 3;
 
 //メイン関数
 
@@ -78,6 +85,26 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
     ];
     return !surroundingCells.some((id) => input.damageCells.includes(id));
   });
+
+  // 2-4 傾斜制限
+  const slopeBufferPoints = holeData.slope
+    ? getOffsetSlope(holeData.slope.slope.d, SLOPE_BUFFER)
+    : [];
+  const excludedSlope =
+    slopeBufferPoints.length > 0
+      ? excludedDamage.filter(
+          (c) => !isPointInPolygon(c.x, c.y, slopeBufferPoints),
+        )
+      : excludedDamage;
+
+  // 2-5 外周制限
+  const boundaryBufferPoints = getOffsetBoundary(
+    holeData.boundary.d,
+    BOUNDARY_BUFFER,
+  );
+  const excludedBoundary = excludedSlope.filter((c) =>
+    isPointInPolygon(c.x, c.y, boundaryBufferPoints),
+  );
 
   // Step 3: フォールバック
   return [];
