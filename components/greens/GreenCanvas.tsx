@@ -363,8 +363,7 @@ export default function GreenCanvas({
     ? getOffsetSlope(holeData.slope.slope.d, SLOPE_BUFFER)
     : [];
 
-  console.log("GreenCanvas damageCells:", damageCells, "hole:", hole);
-
+  console.log("GreenCanvas ban:", banCells, "rain:", rainCells, "hole:", hole);
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
       <Layer
