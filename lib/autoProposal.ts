@@ -22,6 +22,10 @@ export interface Candidate {
   y: number;
 }
 
+//定数
+
+const PAST_PIN_RESTRICTION_RADIUS = 7; // 過去ピン制限　半径yd
+const BOUNDARY_BUFFER = 3.5; // 外周制限距離（ヤード）
 const SLOPE_BUFFER = 3;
 
 //メイン関数
@@ -105,6 +109,25 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
   const excludedBoundary = excludedSlope.filter((c) =>
     isPointInPolygon(c.x, c.y, boundaryBufferPoints),
   );
+
+  // 2-6 過去ピン
+  const excludedPastPin = excludedBoundary.filter((c) => {
+    for (let i = 0; i < input.pastPins.length; i++) {
+      const past = input.pastPins[i];
+      const dist = Math.sqrt(
+        Math.pow(c.x - past.x, 2) + Math.pow(c.y - past.y, 2),
+      );
+      // 前回・前々回: 回避半径内は除外
+      if (i <= 1 && dist < PAST_PIN_RESTRICTION_RADIUS) {
+        return false;
+      }
+      // 3〜5回前: 同一座標のみ除外
+      if (i >= 2 && i <= 4 && dist < 1) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   // Step 3: フォールバック
   return [];
