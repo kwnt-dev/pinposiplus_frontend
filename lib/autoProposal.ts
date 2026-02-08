@@ -43,6 +43,42 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
     }
   }
   // Step 2: 除外フィルタ
+
+  // 2-1 禁止セル
+  const excludedBan = candidates.filter((c) => {
+    const surroundingCells = [
+      `cell_${Math.floor(c.x)}_${Math.floor(c.y)}`,
+      `cell_${Math.floor(c.x) - 1}_${Math.floor(c.y)}`,
+      `cell_${Math.floor(c.x)}_${Math.floor(c.y) - 1}`,
+      `cell_${Math.floor(c.x) - 1}_${Math.floor(c.y) - 1}`,
+    ];
+    return !surroundingCells.some((id) => input.banCells.includes(id));
+  });
+
+  // 2-2 雨天禁止セル
+  const excludedRain = input.isRainyDay
+    ? excludedBan.filter((c) => {
+        const surroundingCells = [
+          `cell_${Math.floor(c.x)}_${Math.floor(c.y)}`,
+          `cell_${Math.floor(c.x) - 1}_${Math.floor(c.y)}`,
+          `cell_${Math.floor(c.x)}_${Math.floor(c.y) - 1}`,
+          `cell_${Math.floor(c.x) - 1}_${Math.floor(c.y) - 1}`,
+        ];
+        return !surroundingCells.some((id) => input.rainCells.includes(id));
+      })
+    : excludedBan;
+
+  // 2-3 傷みセル
+  const excludedDamage = excludedRain.filter((c) => {
+    const surroundingCells = [
+      `cell_${Math.floor(c.x)}_${Math.floor(c.y)}`,
+      `cell_${Math.floor(c.x) - 1}_${Math.floor(c.y)}`,
+      `cell_${Math.floor(c.x)}_${Math.floor(c.y) - 1}`,
+      `cell_${Math.floor(c.x) - 1}_${Math.floor(c.y) - 1}`,
+    ];
+    return !surroundingCells.some((id) => input.damageCells.includes(id));
+  });
+
   // Step 3: フォールバック
   return [];
 }
