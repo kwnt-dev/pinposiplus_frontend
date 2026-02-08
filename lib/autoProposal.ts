@@ -150,5 +150,10 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
   });
 
   // Step 3: フォールバック
-  return [];
+  if (excludedRoute.length === 0) {
+    // 過去ピン・導線の除外をスキップして返す
+    return excludedBoundary.map((c) => ({ x: c.x, y: c.y }));
+  }
+
+  return excludedRoute.map((c) => ({ x: c.x, y: c.y }));
 }
