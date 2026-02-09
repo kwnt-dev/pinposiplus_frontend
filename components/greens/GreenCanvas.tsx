@@ -13,6 +13,7 @@ import {
 } from "react-konva";
 import { Fragment } from "react";
 import ClipperLib from "clipper-lib";
+import { HOLE_CONFIGS } from "@/config/holes";
 
 // 型定義
 interface LayerData {
@@ -53,19 +54,6 @@ export interface HoleData {
     slope: { d: string };
   } | null;
 }
-
-interface HoleConfig {
-  exit: { x: number; y: number };
-  centerLineMarks: {
-    front: { x: number; y: number };
-    back: { x: number; y: number };
-  };
-}
-
-const HOLE_01_CONFIG: HoleConfig = {
-  exit: { x: 10, y: 16 },
-  centerLineMarks: { front: { x: 30, y: 57 }, back: { x: 30, y: 17 } },
-};
 
 interface Props {
   hole: string;
@@ -354,7 +342,7 @@ export default function GreenCanvas({
   }
 
   const scale = width / CANVAS_SIZE;
-  const config = HOLE_01_CONFIG;
+  const config = HOLE_CONFIGS[hole.padStart(2, "0")];
 
   //外周制限を計算
   const boundaryBufferPoints = getOffsetBoundary(
