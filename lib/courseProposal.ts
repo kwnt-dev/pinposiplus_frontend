@@ -1,4 +1,5 @@
 import { Candidate } from "./autoProposal";
+import { HOLE_CONFIGS } from "@/config/holes";
 
 // 型定義
 
@@ -106,16 +107,25 @@ export function generateCourseProposal(
       if (filtered.length > 0) pool = filtered;
     }
 
-    // ルール2: 前ホールと同じ奥行きを除外
+    // ルール2: 前ホールとの位置変化（奥行き違い+1、左右違い+1でスコア付け）
     if (result.length > 0) {
       const prevPin = result[result.length - 1].selectedPin;
-      const prevDepth = getDepthPosition(
-        prevPin.y,
-        input.holes[result.length - 1].cells,
-      );
-      const filtered = pool.filter(
-        (c) => getDepthPosition(c.y, hole.cells) !== prevDepth,
-      );
+      const prevCells = input.holes[result.length - 1].cells;
+      const prevDepth = getDepthPosition(prevPin.y, prevCells);
+      const prevHorizontal = getHorizontalPosition(prevPin.x, prevCells);
+
+      const scored = pool.map((c) => {
+        let score = 0;
+        if (getDepthPosition(c.y, hole.cells) !== prevDepth) score++;
+        if (getHorizontalPosition(c.x, hole.cells) !== prevHorizontal) score++;
+        return { candidate: c, score };
+      });
+
+      const maxScore = Math.max(...scored.map((s) => s.score));
+      const filtered = scored
+        .filter((s) => s.score === maxScore)
+        .map((s) => s.candidate);
+
       if (filtered.length > 0) pool = filtered;
     }
 
@@ -132,21 +142,20 @@ export function generateCourseProposal(
       if (filtered.length > 0) pool = filtered;
     }
 
-    // ルール4: 前ホールと異なる左右位置を優先
-    if (result.length > 0) {
-      const prevPin = result[result.length - 1].selectedPin;
-      const prevHorizontal = getHorizontalPosition(
-        prevPin.x,
-        input.holes[result.length - 1].cells,
-      );
-      const filtered = pool.filter(
-        (c) => getHorizontalPosition(c.x, hole.cells) !== prevHorizontal,
-      );
-      if (filtered.length > 0) pool = filtered;
-    }
+    // ルール4: グリーン中央に近い候補を選択
+    const holeConfig = HOLE_CONFIGS[String(hole.holeNumber).padStart(2, "0")];
+    const centerX = 30;
+    const centerY =
+      (holeConfig.centerLineMarks.front.y + holeConfig.centerLineMarks.back.y) /
+      2;
 
-    // ルール5: ランダム選択
-    const selected = pool[Math.floor(Math.random() * pool.length)];
+    pool.sort((a, b) => {
+      const distA = Math.pow(a.x - centerX, 2) + Math.pow(a.y - centerY, 2);
+      const distB = Math.pow(b.x - centerX, 2) + Math.pow(b.y - centerY, 2);
+      return distA - distB;
+    });
+
+    const selected = pool[0];
 
     // カウント更新
     const selectedDepth = getDepthPosition(selected.y, hole.cells);

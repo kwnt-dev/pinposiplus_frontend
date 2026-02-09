@@ -13,6 +13,7 @@ import {
 } from "react-konva";
 import { Fragment } from "react";
 import ClipperLib from "clipper-lib";
+import { HOLE_CONFIGS } from "@/config/holes";
 
 // 型定義
 interface LayerData {
@@ -54,19 +55,6 @@ export interface HoleData {
   } | null;
 }
 
-interface HoleConfig {
-  exit: { x: number; y: number };
-  centerLineMarks: {
-    front: { x: number; y: number };
-    back: { x: number; y: number };
-  };
-}
-
-const HOLE_01_CONFIG: HoleConfig = {
-  exit: { x: 10, y: 16 },
-  centerLineMarks: { front: { x: 30, y: 57 }, back: { x: 30, y: 17 } },
-};
-
 interface Props {
   hole: string;
   width?: number;
@@ -78,6 +66,7 @@ interface Props {
   currentPin?: Pin;
   onPinDragged?: (currentPin: Pin) => void;
   pastPins?: Pin[];
+  suggestedPins?: { x: number; y: number }[];
 }
 
 // 定数
@@ -121,7 +110,7 @@ function isInsideGreen(pin: Pin, cells: Cell[]): boolean {
 }
 
 // SVGベジェ曲線上の1点の座標を計算する関数
-function calcBezierPoint(
+export function calcBezierPoint(
   t: number,
   p0: number,
   p1: number,
@@ -138,7 +127,10 @@ function calcBezierPoint(
 }
 
 // SVGパス文字列を点配列に変換する（ベジェ曲線は直線近似）関数
-function svgPathToPoints(d: string, segments = 40): { x: number; y: number }[] {
+export function svgPathToPoints(
+  d: string,
+  segments = 40,
+): { x: number; y: number }[] {
   // パスをコマンドと数字に分解
   const tokens = d.match(/[a-zA-Z]|-?\d*\.?\d+/g);
   if (!tokens) return [];
@@ -236,7 +228,7 @@ function svgPathToPoints(d: string, segments = 40): { x: number; y: number }[] {
 }
 
 // 境界線から内側にオフセットした境界を生成する関数
-function getOffsetBoundary(
+export function getOffsetBoundary(
   boundaryD: string,
   offsetYd: number,
 ): { x: number; y: number }[] {
@@ -268,7 +260,7 @@ function getOffsetBoundary(
 }
 
 // 傾斜線から両側にオフセットした境界を生成する関数
-function getOffsetSlope(
+export function getOffsetSlope(
   slopeD: string,
   offsetYd: number,
 ): { x: number; y: number }[] {
@@ -300,7 +292,7 @@ function getOffsetSlope(
 }
 
 // ポリゴン内にピンがあるか判定する関数
-function isPointInPolygon(
+export function isPointInPolygon(
   x: number,
   y: number,
   polygon: { x: number; y: number }[],
@@ -333,6 +325,7 @@ export default function GreenCanvas({
   currentPin,
   onPinDragged,
   pastPins,
+  suggestedPins = [],
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
@@ -349,7 +342,7 @@ export default function GreenCanvas({
   }
 
   const scale = width / CANVAS_SIZE;
-  const config = HOLE_01_CONFIG;
+  const config = HOLE_CONFIGS[hole.padStart(2, "0")];
 
   //外周制限を計算
   const boundaryBufferPoints = getOffsetBoundary(
@@ -527,53 +520,60 @@ export default function GreenCanvas({
           fill="#f97316"
         />
 
-        {/* 傷みセル */}
-        {damageCells.map((cellId) => {
-          const cell = holeData.cells.find((c) => c.id === cellId);
-          if (!cell) return null;
-          return (
-            <Rect
-              key={`damage-${cellId}`}
-              x={ydToPx(cell.x)}
-              y={ydToPx(cell.y)}
-              width={YD_TO_PX}
-              height={YD_TO_PX}
-              fill="rgba(239, 68, 68, 0.7)"
-            />
-          );
-        })}
+        {/* セル描画（外周でクリップ） */}
+        <Group
+          clipFunc={() => {
+            return [new Path2D(scalePathToPixels(holeData.boundary.d))];
+          }}
+        >
+          {/* 傷みセル */}
+          {damageCells.map((cellId) => {
+            const cell = holeData.cells.find((c) => c.id === cellId);
+            if (!cell) return null;
+            return (
+              <Rect
+                key={`damage-${cellId}`}
+                x={ydToPx(cell.x)}
+                y={ydToPx(cell.y)}
+                width={YD_TO_PX}
+                height={YD_TO_PX}
+                fill="rgba(239, 68, 68, 0.7)"
+              />
+            );
+          })}
 
-        {/* 禁止セル */}
-        {banCells.map((cellId) => {
-          const cell = holeData.cells.find((c) => c.id === cellId);
-          if (!cell) return null;
-          return (
-            <Rect
-              key={`ban-${cellId}`}
-              x={ydToPx(cell.x)}
-              y={ydToPx(cell.y)}
-              width={YD_TO_PX}
-              height={YD_TO_PX}
-              fill="rgba(75, 85, 99, 0.7)"
-            />
-          );
-        })}
+          {/* 禁止セル */}
+          {banCells.map((cellId) => {
+            const cell = holeData.cells.find((c) => c.id === cellId);
+            if (!cell) return null;
+            return (
+              <Rect
+                key={`ban-${cellId}`}
+                x={ydToPx(cell.x)}
+                y={ydToPx(cell.y)}
+                width={YD_TO_PX}
+                height={YD_TO_PX}
+                fill="rgba(75, 85, 99, 0.7)"
+              />
+            );
+          })}
 
-        {/* 雨天禁止セル */}
-        {rainCells.map((cellId) => {
-          const cell = holeData.cells.find((c) => c.id === cellId);
-          if (!cell) return null;
-          return (
-            <Rect
-              key={`rain-${cellId}`}
-              x={ydToPx(cell.x)}
-              y={ydToPx(cell.y)}
-              width={YD_TO_PX}
-              height={YD_TO_PX}
-              fill="rgba(59, 130, 246, 0.7)"
-            />
-          );
-        })}
+          {/* 雨天禁止セル */}
+          {rainCells.map((cellId) => {
+            const cell = holeData.cells.find((c) => c.id === cellId);
+            if (!cell) return null;
+            return (
+              <Rect
+                key={`rain-${cellId}`}
+                x={ydToPx(cell.x)}
+                y={ydToPx(cell.y)}
+                width={YD_TO_PX}
+                height={YD_TO_PX}
+                fill="rgba(59, 130, 246, 0.7)"
+              />
+            );
+          })}
+        </Group>
 
         {/* 過去ピン */}
         {pastPins &&
@@ -612,6 +612,18 @@ export default function GreenCanvas({
               dash={[10, 5]}
             />
           ))}
+
+        {/* 候補ピン */}
+        {suggestedPins?.map((pin, i) => (
+          <Circle
+            key={`suggest-${i}`}
+            x={ydToPx(pin.x)}
+            y={ydToPx(pin.y)}
+            radius={5}
+            fill="#ef4444"
+            opacity={1}
+          />
+        ))}
 
         {/* 現在のピン */}
         {currentPin && (
