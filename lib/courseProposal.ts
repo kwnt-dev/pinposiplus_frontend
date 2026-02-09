@@ -1,4 +1,5 @@
 import { Candidate } from "./autoProposal";
+import { HOLE_CONFIGS } from "@/config/holes";
 
 // 型定義
 
@@ -141,8 +142,20 @@ export function generateCourseProposal(
       if (filtered.length > 0) pool = filtered;
     }
 
-    // ルール4: ランダム選択
-    const selected = pool[Math.floor(Math.random() * pool.length)];
+    // ルール4: グリーン中央に近い候補を選択
+    const holeConfig = HOLE_CONFIGS[String(hole.holeNumber).padStart(2, "0")];
+    const centerX = 30;
+    const centerY =
+      (holeConfig.centerLineMarks.front.y + holeConfig.centerLineMarks.back.y) /
+      2;
+
+    pool.sort((a, b) => {
+      const distA = Math.pow(a.x - centerX, 2) + Math.pow(a.y - centerY, 2);
+      const distB = Math.pow(b.x - centerX, 2) + Math.pow(b.y - centerY, 2);
+      return distA - distB;
+    });
+
+    const selected = pool[0];
 
     // カウント更新
     const selectedDepth = getDepthPosition(selected.y, hole.cells);
