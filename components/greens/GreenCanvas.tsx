@@ -78,6 +78,7 @@ interface Props {
   currentPin?: Pin;
   onPinDragged?: (currentPin: Pin) => void;
   pastPins?: Pin[];
+  suggestedPins?: { x: number; y: number }[];
 }
 
 // 定数
@@ -121,7 +122,7 @@ function isInsideGreen(pin: Pin, cells: Cell[]): boolean {
 }
 
 // SVGベジェ曲線上の1点の座標を計算する関数
-function calcBezierPoint(
+export function calcBezierPoint(
   t: number,
   p0: number,
   p1: number,
@@ -138,7 +139,10 @@ function calcBezierPoint(
 }
 
 // SVGパス文字列を点配列に変換する（ベジェ曲線は直線近似）関数
-function svgPathToPoints(d: string, segments = 40): { x: number; y: number }[] {
+export function svgPathToPoints(
+  d: string,
+  segments = 40,
+): { x: number; y: number }[] {
   // パスをコマンドと数字に分解
   const tokens = d.match(/[a-zA-Z]|-?\d*\.?\d+/g);
   if (!tokens) return [];
@@ -236,7 +240,7 @@ function svgPathToPoints(d: string, segments = 40): { x: number; y: number }[] {
 }
 
 // 境界線から内側にオフセットした境界を生成する関数
-function getOffsetBoundary(
+export function getOffsetBoundary(
   boundaryD: string,
   offsetYd: number,
 ): { x: number; y: number }[] {
@@ -268,7 +272,7 @@ function getOffsetBoundary(
 }
 
 // 傾斜線から両側にオフセットした境界を生成する関数
-function getOffsetSlope(
+export function getOffsetSlope(
   slopeD: string,
   offsetYd: number,
 ): { x: number; y: number }[] {
@@ -300,7 +304,7 @@ function getOffsetSlope(
 }
 
 // ポリゴン内にピンがあるか判定する関数
-function isPointInPolygon(
+export function isPointInPolygon(
   x: number,
   y: number,
   polygon: { x: number; y: number }[],
@@ -333,6 +337,7 @@ export default function GreenCanvas({
   currentPin,
   onPinDragged,
   pastPins,
+  suggestedPins = [],
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
@@ -612,6 +617,18 @@ export default function GreenCanvas({
               dash={[10, 5]}
             />
           ))}
+
+        {/* 候補ピン */}
+        {suggestedPins?.map((pin, i) => (
+          <Circle
+            key={`suggest-${i}`}
+            x={ydToPx(pin.x)}
+            y={ydToPx(pin.y)}
+            radius={5}
+            fill="#ef4444"
+            opacity={1}
+          />
+        ))}
 
         {/* 現在のピン */}
         {currentPin && (

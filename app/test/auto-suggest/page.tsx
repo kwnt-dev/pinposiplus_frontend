@@ -33,8 +33,8 @@ export default function AutoSuggestTestPage() {
 
   // 過去ピン（テスト用ハードコード）
   const pastPins: Pin[] = [
-    { id: "past1", x: 30, y: 20 },
-    { id: "past2", x: 35, y: 47 },
+    { id: "past1", x: 32, y: 30 },
+    { id: "past2", x: 25, y: 48 },
   ];
 
   const [isRainyDay, setIsRainyDay] = useState(false);
@@ -105,15 +105,7 @@ export default function AutoSuggestTestPage() {
             banCells={banCells}
             rainCells={rainCells}
             pastPins={pastPins}
-            currentPin={
-              currentCandidate
-                ? {
-                    id: "suggested",
-                    x: currentCandidate.x,
-                    y: currentCandidate.y,
-                  }
-                : undefined
-            }
+            suggestedPins={candidates}
           />
         </div>
 
