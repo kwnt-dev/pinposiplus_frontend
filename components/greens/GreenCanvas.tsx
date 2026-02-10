@@ -484,15 +484,17 @@ export default function GreenCanvas({
         })}
 
         {/* 座標線ラベル */}
-        {[0, 10, 20, 30, 40].map((depth) => {
+        {[0, 10, 20, 30, 40, 50].map((depth) => {
           const y = holeData.origin.y - depth;
           return (
             <Text
               key={`label-${depth}`}
-              x={CANVAS_SIZE - 50}
-              y={ydToPx(y) - 25}
+              x={CANVAS_SIZE - 95}
+              y={ydToPx(y) - 60}
               text={`${depth}`}
-              fontSize={25}
+              fontSize={60}
+              width={80}
+              align="right"
               fontStyle="bold"
               fill="#000000"
             />

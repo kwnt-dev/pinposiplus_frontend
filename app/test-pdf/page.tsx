@@ -1,18 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import GreenCanvas, { Pin } from "@/components/greens/GreenCanvas";
-import GreenCardGridPDF, {
+import GreenCardGridPDFExport, {
   HolePin,
-} from "@/components/greens/GreenCardGridPDF";
+} from "@/components/greens/GreenCardGridPDFExport";
 
-export default function TestPage() {
-  const [currentPin, setCurrentPin] = useState<Pin>({
-    id: "pin1",
-    x: 30,
-    y: 35,
-  });
-
+export default function TestPDFPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
 
   const testPins: HolePin[] = [
@@ -38,9 +31,28 @@ export default function TestPage() {
 
   return (
     <div className="p-8">
-      <button onClick={() => setCourse("out")}>OUT</button>
-      <button onClick={() => setCourse("in")}>IN</button>
-      <GreenCardGridPDF course={course} testPins={testPins} />
+      <h1 className="text-2xl font-bold mb-4">PDF Export テスト</h1>
+
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setCourse("out")}
+          className={`px-4 py-2 border rounded ${
+            course === "out" ? "bg-gray-800 text-white" : "bg-white"
+          }`}
+        >
+          OUT
+        </button>
+        <button
+          onClick={() => setCourse("in")}
+          className={`px-4 py-2 border rounded ${
+            course === "in" ? "bg-gray-800 text-white" : "bg-white"
+          }`}
+        >
+          IN
+        </button>
+      </div>
+
+      <GreenCardGridPDFExport course={course} pins={testPins} />
     </div>
   );
 }

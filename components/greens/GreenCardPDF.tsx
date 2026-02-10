@@ -328,11 +328,11 @@ export default function GreenCardPDF({
               return (
                 <Text
                   key={`label-${depth}`}
-                  x={CANVAS_SIZE - 60}
-                  y={ydToPx(y) - 40}
+                  x={CANVAS_SIZE - 95}
+                  y={ydToPx(y) - 60}
                   text={`${depth}`}
-                  fontSize={40}
-                  width={45}
+                  fontSize={60}
+                  width={80}
                   align="right"
                   fontStyle="bold"
                   fill="#000000"
