@@ -30,6 +30,10 @@ const CARD_SIZE = 240;
 
 /**
  * Konvaグリッドを1枚の画像にまとめる
+ *
+ * Konvaは1ホールにつき1つのStageコンテナ(.konvajs-content)を生成する
+ * 各Stageには描画用・枠線用など複数のcanvasがある
+ * これらを3×3に並べて1枚の画像にする
  */
 async function exportGridToImage(
   gridRef: React.RefObject<HTMLDivElement | null>,
@@ -94,6 +98,26 @@ async function exportGridToImage(
       offset + gridW - 12,
       offset + headerHeight / 2,
     );
+  }
+
+  // --- 9ホール分のKonva canvasを3×3に並べる ---
+  // KonvaがDOM上に生成したStageコンテナを全て取得（9個）
+  const stageList = el.querySelectorAll(".konvajs-content");
+
+  for (let i = 0; i < stageList.length; i++) {
+    // i番目のカードの配置先を計算
+    // 例: i=0→(0,0)左上, i=1→(1,0)上段中央, i=4→(1,1)中段中央, i=8→(2,2)右下
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = offset + col * CARD_SIZE;
+    const y = offset + headerHeight + row * CARD_SIZE;
+
+    // Konvaは1つのStageに複数のcanvasを持つ（描画用、枠線用など）
+    // 全部同じ位置に重ねて描画する
+    const layerCanvases = stageList[i].querySelectorAll("canvas");
+    for (let j = 0; j < layerCanvases.length; j++) {
+      ctx.drawImage(layerCanvases[j], x, y, CARD_SIZE, CARD_SIZE);
+    }
   }
 
   return canvas.toDataURL("image/png", 1.0);
