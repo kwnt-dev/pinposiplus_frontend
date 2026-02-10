@@ -1,6 +1,6 @@
 "use client";
-import { useRouter } from "next/navigation";
 
+import { useRef } from "react";
 import GreenCardGridPDFExport, {
   HolePin,
 } from "@/components/greens/GreenCardGridPDFExport";
@@ -25,28 +25,37 @@ const testPins: HolePin[] = [
   { hole: 17, x: 25, y: 33 },
   { hole: 18, x: 30, y: 36 },
 ];
+
+const CARD_SIZE = 240;
+
 export default function PDFPreviewPage() {
-  const router = useRouter();
+  const outRef = useRef<HTMLDivElement>(null);
+  const inRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div>
-      <div className="p-8">
-        <button
-          onClick={() => window.print()}
-          className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700"
-        >
-          PDF
-        </button>
+    <div className="p-8">
+      <div className="mb-6">
+        <button onClick={() => window.print()}>PDF</button>
       </div>
 
-      {/* OUT */}
       <div className="mb-4">
-        <GreenCardGridPDFExport course="out" pins={testPins} />
+        <div ref={outRef}>
+          <GreenCardGridPDFExport
+            course="out"
+            pins={testPins}
+            cardSize={CARD_SIZE}
+          />
+        </div>
       </div>
 
-      {/* IN */}
       <div>
-        <GreenCardGridPDFExport course="in" pins={testPins} />
+        <div ref={inRef}>
+          <GreenCardGridPDFExport
+            course="in"
+            pins={testPins}
+            cardSize={CARD_SIZE}
+          />
+        </div>
       </div>
     </div>
   );
