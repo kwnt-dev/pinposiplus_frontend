@@ -60,8 +60,6 @@ const CIRCLE_NUMBERS = [
 // 定数
 const YD_TO_PX = 20;
 const CANVAS_SIZE = 60 * YD_TO_PX;
-const DEPTH_FONT_SIZE = 80;
-const HORIZONTAL_FONT_SIZE = 40;
 
 // ユーティリティ関数
 function scalePathToPixels(d: string): string {
@@ -293,7 +291,7 @@ export default function GreenCardPDFExport({
               key={`layer-${index}`}
               data={scalePathToPixels(layer.d)}
               stroke="#000000"
-              strokeWidth={3}
+              strokeWidth={4}
               fill="transparent"
             />
           ))}
@@ -301,7 +299,7 @@ export default function GreenCardPDFExport({
         <Path
           data={scalePathToPixels(holeData.boundary.d)}
           stroke="#000000"
-          strokeWidth={6}
+          strokeWidth={10}
           fill="transparent"
         />
         {/* 傾斜線 */}
@@ -309,7 +307,7 @@ export default function GreenCardPDFExport({
           <Path
             data={scalePathToPixels(holeData.slope.slope.d)}
             stroke="#000000"
-            strokeWidth={3}
+            strokeWidth={6}
             fill="transparent"
           />
         ) : null}
@@ -331,11 +329,11 @@ export default function GreenCardPDFExport({
           return (
             <Text
               key={`label-${depth}`}
-              x={CANVAS_SIZE - 60}
-              y={ydToPx(y) - 40}
+              x={CANVAS_SIZE - 90}
+              y={ydToPx(y) - 55}
               text={`${depth}`}
-              fontSize={40}
-              width={45}
+              fontSize={50}
+              width={70}
               align="right"
               fontStyle="bold"
               fill="#000000"
@@ -352,7 +350,7 @@ export default function GreenCardPDFExport({
               ydToPx(holeData.origin.y),
             ]}
             stroke="#000000"
-            strokeWidth={3}
+            strokeWidth={2}
           />
         )}
         {/* 現在のピン */}
@@ -360,7 +358,7 @@ export default function GreenCardPDFExport({
           <Circle
             x={ydToPx(currentPin.x)}
             y={ydToPx(currentPin.y)}
-            radius={10}
+            radius={12}
             fill="#000000"
           />
         )}
@@ -375,7 +373,7 @@ export default function GreenCardPDFExport({
                 ydToPx(holeData.origin.y),
               ]}
               stroke="#000000"
-              strokeWidth={6}
+              strokeWidth={12}
             />
             {currentPin.x !== 30 && edges && (
               <Line
@@ -386,7 +384,7 @@ export default function GreenCardPDFExport({
                   ydToPx(currentPin.y),
                 ]}
                 stroke="#000000"
-                strokeWidth={6}
+                strokeWidth={12}
               />
             )}
           </Fragment>
@@ -394,8 +392,8 @@ export default function GreenCardPDFExport({
 
         {/* 丸数字（左上） */}
         <Text
-          x={20}
-          y={20}
+          x={30}
+          y={30}
           text={CIRCLE_NUMBERS[holeNumber - 1] ?? ""}
           fontSize={160}
           fontStyle="bold"
@@ -406,13 +404,13 @@ export default function GreenCardPDFExport({
         {currentPin && (
           <Text
             text={`${Math.round(holeData.origin.y - currentPin.y)}`}
-            fontSize={300}
+            fontSize={450}
             x={currentPin.x <= 30 ? ydToPx(45) : ydToPx(15)}
             y={ydToPx(currentPin.y)}
-            offsetY={80}
+            offsetY={100}
             align="center"
-            width={400}
-            offsetX={160}
+            width={600}
+            offsetX={300}
             fontStyle="bold"
             fill="#000000"
           />
@@ -422,9 +420,9 @@ export default function GreenCardPDFExport({
         {currentPin && currentPin.x === 30 && (
           <Text
             text="C"
-            fontSize={120}
-            x={ydToPx(currentPin.x) - 120}
-            y={ydToPx(currentPin.y) - 120}
+            fontSize={200}
+            x={ydToPx(currentPin.x) - 200}
+            y={ydToPx(currentPin.y) - 200}
             fontStyle="bold"
             fill="#000000"
           />
@@ -466,9 +464,9 @@ export default function GreenCardPDFExport({
               <Text
                 x={x}
                 y={y}
-                offsetY={fontSize / 2}
+                offsetY={100}
                 text={text}
-                fontSize={fontSize}
+                fontSize={200}
                 fontStyle="bold"
                 fill="#000000"
               />

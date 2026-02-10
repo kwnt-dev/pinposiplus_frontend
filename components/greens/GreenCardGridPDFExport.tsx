@@ -35,7 +35,7 @@ export default function GreenCardGridPDFExport({
       : [10, 11, 12, 13, 14, 15, 16, 17, 18];
 
   const { dateStr, dayStr } = getDateString();
-  const headerText = course === "out" ? "OUT" : "IN";
+  const headerText = course === "out" ? "OUT" : " IN";
 
   return (
     <div
