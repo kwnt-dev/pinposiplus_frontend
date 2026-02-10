@@ -331,11 +331,11 @@ export default function GreenCardPDFExport({
           return (
             <Text
               key={`label-${depth}`}
-              x={CANVAS_SIZE - 60}
-              y={ydToPx(y) - 40}
+              x={CANVAS_SIZE - 95}
+              y={ydToPx(y) - 60}
               text={`${depth}`}
-              fontSize={40}
-              width={45}
+              fontSize={60}
+              width={80}
               align="right"
               fontStyle="bold"
               fill="#000000"
@@ -395,6 +395,17 @@ export default function GreenCardPDFExport({
 
       {/* 数字・丸数字用Layer（scaleなし） */}
       <Layer>
+        {/* 黒枠線 */}
+        <Rect
+          x={0}
+          y={0}
+          width={width}
+          height={height}
+          stroke="#000000"
+          strokeWidth={2}
+          fill="transparent"
+        />
+
         {/* 丸数字（左上） */}
         <Text
           x={10}
@@ -403,17 +414,6 @@ export default function GreenCardPDFExport({
           fontSize={80 * (width / 600)}
           fontStyle="bold"
           fill="#000000"
-        />
-
-        {/* 黒枠線 */}
-        <Rect
-          x={0}
-          y={0}
-          width={width}
-          height={height}
-          stroke="#000000"
-          strokeWidth={4}
-          fill="transparent"
         />
 
         {/* 奥行き数字 */}
