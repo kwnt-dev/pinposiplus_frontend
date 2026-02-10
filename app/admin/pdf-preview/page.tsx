@@ -120,6 +120,11 @@ async function exportGridToImage(
     }
   }
 
+  // グリッド部分の外枠
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(offset, offset + headerHeight, gridW, gridH);
+
   return canvas.toDataURL("image/png", 1.0);
 }
 
