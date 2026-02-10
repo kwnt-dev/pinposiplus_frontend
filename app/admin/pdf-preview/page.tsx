@@ -62,6 +62,40 @@ async function exportGridToImage(
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, totalW, totalH);
 
+  // ヘッダー背景
+  ctx.fillStyle = "#1f2937";
+  ctx.fillRect(offset, offset, gridW, headerHeight);
+
+  // ヘッダー枠線
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(offset, offset, gridW, headerHeight);
+
+  // ヘッダーテキスト（DOMから取得）
+  const headerEl = el.querySelector("div > div") as HTMLElement;
+  if (headerEl) {
+    const spans = headerEl.querySelectorAll("span");
+    ctx.fillStyle = "white";
+    ctx.font = "bold 20px sans-serif";
+    ctx.textBaseline = "middle";
+
+    // 左：OUT or IN
+    ctx.textAlign = "left";
+    ctx.fillText(
+      spans[0]?.textContent ?? "",
+      offset + 12,
+      offset + headerHeight / 2,
+    );
+
+    // 右：日付
+    ctx.textAlign = "right";
+    ctx.fillText(
+      spans[1]?.textContent ?? "",
+      offset + gridW - 12,
+      offset + headerHeight / 2,
+    );
+  }
+
   return canvas.toDataURL("image/png", 1.0);
 }
 
