@@ -274,7 +274,7 @@ export default function GreenCardPDFExport({
   const centerLineEdges = getBoundaryIntersectionX(holeData.boundary.d, 30);
 
   return (
-    <Stage width={width} height={height}>
+    <Stage width={width} height={height} pixelRatio={4}>
       {/* 描画用Layer（スケーリングあり） */}
       <Layer scaleX={scale} scaleY={scale}>
         {/* 白背景 */}
@@ -331,11 +331,11 @@ export default function GreenCardPDFExport({
           return (
             <Text
               key={`label-${depth}`}
-              x={CANVAS_SIZE - 95}
-              y={ydToPx(y) - 60}
+              x={CANVAS_SIZE - 60}
+              y={ydToPx(y) - 40}
               text={`${depth}`}
-              fontSize={60}
-              width={80}
+              fontSize={40}
+              width={45}
               align="right"
               fontStyle="bold"
               fill="#000000"
@@ -391,27 +391,13 @@ export default function GreenCardPDFExport({
             )}
           </Fragment>
         )}
-      </Layer>
-
-      {/* 数字・丸数字用Layer（scaleなし） */}
-      <Layer>
-        {/* 黒枠線 */}
-        <Rect
-          x={0}
-          y={0}
-          width={width}
-          height={height}
-          stroke="#000000"
-          strokeWidth={2}
-          fill="transparent"
-        />
 
         {/* 丸数字（左上） */}
         <Text
-          x={10}
-          y={10}
+          x={20}
+          y={20}
           text={CIRCLE_NUMBERS[holeNumber - 1] ?? ""}
-          fontSize={80 * (width / 600)}
+          fontSize={160}
           fontStyle="bold"
           fill="#000000"
         />
@@ -420,13 +406,13 @@ export default function GreenCardPDFExport({
         {currentPin && (
           <Text
             text={`${Math.round(holeData.origin.y - currentPin.y)}`}
-            fontSize={DEPTH_FONT_SIZE}
-            x={currentPin.x <= 30 ? ydToPx(45) * scale : ydToPx(15) * scale}
-            y={ydToPx(currentPin.y) * scale}
-            offsetY={DEPTH_FONT_SIZE / 2}
+            fontSize={300}
+            x={currentPin.x <= 30 ? ydToPx(45) : ydToPx(15)}
+            y={ydToPx(currentPin.y)}
+            offsetY={80}
             align="center"
-            width={DEPTH_FONT_SIZE * 2}
-            offsetX={DEPTH_FONT_SIZE}
+            width={400}
+            offsetX={160}
             fontStyle="bold"
             fill="#000000"
           />
@@ -436,9 +422,9 @@ export default function GreenCardPDFExport({
         {currentPin && currentPin.x === 30 && (
           <Text
             text="C"
-            fontSize={40}
-            x={ydToPx(currentPin.x) * scale - 60}
-            y={ydToPx(currentPin.y) * scale - 60}
+            fontSize={120}
+            x={ydToPx(currentPin.x) - 120}
+            y={ydToPx(currentPin.y) - 120}
             fontStyle="bold"
             fill="#000000"
           />
@@ -455,24 +441,24 @@ export default function GreenCardPDFExport({
                 : edges.right - currentPin.x,
             );
             const text = `${distance}`;
-            const textWidth = HORIZONTAL_FONT_SIZE * text.length * 0.6;
-            const margin = 5;
-            const cardWidth = width;
+            const fontSize = 200;
+            const textWidth = fontSize * text.length * 0.6;
+            const margin = 10;
 
             let x: number;
-            let y = ydToPx(currentPin.y) * scale;
+            let y = ydToPx(currentPin.y);
 
             if (currentPin.x < 30) {
-              x = ydToPx(edges.left) * scale - margin - textWidth;
+              x = ydToPx(edges.left) - margin - textWidth;
               if (x < 0) {
                 x = margin;
-                y = y - HORIZONTAL_FONT_SIZE;
+                y = y - fontSize;
               }
             } else {
-              x = ydToPx(edges.right) * scale + margin;
-              if (x + textWidth > cardWidth) {
-                x = cardWidth - textWidth - margin;
-                y = y - HORIZONTAL_FONT_SIZE;
+              x = ydToPx(edges.right) + margin;
+              if (x + textWidth > CANVAS_SIZE) {
+                x = CANVAS_SIZE - textWidth - margin;
+                y = y - fontSize;
               }
             }
 
@@ -480,14 +466,27 @@ export default function GreenCardPDFExport({
               <Text
                 x={x}
                 y={y}
-                offsetY={HORIZONTAL_FONT_SIZE / 2}
+                offsetY={fontSize / 2}
                 text={text}
-                fontSize={HORIZONTAL_FONT_SIZE}
+                fontSize={fontSize}
                 fontStyle="bold"
                 fill="#000000"
               />
             );
           })()}
+      </Layer>
+
+      {/* 黒枠線用Layer（scaleなし） */}
+      <Layer>
+        <Rect
+          x={0}
+          y={0}
+          width={width}
+          height={height}
+          stroke="#000000"
+          strokeWidth={2}
+          fill="transparent"
+        />
       </Layer>
     </Stage>
   );
