@@ -1,9 +1,11 @@
 "use client";
 
 import { useRef } from "react";
+import { pdf } from "@react-pdf/renderer";
 import GreenCardGridPDFExport, {
   HolePin,
 } from "@/components/greens/GreenCardGridPDFExport";
+import PDFDocument from "@/components/pdf/PDFDocument";
 
 const testPins: HolePin[] = [
   { hole: 1, x: 30, y: 35 },
@@ -128,6 +130,46 @@ async function exportGridToImage(
   return canvas.toDataURL("image/png", 1.0);
 }
 
+/**
+ * OUT/INグリッドを画像化してPDFを生成・ダウンロードする
+ */
+async function handleDownloadPDF(
+  outRef: React.RefObject<HTMLDivElement | null>,
+  inRef: React.RefObject<HTMLDivElement | null>,
+) {
+  // Konvaの描画完了を待つ
+  await new Promise((r) => setTimeout(r, 500));
+
+  const outImage = await exportGridToImage(outRef);
+  const inImage = await exportGridToImage(inRef);
+
+  if (!outImage || !inImage) {
+    alert("画像の生成に失敗しました");
+    return;
+  }
+
+  // react-pdfでPDF生成
+  const pdfData = await pdf(
+    <PDFDocument outImageUrl={outImage} inImageUrl={inImage} />,
+  ).toBlob();
+
+  // PDFファイルをダウンロード
+  // ダウンロード用のaタグを作ってクリックする（JSからファイルを保存する定番の方法）
+  const downloadUrl = URL.createObjectURL(pdfData);
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+
+  // ファイル名: ピンポジション_20260210.pdf
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  link.download = `ピンポジション_${year}${month}${day}.pdf`;
+
+  link.click();
+  URL.revokeObjectURL(downloadUrl);
+}
+
 export default function PDFPreviewPage() {
   const outRef = useRef<HTMLDivElement>(null);
   const inRef = useRef<HTMLDivElement>(null);
@@ -135,7 +177,9 @@ export default function PDFPreviewPage() {
   return (
     <div className="p-8">
       <div className="mb-6">
-        <button onClick={() => window.print()}>PDF</button>
+        <button onClick={() => handleDownloadPDF(outRef, inRef)}>
+          PDFダウンロード
+        </button>
       </div>
 
       <div className="mb-4">
