@@ -20,20 +20,26 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    await api.get("/sanctum/csrf-cookie");
+    setError("");
 
-    const response = await api.post("/api/login", { email, password });
+    try {
+      await api.get("/sanctum/csrf-cookie");
 
-    if (response.data.role === "admin") {
-      router.push("/admin");
-    } else {
-      router.push("/staff");
+      const response = await api.post("/api/login", { email, password });
+
+      if (response.data.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/staff");
+      }
+    } catch (err) {
+      setError("メールアドレスまたはパスワードが正しくありません");
     }
   }
-
   return (
     <div className="min-h-screen bg-page-gradient flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -47,6 +53,7 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <p className="text-red-500 text-sm">{error}</p>}
             <div>
               <Label htmlFor="email">メールアドレス</Label>
               <Input
