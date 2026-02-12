@@ -1,4 +1,8 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+
 import {
   Card,
   CardContent,
@@ -9,8 +13,18 @@ import {
 import { Label } from "@/components/ui/label";
 
 import { Input } from "@/components/ui/input";
+import api from "@/lib/axios";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await api.get("/sanctum/csrf-cookie");
+    await api.post("/api/login", { email, password });
+  }
+
   return (
     <div className="min-h-screen bg-page-gradient flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -23,13 +37,15 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="email">メールアドレス</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="email@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -40,6 +56,8 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
