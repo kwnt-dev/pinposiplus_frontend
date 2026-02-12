@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   Card,
@@ -18,11 +19,19 @@ import api from "@/lib/axios";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     await api.get("/sanctum/csrf-cookie");
-    await api.post("/api/login", { email, password });
+
+    const response = await api.post("/api/login", { email, password });
+
+    if (response.data.role === "admin") {
+      router.push("/admin");
+    } else {
+      router.push("/staff");
+    }
   }
 
   return (
