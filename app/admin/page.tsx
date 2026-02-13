@@ -1,7 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
+import {
+  generateProposals,
+  Candidate,
+  AutoProposalInput,
+} from "@/lib/autoProposal";
+import {
+  generateCourseProposal,
+  CourseDifficulty,
+  HoleCandidates,
+  CourseProposalInput,
+} from "@/lib/courseProposal";
+import { HOLE_CONFIGS } from "@/config/holes";
+import { HoleData, Pin, HolePin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
@@ -12,7 +25,6 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Switch } from "@/components/ui/switch";
-import { CourseDifficulty } from "@/lib/courseProposal";
 import {
   Select,
   SelectContent,
@@ -27,8 +39,76 @@ export default function DashboardPage() {
   const [isRainyDay, setIsRainyDay] = useState(false);
   const [courseDifficulty, setCourseDifficulty] =
     useState<CourseDifficulty>("medium");
+
+  const [allHoleData, setAllHoleData] = useState<Record<string, HoleData>>({});
+
+  useEffect(() => {
+    const loadAll = async () => {
+      const data: Record<string, HoleData> = {};
+      for (let i = 1; i <= 18; i++) {
+        const paddedHole = String(i).padStart(2, "0");
+        try {
+          const res = await fetch(`/greens/hole_${paddedHole}.json`);
+          const json = await res.json();
+          data[paddedHole] = json;
+        } catch (err) {
+          console.error(`hole_${paddedHole} 読み込みエラー:`, err);
+        }
+      }
+      setAllHoleData(data);
+    };
+    loadAll();
+  }, []);
+  const [coursePins, setCoursePins] = useState<HolePin[]>([]);
+
   const handleCourseGenerate = () => {
-    console.log("自動提案実行");
+    const holes =
+      course === "out"
+        ? ["01", "02", "03", "04", "05", "06", "07", "08", "09"]
+        : ["10", "11", "12", "13", "14", "15", "16", "17", "18"];
+
+    const holeCandidates: HoleCandidates[] = holes.map((h) => {
+      const hData = allHoleData[h];
+      const config = HOLE_CONFIGS[h];
+      if (!hData || !config) {
+        return {
+          holeNumber: parseInt(h, 10),
+          candidates: [],
+          isShortHole: false,
+          cells: [],
+        };
+      }
+
+      const input: AutoProposalInput = {
+        holeData: hData,
+        exit: config.exit,
+        damageCells: [],
+        banCells: [],
+        rainCells: [],
+        pastPins: [],
+        isRainyDay,
+      };
+
+      const candidates = generateProposals(input);
+      return {
+        holeNumber: parseInt(h, 10),
+        candidates,
+        isShortHole: config.isShortHole,
+        cells: hData.cells,
+      };
+    });
+
+    const result = generateCourseProposal({
+      holes: holeCandidates,
+      courseDifficulty,
+    });
+    const pins: HolePin[] = result.holes.map((h) => ({
+      hole: h.holeNumber,
+      x: h.selectedPin.x,
+      y: h.selectedPin.y,
+    }));
+
+    setCoursePins(pins);
   };
 
   return (
@@ -58,7 +138,7 @@ export default function DashboardPage() {
               transformOrigin: "top left",
             }}
           >
-            <GreenCardGridPDF course={course} />
+            <GreenCardGridPDF course={course} pins={coursePins} />
           </div>
         </div>
         <div className="flex-1">
