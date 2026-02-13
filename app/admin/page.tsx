@@ -12,11 +12,21 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Switch } from "@/components/ui/switch";
+import { CourseDifficulty } from "@/lib/courseProposal";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function DashboardPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isRainyDay, setIsRainyDay] = useState(false);
+  const [courseDifficulty, setCourseDifficulty] =
+    useState<CourseDifficulty>("medium");
 
   return (
     <div>
@@ -70,6 +80,22 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 mt-4">
             <Switch checked={isRainyDay} onCheckedChange={setIsRainyDay} />
             <Label>雨天モード</Label>
+          </div>
+          <div className="mt-4">
+            <Label>コース難易度</Label>
+            <Select
+              value={courseDifficulty}
+              onValueChange={(v) => setCourseDifficulty(v as CourseDifficulty)}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="easy">Easy</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="hard">Hard</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
