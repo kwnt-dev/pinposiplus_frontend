@@ -27,6 +27,9 @@ export default function DashboardPage() {
   const [isRainyDay, setIsRainyDay] = useState(false);
   const [courseDifficulty, setCourseDifficulty] =
     useState<CourseDifficulty>("medium");
+  const handleCourseGenerate = () => {
+    console.log("自動提案実行");
+  };
 
   return (
     <div>
@@ -97,6 +100,9 @@ export default function DashboardPage() {
               </SelectContent>
             </Select>
           </div>
+          <Button className="w-full mt-6" onClick={handleCourseGenerate}>
+            自動提案を実行
+          </Button>
         </div>
       </div>
     </div>
