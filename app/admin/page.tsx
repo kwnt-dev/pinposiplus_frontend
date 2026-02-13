@@ -11,10 +11,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
+import { Switch } from "@/components/ui/switch";
 
 export default function DashboardPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [isRainyDay, setIsRainyDay] = useState(false);
 
   return (
     <div>
@@ -64,6 +66,10 @@ export default function DashboardPage() {
                 />
               </PopoverContent>
             </Popover>
+          </div>
+          <div className="flex items-center gap-2 mt-4">
+            <Switch checked={isRainyDay} onCheckedChange={setIsRainyDay} />
+            <Label>雨天モード</Label>
           </div>
         </div>
       </div>
