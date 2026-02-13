@@ -116,6 +116,35 @@ export default function DashboardPage() {
 
   const editingPin = coursePins.find((p) => p.hole === editingHole);
 
+  const [damageCellsMap, setDamageCellsMap] = useState<
+    Record<number, string[]>
+  >({});
+  const [banCellsMap, setBanCellsMap] = useState<Record<number, string[]>>({});
+  const [rainCellsMap, setRainCellsMap] = useState<Record<number, string[]>>(
+    {},
+  );
+  const [cellMode, setCellMode] = useState<"damage" | "ban" | "rain">("damage");
+
+  const handleCellClick = (cellId: string) => {
+    const updateCells =
+      cellMode === "damage"
+        ? setDamageCellsMap
+        : cellMode === "ban"
+          ? setBanCellsMap
+          : setRainCellsMap;
+
+    updateCells((prev) => {
+      const currentCells = prev[editingHole] || [];
+      const isAlreadySelected = currentCells.includes(cellId);
+      return {
+        ...prev,
+        [editingHole]: isAlreadySelected
+          ? currentCells.filter((id) => id !== cellId)
+          : [...currentCells, cellId],
+      };
+    });
+  };
+
   return (
     <div>
       <h1>ダッシュボード</h1>
@@ -203,6 +232,9 @@ export default function DashboardPage() {
                 hole={String(editingHole)}
                 width={400}
                 height={400}
+                damageCells={damageCellsMap[editingHole] || []}
+                banCells={banCellsMap[editingHole] || []}
+                rainCells={rainCellsMap[editingHole] || []}
                 currentPin={
                   editingPin
                     ? {
@@ -219,7 +251,28 @@ export default function DashboardPage() {
                     ),
                   );
                 }}
+                onCellClick={handleCellClick}
               />
+              <div className="flex gap-2 mt-4">
+                <Button
+                  variant={cellMode === "damage" ? "default" : "outline"}
+                  onClick={() => setCellMode("damage")}
+                >
+                  傷み
+                </Button>
+                <Button
+                  variant={cellMode === "ban" ? "default" : "outline"}
+                  onClick={() => setCellMode("ban")}
+                >
+                  禁止
+                </Button>
+                <Button
+                  variant={cellMode === "rain" ? "default" : "outline"}
+                  onClick={() => setCellMode("rain")}
+                >
+                  雨天
+                </Button>
+              </div>
             </div>
           )}
         </div>
