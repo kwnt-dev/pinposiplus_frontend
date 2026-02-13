@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Stage, Layer, Path, Line, Circle, Text } from "react-konva";
+import {
+  Stage,
+  Layer,
+  Path,
+  Line,
+  Circle,
+  Text,
+} from "react-konva";
 import { Fragment } from "react";
 import { HOLE_CONFIGS } from "@/config/holes";
 import { Pin, HoleData } from "@/lib/greenCanvas.geometry";
@@ -9,11 +16,7 @@ import {
   getBoundaryIntersectionX,
   getBoundaryIntersectionY,
 } from "@/lib/greenCanvas.geometry";
-import {
-  CANVAS_SIZE,
-  scalePathToPixels,
-  ydToPx,
-} from "@/lib/greenCanvas.convert";
+import { CANVAS_SIZE, scalePathToPixels, ydToPx } from "@/lib/greenCanvas.convert";
 
 interface Props {
   hole: string;

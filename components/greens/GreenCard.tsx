@@ -13,7 +13,6 @@ export default function GreenCard({
   banCells = [],
   rainCells = [],
 }: GreenCardProps) {
-  console.log("GreenCard ban:", banCells, "hole:", hole);
   return (
     <div className="w-[240]">
       <div className="h-10 bg-gray-800 text-white font-bold text-center flex items-center justify-center">

@@ -9,11 +9,7 @@ import {
   getBoundaryIntersectionX,
   getBoundaryIntersectionY,
 } from "@/lib/greenCanvas.geometry";
-import {
-  CANVAS_SIZE,
-  scalePathToPixels,
-  ydToPx,
-} from "@/lib/greenCanvas.convert";
+import { CANVAS_SIZE, scalePathToPixels, ydToPx } from "@/lib/greenCanvas.convert";
 
 interface Props {
   hole: string;
