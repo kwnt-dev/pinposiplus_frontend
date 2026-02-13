@@ -1,17 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import GreenCanvas from "@/components/greens/GreenCanvas";
+
 import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
-import {
-  generateProposals,
-  Candidate,
-  AutoProposalInput,
-} from "@/lib/autoProposal";
+import { generateProposals, AutoProposalInput } from "@/lib/autoProposal";
 import {
   generateCourseProposal,
   CourseDifficulty,
   HoleCandidates,
-  CourseProposalInput,
 } from "@/lib/courseProposal";
 import { HOLE_CONFIGS } from "@/config/holes";
 import { HoleData, Pin, HolePin } from "@/lib/greenCanvas.geometry";
@@ -117,6 +114,8 @@ export default function DashboardPage() {
     setEditingHole(course === "out" ? 1 : 10);
   };
 
+  const editingPin = coursePins.find((p) => p.hole === editingHole);
+
   return (
     <div>
       <h1>ダッシュボード</h1>
@@ -200,7 +199,27 @@ export default function DashboardPage() {
           ) : (
             <div className="p-4">
               <h2 className="font-bold mb-4">ピン編集 - Hole {editingHole}</h2>
-              <p>ここにピン編集パネルが入る</p>
+              <GreenCanvas
+                hole={String(editingHole)}
+                width={400}
+                height={400}
+                currentPin={
+                  editingPin
+                    ? {
+                        id: `pin-${editingHole}`,
+                        x: editingPin.x,
+                        y: editingPin.y,
+                      }
+                    : undefined
+                }
+                onPinDragged={(pin) => {
+                  setCoursePins((prev) =>
+                    prev.map((p) =>
+                      p.hole === editingHole ? { ...p, x: pin.x, y: pin.y } : p,
+                    ),
+                  );
+                }}
+              />
             </div>
           )}
         </div>
