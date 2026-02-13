@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import GreenCanvas, { HoleData } from "@/components/greens/GreenCanvas";
+import GreenCanvas from "@/components/greens/GreenCanvas";
+import { HoleData } from "@/lib/greenCanvas.geometry";
 import { useParams } from "next/navigation";
 
 export default function CellEditPage() {

@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import GreenCardGridPDF, {
-  HolePin,
-} from "@/components/greens/GreenCardGridPDF";
+import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
+import { HolePin } from "@/lib/greenCanvas.geometry";
 import { useRouter } from "next/navigation";
 
 export default function AutoSuggestPage() {

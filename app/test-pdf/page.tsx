@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import GreenCardGridPDFExport, {
-  HolePin,
-} from "@/components/greens/GreenCardGridPDFExport";
+import GreenCardGridPDFExport from "@/components/greens/GreenCardGridPDFExport";
+import { HolePin } from "@/lib/greenCanvas.geometry";
 
 export default function TestPDFPage() {
   const [course, setCourse] = useState<"out" | "in">("out");

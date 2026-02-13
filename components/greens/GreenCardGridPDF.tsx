@@ -1,15 +1,10 @@
 import GreenCardPDF from "@/components/greens/GreenCardPDF";
+import { HolePin } from "@/lib/greenCanvas.geometry";
 
 interface GreenCardGridPDFProps {
   course: "out" | "in";
   onCardClick?: (holeId: string) => void;
   pins?: HolePin[];
-}
-
-export interface HolePin {
-  hole: number;
-  x: number;
-  y: number;
 }
 
 export default function GreenCardGridPDF({
