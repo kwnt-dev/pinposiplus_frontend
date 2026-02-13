@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 import GreenCanvas from "@/components/greens/GreenCanvas";
-import {
-  Pin,
-  HoleData,
-  getBoundaryIntersectionY,
-} from "@/lib/greenCanvas.geometry";
+import { Pin, HoleData, getBoundaryIntersectionY } from "@/lib/greenCanvas.geometry";
 import { useParams } from "next/navigation";
 
 export default function PinEditPage() {
@@ -25,7 +21,6 @@ export default function PinEditPage() {
   });
 
   function handlePinDragged(newPin: Pin) {
-    console.log("新しい座標", newPin);
     setCurrentPin(newPin);
   }
   const [holeData, setHoleData] = useState<HoleData | null>(null);
@@ -64,7 +59,6 @@ export default function PinEditPage() {
       {`奥行${Math.round(holeData.origin.y - currentPin.y)}yd, ${horizontal}`}
       <button
         onClick={() => {
-          console.log("保存クリック");
           localStorage.setItem(`pin_${hole}`, JSON.stringify(currentPin));
         }}
       >

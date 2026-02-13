@@ -67,7 +67,6 @@ export default function CellEditPage() {
     <div>
       <button
         onClick={() => {
-          console.log("保存クリック");
           localStorage.setItem(
             `cells_damage_${hole}`,
             JSON.stringify(damageCells),

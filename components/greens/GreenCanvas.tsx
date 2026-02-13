@@ -21,12 +21,7 @@ import {
   isPointInPolygon,
   isInsideGreen,
 } from "@/lib/greenCanvas.geometry";
-import {
-  CANVAS_SIZE,
-  YD_TO_PX,
-  scalePathToPixels,
-  ydToPx,
-} from "@/lib/greenCanvas.convert";
+import { CANVAS_SIZE, YD_TO_PX, scalePathToPixels, ydToPx } from "@/lib/greenCanvas.convert";
 
 interface Props {
   hole: string;
@@ -46,6 +41,7 @@ interface Props {
 const PAST_PIN_RESTRICTION_RADIUS = 7; // 過去ピン制限　半径yd
 const BOUNDARY_BUFFER = 3.5; // 外周制限距離（ヤード）
 const SLOPE_BUFFER = 3;
+
 
 export default function GreenCanvas({
   hole,
@@ -89,7 +85,6 @@ export default function GreenCanvas({
     ? getOffsetSlope(holeData.slope.slope.d, SLOPE_BUFFER)
     : [];
 
-  console.log("GreenCanvas ban:", banCells, "rain:", rainCells, "hole:", hole);
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
       <Layer
@@ -371,15 +366,6 @@ export default function GreenCanvas({
             onDragEnd={(e) => {
               const newX = e.target.x() / YD_TO_PX;
               const newY = e.target.y() / YD_TO_PX;
-
-              console.log("newX:", newX, "newY:", newY);
-              console.log(
-                "isInside:",
-                isInsideGreen(
-                  { id: currentPin.id, x: newX, y: newY },
-                  holeData.cells,
-                ),
-              );
 
               if (
                 isInsideGreen(

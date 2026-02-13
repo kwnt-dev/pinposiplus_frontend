@@ -155,7 +155,6 @@ export default function AutoSuggestTestPage() {
 
     const result = generateProposals(input);
     setCandidates(result);
-    console.log(`Hole ${selectedHole} 候補数:`, result.length);
   };
 
   // ==========================================
@@ -258,7 +257,6 @@ export default function AutoSuggestTestPage() {
     }));
 
     setCoursePins(pins);
-    console.log("9ホール結果:", result);
   };
 
   if (!holeData) return <div>読み込み中...</div>;
