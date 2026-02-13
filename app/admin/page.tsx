@@ -60,6 +60,9 @@ export default function DashboardPage() {
     loadAll();
   }, []);
   const [coursePins, setCoursePins] = useState<HolePin[]>([]);
+  const [rightPanelMode, setRightPanelMode] = useState<
+    "auto-suggest" | "pin-edit"
+  >("auto-suggest");
 
   const handleCourseGenerate = () => {
     const holes =
@@ -109,6 +112,7 @@ export default function DashboardPage() {
     }));
 
     setCoursePins(pins);
+    setRightPanelMode("pin-edit");
   };
 
   return (
@@ -118,7 +122,6 @@ export default function DashboardPage() {
         <div className="flex-1">
           {/* 左パネル */}
           <div className="flex justify-center gap-2">
-            {" "}
             <Button
               variant={course === "out" ? "default" : "outline"}
               onClick={() => setCourse("out")}
@@ -142,47 +145,58 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="flex-1">
-          {/* 右パネル　*/}
-          <div>
-            <Label>日付</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full mt-1">
-                  {format(selectedDate, "yyyy-MM-dd")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => date && setSelectedDate(date)}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="flex items-center gap-2 mt-4">
-            <Switch checked={isRainyDay} onCheckedChange={setIsRainyDay} />
-            <Label>雨天モード</Label>
-          </div>
-          <div className="mt-4">
-            <Label>コース難易度</Label>
-            <Select
-              value={courseDifficulty}
-              onValueChange={(v) => setCourseDifficulty(v as CourseDifficulty)}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Button className="w-full mt-6" onClick={handleCourseGenerate}>
-            自動提案を実行
-          </Button>
+          {rightPanelMode === "auto-suggest" ? (
+            <div className="p-4">
+              <h2 className="font-bold mb-4">自動提案設定</h2>
+              <div>
+                <Label>日付</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full mt-1">
+                      {format(selectedDate, "yyyy-MM-dd")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => date && setSelectedDate(date)}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex items-center gap-2 mt-4">
+                <Switch checked={isRainyDay} onCheckedChange={setIsRainyDay} />
+                <Label>雨天モード</Label>
+              </div>
+              <div className="mt-4">
+                <Label>コース難易度</Label>
+                <Select
+                  value={courseDifficulty}
+                  onValueChange={(v) =>
+                    setCourseDifficulty(v as CourseDifficulty)
+                  }
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="easy">Easy</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="hard">Hard</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button className="w-full mt-6" onClick={handleCourseGenerate}>
+                自動提案を実行
+              </Button>
+            </div>
+          ) : (
+            <div className="p-4">
+              <h2 className="font-bold mb-4">ピン編集</h2>
+              <p>ここにピン編集パネルが入る</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
