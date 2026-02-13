@@ -1,14 +1,7 @@
 "use client";
 
-import GreenCardPDFExport, {
-  Pin,
-} from "@/components/greens/GreenCardPDFExport";
-
-export interface HolePin {
-  hole: number;
-  x: number;
-  y: number;
-}
+import GreenCardPDFExport from "@/components/greens/GreenCardPDFExport";
+import { Pin, HolePin } from "@/lib/greenCanvas.geometry";
 
 interface Props {
   course: "out" | "in";

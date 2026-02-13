@@ -2,9 +2,8 @@
 
 import { useRef } from "react";
 import { pdf } from "@react-pdf/renderer";
-import GreenCardGridPDFExport, {
-  HolePin,
-} from "@/components/greens/GreenCardGridPDFExport";
+import GreenCardGridPDFExport from "@/components/greens/GreenCardGridPDFExport";
+import { HolePin } from "@/lib/greenCanvas.geometry";
 import PDFDocument from "@/components/pdf/PDFDocument";
 
 const testPins: HolePin[] = [
