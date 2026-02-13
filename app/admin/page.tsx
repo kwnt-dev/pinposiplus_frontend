@@ -63,6 +63,7 @@ export default function DashboardPage() {
   const [rightPanelMode, setRightPanelMode] = useState<
     "auto-suggest" | "pin-edit"
   >("auto-suggest");
+  const [editingHole, setEditingHole] = useState<number>(1);
 
   const handleCourseGenerate = () => {
     const holes =
@@ -113,6 +114,7 @@ export default function DashboardPage() {
 
     setCoursePins(pins);
     setRightPanelMode("pin-edit");
+    setEditingHole(course === "out" ? 1 : 10);
   };
 
   return (
@@ -141,7 +143,11 @@ export default function DashboardPage() {
               transformOrigin: "top left",
             }}
           >
-            <GreenCardGridPDF course={course} pins={coursePins} />
+            <GreenCardGridPDF
+              course={course}
+              pins={coursePins}
+              onCardClick={(holeId) => setEditingHole(Number(holeId))}
+            />
           </div>
         </div>
         <div className="flex-1">
@@ -193,7 +199,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="p-4">
-              <h2 className="font-bold mb-4">ピン編集</h2>
+              <h2 className="font-bold mb-4">ピン編集 - Hole {editingHole}</h2>
               <p>ここにピン編集パネルが入る</p>
             </div>
           )}
