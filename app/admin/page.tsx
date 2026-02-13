@@ -272,6 +272,20 @@ export default function DashboardPage() {
                 >
                   雨天
                 </Button>
+
+                <div className="mt-8">
+                  <Button
+                    className="w-full mt-4"
+                    onClick={() => {
+                      console.log("ピン保存", {
+                        hole: editingHole,
+                        pin: coursePins.find((p) => p.hole === editingHole),
+                      });
+                    }}
+                  >
+                    ピンを保存
+                  </Button>
+                </div>
               </div>
             </div>
           )}
