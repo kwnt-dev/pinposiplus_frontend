@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import GreenCanvas, { Pin, HoleData } from "@/components/greens/GreenCanvas";
-import GreenCardGridPDF, {
-  HolePin,
-} from "@/components/greens/GreenCardGridPDF";
+import GreenCanvas from "@/components/greens/GreenCanvas";
+import { Pin, HoleData } from "@/lib/greenCanvas.geometry";
+import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
+import { HolePin } from "@/lib/greenCanvas.geometry";
 import {
   generateProposals,
   Candidate,

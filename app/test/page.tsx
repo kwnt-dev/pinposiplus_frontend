@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import GreenCanvas, { Pin } from "@/components/greens/GreenCanvas";
+import GreenCanvas from "@/components/greens/GreenCanvas";
+import { Pin } from "@/lib/greenCanvas.geometry";
 import GreenCard from "@/components/greens/GreenCard";
 import GreenCardGrid from "@/components/greens/GreenCardGrid";
 
