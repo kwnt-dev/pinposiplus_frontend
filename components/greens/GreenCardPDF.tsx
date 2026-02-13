@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Stage,
-  Layer,
-  Path,
-  Line,
-  Circle,
-  Text,
-} from "react-konva";
+import { Stage, Layer, Path, Line, Circle, Text } from "react-konva";
 import { Fragment } from "react";
 import { HOLE_CONFIGS } from "@/config/holes";
 import { Pin, HoleData } from "@/lib/greenCanvas.geometry";
@@ -16,25 +9,23 @@ import {
   getBoundaryIntersectionX,
   getBoundaryIntersectionY,
 } from "@/lib/greenCanvas.geometry";
-import { CANVAS_SIZE, scalePathToPixels, ydToPx } from "@/lib/greenCanvas.convert";
+import {
+  CANVAS_SIZE,
+  scalePathToPixels,
+  ydToPx,
+} from "@/lib/greenCanvas.convert";
 
 interface Props {
   hole: string;
-  width?: number;
-  height?: number;
   currentPin?: Pin;
 }
 
 // 定数
+const CARD_SIZE = 240;
 const DEPTH_FONT_SIZE = 80;
 const HORIZONTAL_FONT_SIZE = 40;
 
-export default function GreenCardPDF({
-  hole,
-  width = 240,
-  height = 240,
-  currentPin,
-}: Props) {
+export default function GreenCardPDF({ hole, currentPin }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
   useEffect(() => {
@@ -49,7 +40,7 @@ export default function GreenCardPDF({
     return <div>読み込み中...</div>;
   }
 
-  const scale = width / CANVAS_SIZE;
+  const scale = CARD_SIZE / CANVAS_SIZE;
   const config = HOLE_CONFIGS[hole.padStart(2, "0")];
   const edges = getBoundaryIntersectionY(
     holeData.boundary.d,
@@ -62,12 +53,12 @@ export default function GreenCardPDF({
     <div className="w-[240px]">
       <div
         className="h-10 bg-gray-800 text-white font-bold text-center flex items-center justify-center"
-        style={{ width: 240 }}
+        style={{ width: CARD_SIZE }}
       >
         Hole {hole}
       </div>
       <div className="border-l border-r border-b border-gray-300 overflow-hidden">
-        <Stage width={240} height={240}>
+        <Stage width={CARD_SIZE} height={CARD_SIZE}>
           <Layer scaleX={scale} scaleY={scale}>
             {/* バンカーとウォーターハザード */}
             {holeData.layers
@@ -225,7 +216,6 @@ export default function GreenCardPDF({
                 const text = `${distance}`;
                 const textWidth = HORIZONTAL_FONT_SIZE * text.length * 0.6;
                 const margin = 5;
-                const cardWidth = width;
 
                 let x: number;
                 let y = ydToPx(currentPin.y) * scale;
@@ -238,8 +228,8 @@ export default function GreenCardPDF({
                   }
                 } else {
                   x = ydToPx(edges.right) * scale + margin;
-                  if (x + textWidth > cardWidth) {
-                    x = cardWidth - textWidth - margin;
+                  if (x + textWidth > CARD_SIZE) {
+                    x = CARD_SIZE - textWidth - margin;
                     y = y - HORIZONTAL_FONT_SIZE;
                   }
                 }

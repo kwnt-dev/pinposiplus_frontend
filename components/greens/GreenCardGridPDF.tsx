@@ -18,7 +18,7 @@ export default function GreenCardGridPDF({
       : [10, 11, 12, 13, 14, 15, 16, 17, 18];
 
   return (
-    <div className="grid grid-cols-3 gap-5">
+    <div className="grid grid-cols-3 gap-4" style={{ width: 752 }}>
       {holes.map((hole) => {
         const pin = pins?.find((p) => p.hole === hole);
         return (
