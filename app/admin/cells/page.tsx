@@ -8,6 +8,8 @@ export default function CellsEditPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
   const [selectedHole, setSelectedHole] = useState<number>(1);
 
+  const [cellMode, setCellMode] = useState<"damage" | "ban" | "rain">("damage");
+
   return (
     <div>
       <h1>セル編集</h1>
@@ -15,6 +17,28 @@ export default function CellsEditPage() {
         <div className="flex-1">
           <div className="p-4">
             <div className="flex justify-center gap-2">
+              <div className="flex gap-2 mt-4">
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    variant={cellMode === "damage" ? "default" : "outline"}
+                    onClick={() => setCellMode("damage")}
+                  >
+                    傷み
+                  </Button>
+                  <Button
+                    variant={cellMode === "ban" ? "default" : "outline"}
+                    onClick={() => setCellMode("ban")}
+                  >
+                    禁止
+                  </Button>
+                  <Button
+                    variant={cellMode === "rain" ? "default" : "outline"}
+                    onClick={() => setCellMode("rain")}
+                  >
+                    雨天
+                  </Button>
+                </div>
+              </div>
               <Button
                 variant={course === "out" ? "default" : "outline"}
                 onClick={() => {
