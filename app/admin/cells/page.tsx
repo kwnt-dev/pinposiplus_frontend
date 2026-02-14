@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import GreenCardGrid from "@/components/greens/GreenCardGrid";
 
 export default function CellsEditPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
+  const [selectedHole, setSelectedHole] = useState<number>(1);
 
   return (
     <div>
@@ -15,16 +17,33 @@ export default function CellsEditPage() {
             <div className="flex justify-center gap-2">
               <Button
                 variant={course === "out" ? "default" : "outline"}
-                onClick={() => setCourse("out")}
+                onClick={() => {
+                  setCourse("out");
+                  setSelectedHole(1);
+                }}
               >
                 OUT
               </Button>
               <Button
                 variant={course === "in" ? "default" : "outline"}
-                onClick={() => setCourse("in")}
+                onClick={() => {
+                  setCourse("in");
+                  setSelectedHole(10);
+                }}
               >
                 IN
               </Button>
+            </div>
+            <div
+              style={{
+                transform: `scale(0.7)`,
+                transformOrigin: "top left",
+              }}
+            >
+              <GreenCardGrid
+                course={course}
+                onCardClick={(holeId) => setSelectedHole(Number(holeId))}
+              />
             </div>
           </div>
         </div>
