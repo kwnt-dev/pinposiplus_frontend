@@ -127,9 +127,15 @@ export default function CellsEditPage() {
               hole={String(selectedHole)}
               width={400}
               height={400}
-              damageCells={damageCellsMap[selectedHole] || []}
-              banCells={banCellsMap[selectedHole] || []}
-              rainCells={rainCellsMap[selectedHole] || []}
+              damageCells={
+                cellMode === "damage" ? damageCellsMap[selectedHole] || [] : []
+              }
+              banCells={
+                cellMode === "ban" ? banCellsMap[selectedHole] || [] : []
+              }
+              rainCells={
+                cellMode === "rain" ? rainCellsMap[selectedHole] || [] : []
+              }
               onCellClick={handleCellClick}
             />
           </div>
