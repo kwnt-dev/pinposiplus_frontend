@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import GreenCardGrid from "@/components/greens/GreenCardGrid";
+import GreenCanvas from "@/components/greens/GreenCanvas";
 
 export default function CellsEditPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
@@ -71,7 +72,19 @@ export default function CellsEditPage() {
             </div>
           </div>
         </div>
-        <div className="flex-1">右パネル</div>
+        <div className="flex-1">
+          右パネル
+          <div className="flex-1">
+            <div className="p-4">
+              <h2 className="font-bold mb-4">Hole {selectedHole}</h2>
+              <GreenCanvas
+                hole={String(selectedHole)}
+                width={400}
+                height={400}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
