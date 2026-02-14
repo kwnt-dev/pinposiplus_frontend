@@ -92,15 +92,30 @@ export default function CellsEditPage() {
               <GreenCardGrid
                 course={course}
                 onCardClick={(holeId) => setSelectedHole(Number(holeId))}
-                holeDamageCells={Object.entries(damageCellsMap).map(
-                  ([hole, cellIds]) => ({ hole: Number(hole), cellIds }),
-                )}
-                holeBanCells={Object.entries(banCellsMap).map(
-                  ([hole, cellIds]) => ({ hole: Number(hole), cellIds }),
-                )}
-                holeRainCells={Object.entries(rainCellsMap).map(
-                  ([hole, cellIds]) => ({ hole: Number(hole), cellIds }),
-                )}
+                holeDamageCells={
+                  cellMode === "damage"
+                    ? Object.entries(damageCellsMap).map(([hole, cellIds]) => ({
+                        hole: Number(hole),
+                        cellIds,
+                      }))
+                    : []
+                }
+                holeBanCells={
+                  cellMode === "ban"
+                    ? Object.entries(banCellsMap).map(([hole, cellIds]) => ({
+                        hole: Number(hole),
+                        cellIds,
+                      }))
+                    : []
+                }
+                holeRainCells={
+                  cellMode === "rain"
+                    ? Object.entries(rainCellsMap).map(([hole, cellIds]) => ({
+                        hole: Number(hole),
+                        cellIds,
+                      }))
+                    : []
+                }
               />
             </div>
           </div>
