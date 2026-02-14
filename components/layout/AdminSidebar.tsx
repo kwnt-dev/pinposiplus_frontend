@@ -14,8 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const menuItems = [
-  { label: "ダッシュボード", href: "/admin/overview" },
-  { label: "自動提案", href: "/admin/auto-suggest" },
+  { label: "ダッシュボード", href: "/admin" },
   { label: "セル設定", href: "/admin/cells" },
   { label: "予定表", href: "/admin/schedule" },
   { label: "ピン履歴", href: "/admin/history" },
@@ -38,7 +37,11 @@ export function AdminSidebar() {
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname.startsWith(item.href)}
+                    isActive={
+                      item.href === "/admin"
+                        ? pathname === "/admin"
+                        : pathname.startsWith(item.href)
+                    }
                   >
                     <Link href={item.href}>{item.label}</Link>
                   </SidebarMenuButton>
