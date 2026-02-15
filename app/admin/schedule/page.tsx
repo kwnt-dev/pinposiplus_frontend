@@ -67,21 +67,25 @@ export default function SchedulePage() {
   }));
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-full flex flex-col">
       <h1>予定表</h1>
-      <FullCalendar
-        plugins={[dayGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
-        locale="ja"
-        events={calendarEvents}
-        dateClick={(info) => handleDateClick(info.dateStr)}
-        dayCellClassNames={(arg) => {
-          if (holidayJp.isHoliday(arg.date) || arg.date.getDay() === 0)
-            return "bg-red-50";
-          if (arg.date.getDay() === 6) return "bg-blue-50";
-          return "";
-        }}
-      />
+      <div className="flex-1 min-h-0">
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          locale="ja"
+          events={calendarEvents}
+          dateClick={(info) => handleDateClick(info.dateStr)}
+          dayCellClassNames={(arg) => {
+            if (holidayJp.isHoliday(arg.date) || arg.date.getDay() === 0)
+              return "bg-red-50";
+            if (arg.date.getDay() === 6) return "bg-blue-50";
+            return "";
+          }}
+          showNonCurrentDates={false}
+          height="100%"
+        />
+      </div>
 
       <Dialog open={!!selectedDate} onOpenChange={() => setSelectedDate(null)}>
         <DialogContent>
