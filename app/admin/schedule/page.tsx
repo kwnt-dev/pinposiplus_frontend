@@ -1,12 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { addMonths, subMonths, format } from "date-fns";
+import {
+  addMonths,
+  subMonths,
+  format,
+  eachDayOfInterval,
+  startOfMonth,
+  endOfMonth,
+  getDay,
+} from "date-fns";
 import { ja } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 
 export default function SchedulePage() {
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
+
+  const days = eachDayOfInterval({
+    start: startOfMonth(currentMonth),
+    end: endOfMonth(currentMonth),
+  });
+
+  const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
 
   return (
     <div className="p-4">
@@ -31,6 +46,29 @@ export default function SchedulePage() {
           ▶
         </Button>
       </div>
+
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border p-2 text-left">日付</th>
+            <th className="border p-2 text-left">曜日</th>
+            <th className="border p-2 text-left">祝日</th>
+            <th className="border p-2 text-left">イベント</th>
+            <th className="border p-2 text-left">組数</th>
+          </tr>
+        </thead>
+        <tbody>
+          {days.map((day) => (
+            <tr key={day.toISOString()}>
+              <td className="border p-2">{format(day, "d")}</td>
+              <td className="border p-2">{weekDays[getDay(day)]}</td>
+              <td className="border p-2"></td>
+              <td className="border p-2"></td>
+              <td className="border p-2"></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
