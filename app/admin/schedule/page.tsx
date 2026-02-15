@@ -24,6 +24,12 @@ export default function SchedulePage() {
 
   const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
 
+  function getRowClassName(day: Date): string {
+    if (holidayJp.isHoliday(day) || getDay(day) === 0) return "bg-red-100";
+    if (getDay(day) === 6) return "bg-blue-100";
+    return "";
+  }
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">予定表</h1>
@@ -60,7 +66,7 @@ export default function SchedulePage() {
         </thead>
         <tbody>
           {days.map((day) => (
-            <tr key={day.toISOString()}>
+            <tr key={day.toISOString()} className={getRowClassName(day)}>
               <td className="border p-2">{format(day, "d")}</td>
               <td className="border p-2">{weekDays[getDay(day)]}</td>
               <td className="border p-2">
