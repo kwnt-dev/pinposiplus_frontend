@@ -9,7 +9,7 @@ export default function AdminLayout({
   return (
     <SidebarProvider>
       <AdminSidebar />
-      <main>{children}</main>
+      <main className="flex-1 h-screen overflow-auto">{children}</main>{" "}
     </SidebarProvider>
   );
 }
