@@ -1,11 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import dynamic from "next/dynamic";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const FullCalendar = dynamic(() => import("@fullcalendar/react"), {
   ssr: false,
 });
-import dayGridPlugin from "@fullcalendar/daygrid";
 
 const mockEvents = [
   { title: "月例杯 42組", date: "2026-02-20" },
@@ -14,15 +22,27 @@ const mockEvents = [
 ];
 
 export default function SchedulePage() {
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
   return (
     <div className="p-4">
       <h1>予定表</h1>
       <FullCalendar
-        plugins={[dayGridPlugin]}
+        plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         locale="ja"
         events={mockEvents}
+        dateClick={(info) => setSelectedDate(info.dateStr)}
       />
+
+      <Dialog open={!!selectedDate} onOpenChange={() => setSelectedDate(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedDate}</DialogTitle>
+          </DialogHeader>
+          <p>ここに編集フォームを追加</p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
