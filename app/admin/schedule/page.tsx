@@ -12,6 +12,7 @@ import {
 } from "date-fns";
 import { ja } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
+import holidayJp from "@holiday-jp/holiday_jp";
 
 export default function SchedulePage() {
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
@@ -62,7 +63,11 @@ export default function SchedulePage() {
             <tr key={day.toISOString()}>
               <td className="border p-2">{format(day, "d")}</td>
               <td className="border p-2">{weekDays[getDay(day)]}</td>
-              <td className="border p-2"></td>
+              <td className="border p-2">
+                {holidayJp.isHoliday(day)
+                  ? holidayJp.between(day, day)[0].name
+                  : ""}
+              </td>
               <td className="border p-2"></td>
               <td className="border p-2"></td>
             </tr>
