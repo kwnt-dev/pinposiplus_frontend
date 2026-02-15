@@ -1,35 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
+import { addMonths, subMonths, format } from "date-fns";
 import { ja } from "date-fns/locale";
-import holidayJp from "@holiday-jp/holiday_jp";
 
 export default function SchedulePage() {
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">予定表</h1>
-      <Calendar
-        locale={ja}
-        month={currentMonth}
-        onMonthChange={setCurrentMonth}
-        className="[--cell-size:--spacing(20)]"
-        modifiers={{
-          holiday: (date) => holidayJp.isHoliday(date),
-        }}
-        modifiersClassNames={{
-          holiday: "text-red-500 font-bold",
-        }}
-        components={{
-          DayButton: ({ children, modifiers, day, ...props }) => (
-            <CalendarDayButton day={day} modifiers={modifiers} {...props}>
-              <span>{children}</span>
-            </CalendarDayButton>
-          ),
-        }}
-      />
+      <h1>予定表</h1>
+      <button onClick={() => setCurrentMonth((prev) => subMonths(prev, 1))}>
+        ◀
+      </button>
+      <span>{format(currentMonth, "yyyy年 M月", { locale: ja })}</span>
+      <button onClick={() => setCurrentMonth((prev) => addMonths(prev, 1))}>
+        ▶
+      </button>
+
+      <div className="grid grid-cols-7">
+        {["日", "月", "火", "水", "木", "金", "土"].map((d) => (
+          <div key={d}>{d}</div>
+        ))}
+      </div>
     </div>
   );
 }
