@@ -10,6 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 const FullCalendar = dynamic(() => import("@fullcalendar/react"), {
   ssr: false,
@@ -23,6 +26,15 @@ const mockEvents = [
 
 export default function SchedulePage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [eventName, setEventName] = useState("");
+  const [groupCount, setGroupCount] = useState("");
+
+  function handleSave() {
+    console.log({ date: selectedDate, eventName, groupCount });
+    setSelectedDate(null);
+    setEventName("");
+    setGroupCount("");
+  }
 
   return (
     <div className="p-4">
@@ -40,7 +52,24 @@ export default function SchedulePage() {
           <DialogHeader>
             <DialogTitle>{selectedDate}</DialogTitle>
           </DialogHeader>
-          <p>ここに編集フォームを追加</p>
+          <div className="space-y-4">
+            <div>
+              <Label>イベント名</Label>
+              <Input
+                value={eventName}
+                onChange={(e) => setEventName(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>組数</Label>
+              <Input
+                type="number"
+                value={groupCount}
+                onChange={(e) => setGroupCount(e.target.value)}
+              />
+            </div>
+            <Button onClick={handleSave}>保存</Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
