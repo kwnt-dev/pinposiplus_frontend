@@ -18,35 +18,52 @@ const FullCalendar = dynamic(() => import("@fullcalendar/react"), {
   ssr: false,
 });
 
-type ScheduleEvent = {
-  title: string;
+type Schedule = {
+  eventName: string;
+  groupCount: string;
   date: string;
 };
 
 export default function SchedulePage() {
-  const [events, setEvents] = useState<ScheduleEvent[]>([
-    { title: "月例杯 42組", date: "2026-02-20" },
-    { title: "38組", date: "2026-02-25" },
+  const [schedules, setSchedules] = useState<Schedule[]>([
+    { eventName: "月例杯", groupCount: "42", date: "2026-02-20" },
+    { eventName: "", groupCount: "38", date: "2026-02-25" },
   ]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [eventName, setEventName] = useState("");
   const [groupCount, setGroupCount] = useState("");
 
+  function handleDateClick(dateStr: string) {
+    const existing = schedules.find((s) => s.date === dateStr);
+    setEventName(existing?.eventName ?? "");
+    setGroupCount(existing?.groupCount ?? "");
+    setSelectedDate(dateStr);
+  }
+
   function handleSave() {
     if (!selectedDate) return;
-    const title = [eventName, groupCount ? `${groupCount}組` : ""]
-      .filter(Boolean)
-      .join(" ");
+    const title = [eventName, groupCount].filter(Boolean).join(" ");
     if (!title) return;
 
-    setEvents((prev) => [
-      ...prev.filter((e) => e.date !== selectedDate),
-      { title, date: selectedDate },
+    setSchedules((prev) => [
+      ...prev.filter((s) => s.date !== selectedDate),
+      { eventName, groupCount, date: selectedDate },
     ]);
     setSelectedDate(null);
-    setEventName("");
-    setGroupCount("");
   }
+
+  function handleDelete() {
+    if (!selectedDate) return;
+    setSchedules((prev) => prev.filter((s) => s.date !== selectedDate));
+    setSelectedDate(null);
+  }
+
+  const calendarEvents = schedules.map((s) => ({
+    title: [s.eventName, s.groupCount ? `${s.groupCount}組` : ""]
+      .filter(Boolean)
+      .join(" "),
+    date: s.date,
+  }));
 
   return (
     <div className="p-4">
@@ -55,8 +72,8 @@ export default function SchedulePage() {
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         locale="ja"
-        events={events}
-        dateClick={(info) => setSelectedDate(info.dateStr)}
+        events={calendarEvents}
+        dateClick={(info) => handleDateClick(info.dateStr)}
       />
 
       <Dialog open={!!selectedDate} onOpenChange={() => setSelectedDate(null)}>
@@ -80,7 +97,12 @@ export default function SchedulePage() {
                 onChange={(e) => setGroupCount(e.target.value)}
               />
             </div>
-            <Button onClick={handleSave}>保存</Button>
+            <div className="flex gap-2">
+              <Button onClick={handleSave}>保存</Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                削除
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
