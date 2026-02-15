@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import holidayJp from "@holiday-jp/holiday_jp";
 import {
   Dialog,
   DialogContent,
@@ -74,6 +75,12 @@ export default function SchedulePage() {
         locale="ja"
         events={calendarEvents}
         dateClick={(info) => handleDateClick(info.dateStr)}
+        dayCellClassNames={(arg) => {
+          if (holidayJp.isHoliday(arg.date) || arg.date.getDay() === 0)
+            return "bg-red-50";
+          if (arg.date.getDay() === 6) return "bg-blue-50";
+          return "";
+        }}
       />
 
       <Dialog open={!!selectedDate} onOpenChange={() => setSelectedDate(null)}>
