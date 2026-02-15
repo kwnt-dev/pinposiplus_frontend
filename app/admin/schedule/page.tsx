@@ -18,19 +18,31 @@ const FullCalendar = dynamic(() => import("@fullcalendar/react"), {
   ssr: false,
 });
 
-const mockEvents = [
-  { title: "月例杯 42組", date: "2026-02-20" },
-  { title: "38組", date: "2026-02-25" },
-  { title: "クラブ選手権 45組", date: "2026-03-01" },
-];
+type ScheduleEvent = {
+  title: string;
+  date: string;
+};
 
 export default function SchedulePage() {
+  const [events, setEvents] = useState<ScheduleEvent[]>([
+    { title: "月例杯 42組", date: "2026-02-20" },
+    { title: "38組", date: "2026-02-25" },
+  ]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [eventName, setEventName] = useState("");
   const [groupCount, setGroupCount] = useState("");
 
   function handleSave() {
-    console.log({ date: selectedDate, eventName, groupCount });
+    if (!selectedDate) return;
+    const title = [eventName, groupCount ? `${groupCount}組` : ""]
+      .filter(Boolean)
+      .join(" ");
+    if (!title) return;
+
+    setEvents((prev) => [
+      ...prev.filter((e) => e.date !== selectedDate),
+      { title, date: selectedDate },
+    ]);
     setSelectedDate(null);
     setEventName("");
     setGroupCount("");
@@ -43,7 +55,7 @@ export default function SchedulePage() {
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         locale="ja"
-        events={mockEvents}
+        events={events}
         dateClick={(info) => setSelectedDate(info.dateStr)}
       />
 
