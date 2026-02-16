@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import GreenCardGrid from "@/components/greens/GreenCardGrid";
 import GreenCanvas from "@/components/greens/GreenCanvas";
+import api from "@/lib/axios";
 
 export default function CellsEditPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
@@ -16,6 +17,44 @@ export default function CellsEditPage() {
   const [rainCellsMap, setRainCellsMap] = useState<Record<number, string[]>>(
     {},
   );
+
+  // 初回に全ホールのセルデータを取得
+  useEffect(() => {
+    async function fetchAllCells() {
+      const holes = Array.from({ length: 18 }, (_, i) => i + 1);
+
+      const [damageResults, banResults, rainResults] = await Promise.all([
+        Promise.all(
+          holes.map((h) => api.get(`/api/damage-cells?hole_number=${h}`)),
+        ),
+        Promise.all(
+          holes.map((h) => api.get(`/api/ban-cells?hole_number=${h}`)),
+        ),
+        Promise.all(
+          holes.map((h) => api.get(`/api/rain-cells?hole_number=${h}`)),
+        ),
+      ]);
+
+      const toCellIds = (data: { x: number; y: number }[]) =>
+        data.map((c) => `cell_${c.x}_${c.y}`);
+
+      const damageMap: Record<number, string[]> = {};
+      const banMap: Record<number, string[]> = {};
+      const rainMap: Record<number, string[]> = {};
+
+      holes.forEach((h, i) => {
+        damageMap[h] = toCellIds(damageResults[i].data);
+        banMap[h] = toCellIds(banResults[i].data);
+        rainMap[h] = toCellIds(rainResults[i].data);
+      });
+
+      setDamageCellsMap(damageMap);
+      setBanCellsMap(banMap);
+      setRainCellsMap(rainMap);
+    }
+
+    fetchAllCells();
+  }, []);
 
   const handleCellClick = (cellId: string) => {
     const updateCells =
