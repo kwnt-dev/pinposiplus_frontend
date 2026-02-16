@@ -27,11 +27,11 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await api.get("/sanctum/csrf-cookie");
-
       const response = await api.post("/api/login", { email, password });
 
-      if (response.data.role === "admin") {
+      localStorage.setItem("token", response.data.token);
+
+      if (response.data.user.role === "admin") {
         router.push("/admin");
       } else {
         router.push("/staff");
