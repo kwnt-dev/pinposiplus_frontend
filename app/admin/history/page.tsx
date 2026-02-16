@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import api from "@/lib/axios";
 
-type PinHistory = {
+type DateGroup = {
   date: string;
   eventName: string | null;
   groupCount: number | null;
@@ -20,7 +21,7 @@ type PinHistory = {
   inSubmitter: string | null;
 };
 
-const mockData: PinHistory[] = [
+const mockData: DateGroup[] = [
   {
     date: "2026-02-15",
     eventName: "月例杯",
@@ -45,7 +46,7 @@ const mockData: PinHistory[] = [
 ];
 
 export default function HistoryPage() {
-  const [histories] = useState<PinHistory[]>(mockData);
+  const [histories] = useState<DateGroup[]>(mockData);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
