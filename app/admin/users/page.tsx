@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -18,51 +18,41 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import api from "@/lib/axios";
 
 type User = {
   id: string;
   name: string;
   email: string;
   role: "admin" | "staff";
-  createdAt: string;
+  created_at: string;
 };
 
-const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "田中太郎",
-    email: "tanaka@example.com",
-    role: "admin",
-    createdAt: "2026-01-01",
-  },
-  {
-    id: "2",
-    name: "佐藤花子",
-    email: "sato@example.com",
-    role: "staff",
-    createdAt: "2026-01-15",
-  },
-  {
-    id: "3",
-    name: "鈴木一郎",
-    email: "suzuki@example.com",
-    role: "staff",
-    createdAt: "2026-02-01",
-  },
-];
-
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "staff">("staff");
+
+  useEffect(() => {
+    api.get("/api/users").then((response) => {
+      setUsers(response.data);
+    });
+  }, []);
+
+  async function fetchUsers() {
+    const response = await api.get("/api/users");
+    setUsers(response.data);
+  }
 
   function openAdd() {
     setEditingUser(null);
     setName("");
     setEmail("");
+    setPassword("");
     setRole("staff");
     setIsOpen(true);
   }
@@ -71,37 +61,32 @@ export default function UsersPage() {
     setEditingUser(user);
     setName(user.name);
     setEmail(user.email);
+    setPassword("");
     setRole(user.role);
     setIsOpen(true);
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!email) return;
+
     if (editingUser) {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === editingUser.id ? { ...u, name, email, role } : u,
-        ),
-      );
+      const data: Record<string, string> = { name, email, role };
+      if (password) data.password = password;
+      await api.put(`/api/users/${editingUser.id}`, data);
     } else {
-      setUsers((prev) => [
-        ...prev,
-        {
-          id: String(Date.now()),
-          name,
-          email,
-          role,
-          createdAt: new Date().toISOString().split("T")[0],
-        },
-      ]);
+      await api.post("/api/users", { name, email, password, role });
     }
+
     setIsOpen(false);
+    fetchUsers();
   }
 
-  function handleDelete() {
+  async function handleDelete() {
+    console.log("handleSave called", { email, name, password, role });
     if (!editingUser) return;
-    setUsers((prev) => prev.filter((u) => u.id !== editingUser.id));
+    await api.delete(`/api/users/${editingUser.id}`);
     setIsOpen(false);
+    fetchUsers();
   }
 
   return (
@@ -128,7 +113,7 @@ export default function UsersPage() {
               <TableCell>
                 {user.role === "admin" ? "管理者" : "スタッフ"}
               </TableCell>
-              <TableCell>{user.createdAt}</TableCell>
+              <TableCell>{user.created_at?.split("T")[0]}</TableCell>
               <TableCell>
                 <Button
                   variant="outline"
@@ -158,6 +143,18 @@ export default function UsersPage() {
             <div>
               <Label>表示名</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div>
+              <Label>
+                パスワード{editingUser ? "（変更する場合のみ）" : ""}
+              </Label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={editingUser ? "変更なしなら空欄" : ""}
+                required={!editingUser}
+              />
             </div>
             <div>
               <Label>権限</Label>
