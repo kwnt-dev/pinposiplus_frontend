@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   addMonths,
   subMonths,
   format,
   startOfMonth,
+  endOfMonth,
   getDay,
   getDaysInMonth,
 } from "date-fns";
@@ -20,11 +21,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import api from "@/lib/axios";
 
 type Schedule = {
-  eventName: string;
-  groupCount: string;
+  id: string;
   date: string;
+  event_name: string | null;
+  group_count: number | null;
+  notes: string | null;
 };
 
 export default function SchedulePage() {
@@ -50,8 +54,8 @@ export default function SchedulePage() {
   function handleDayClick(day: number) {
     const dateStr = toDateStr(day);
     const existing = schedules.find((s) => s.date === dateStr);
-    setEventName(existing?.eventName ?? "");
-    setGroupCount(existing?.groupCount ?? "");
+    setEventName(existing?.event_name ?? "");
+    setGroupCount(existing?.group_count?.toString() ?? "");
     setSelectedDate(dateStr);
   }
 
@@ -60,7 +64,13 @@ export default function SchedulePage() {
     if (!eventName && !groupCount) return;
     setSchedules((prev) => [
       ...prev.filter((s) => s.date !== selectedDate),
-      { eventName, groupCount, date: selectedDate },
+      {
+        id: "",
+        date: selectedDate,
+        event_name: eventName || null,
+        group_count: groupCount ? Number(groupCount) : null,
+        notes: null,
+      },
     ]);
     setSelectedDate(null);
   }
@@ -144,15 +154,15 @@ export default function SchedulePage() {
                       <span className="text-xs text-red-500">{holiday}</span>
                     )}
                   </div>
-                  {schedule?.groupCount && (
+                  {schedule?.group_count && (
                     <span className="text-xs text-green-600 font-bold">
-                      {schedule.groupCount}組
+                      {schedule.group_count}組
                     </span>
                   )}
                 </div>
-                {schedule?.eventName && (
+                {schedule?.event_name && (
                   <div className="text-xs text-blue-600 mt-1">
-                    {schedule.eventName}
+                    {schedule.event_name}
                   </div>
                 )}
               </div>
