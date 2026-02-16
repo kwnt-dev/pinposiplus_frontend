@@ -2,29 +2,29 @@
 
 import { useEffect, useState } from "react";
 import GreenCanvas from "@/components/greens/GreenCanvas";
-import { Pin, HoleData, getBoundaryIntersectionY } from "@/lib/greenCanvas.geometry";
+import {
+  Pin,
+  HoleData,
+  getBoundaryIntersectionY,
+} from "@/lib/greenCanvas.geometry";
 import { useParams } from "next/navigation";
+import api from "@/lib/axios";
 
 export default function PinEditPage() {
   const { id } = useParams();
   const hole = id as string;
+  const holeNumber = Number(hole);
 
-  const pastPins = [
-    { id: "past1", x: 30, y: 20 },
-    { id: "past2", x: 35, y: 47 },
-  ];
-
-  const [currentPin, setCurrentPin] = useState<Pin>(() => {
-    if (typeof window === "undefined") return { id: "pin1", x: 30, y: 35 };
-    const data = localStorage.getItem(`pin_${hole}`);
-    return data ? JSON.parse(data) : { id: "pin1", x: 30, y: 35 };
+  const [pastPins, setPastPins] = useState<Pin[]>([]);
+  const [currentPin, setCurrentPin] = useState<Pin>({
+    id: "new",
+    x: 30,
+    y: 35,
   });
-
-  function handlePinDragged(newPin: Pin) {
-    setCurrentPin(newPin);
-  }
+  const [currentPinDbId, setCurrentPinDbId] = useState<string | null>(null);
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
+  // グリーンデータ取得
   useEffect(() => {
     const paddedHole = hole.padStart(2, "0");
     fetch(`/greens/hole_${paddedHole}.json`)
@@ -33,11 +33,45 @@ export default function PinEditPage() {
       .catch((err) => console.error("JSON読み込みエラー:", err));
   }, [hole]);
 
+  // APIからピン取得
+  useEffect(() => {
+    api.get(`/api/pins?hole_number=${holeNumber}`).then((response) => {
+      const pins = response.data;
+      if (pins.length > 0) {
+        const latest = pins[pins.length - 1];
+        setCurrentPin({ id: latest.id, x: latest.x, y: latest.y });
+        setCurrentPinDbId(latest.id);
+        setPastPins(
+          pins.slice(0, -1).map((p: { id: string; x: number; y: number }) => ({
+            id: p.id,
+            x: p.x,
+            y: p.y,
+          })),
+        );
+      }
+    });
+  }, [holeNumber]);
+
+  function handlePinDragged(newPin: Pin) {
+    setCurrentPin(newPin);
+  }
+
+  async function handleSave() {
+    if (currentPinDbId) {
+      await api.delete(`/api/pins/${currentPinDbId}`);
+    }
+    const response = await api.post("/api/pins", {
+      hole_number: holeNumber,
+      x: currentPin.x,
+      y: currentPin.y,
+    });
+    setCurrentPinDbId(response.data.id);
+  }
+
   if (!holeData) {
     return <div>読み込み中...</div>;
   }
 
-  // 0.5刻みに丸める（例: 3.1→3.0, 3.3→3.5, 3.8→4.0）
   const roundToHalf = (value: number) => Math.round(value * 2) / 2;
 
   const depth = Math.round(holeData.origin.y - currentPin.y);
@@ -56,17 +90,12 @@ export default function PinEditPage() {
 
   return (
     <div>
-      {`奥行${Math.round(holeData.origin.y - currentPin.y)}yd, ${horizontal}`}
-      <button
-        onClick={() => {
-          localStorage.setItem(`pin_${hole}`, JSON.stringify(currentPin));
-        }}
-      >
-        保存
-      </button>
+      {`奥行${depth}yd, ${horizontal}`}
+      <button onClick={handleSave}>保存</button>
       <GreenCanvas
         hole={hole}
         currentPin={currentPin}
+        pastPins={pastPins}
         onPinDragged={handlePinDragged}
       />
     </div>
