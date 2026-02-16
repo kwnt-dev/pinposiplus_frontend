@@ -20,68 +20,139 @@ export default function CellsEditPage() {
   const [damageCellIdMap, setDamageCellIdMap] = useState<
     Record<string, string>
   >({});
+  const [banCellIdMap, setBanCellIdMap] = useState<Record<string, string>>({});
+  const [rainCellIdMap, setRainCellIdMap] = useState<Record<string, string>>(
+    {},
+  );
 
   useEffect(() => {
     async function fetchAllCells() {
       const holes = Array.from({ length: 18 }, (_, i) => i + 1);
 
-      const damageResults = await Promise.all(
-        holes.map((h) => api.get(`/api/damage-cells?hole_number=${h}`)),
-      );
+      const [damageResults, banResults, rainResults] = await Promise.all([
+        Promise.all(
+          holes.map((h) => api.get(`/api/damage-cells?hole_number=${h}`)),
+        ),
+        Promise.all(
+          holes.map((h) => api.get(`/api/ban-cells?hole_number=${h}`)),
+        ),
+        Promise.all(
+          holes.map((h) => api.get(`/api/rain-cells?hole_number=${h}`)),
+        ),
+      ]);
 
       const damageMap: Record<number, string[]> = {};
+      const banMap: Record<number, string[]> = {};
+      const rainMap: Record<number, string[]> = {};
       const damageIds: Record<string, string> = {};
+      const banIds: Record<string, string> = {};
+      const rainIds: Record<string, string> = {};
 
       holes.forEach((h, i) => {
         damageMap[h] = damageResults[i].data.map(
           (c: { x: number; y: number }) => `cell_${c.x}_${c.y}`,
         );
+        banMap[h] = banResults[i].data.map(
+          (c: { x: number; y: number }) => `cell_${c.x}_${c.y}`,
+        );
+        rainMap[h] = rainResults[i].data.map(
+          (c: { x: number; y: number }) => `cell_${c.x}_${c.y}`,
+        );
+
         damageResults[i].data.forEach(
           (c: { id: string; x: number; y: number }) => {
             damageIds[`${h}_cell_${c.x}_${c.y}`] = c.id;
           },
         );
+        banResults[i].data.forEach(
+          (c: { id: string; x: number; y: number }) => {
+            banIds[`${h}_cell_${c.x}_${c.y}`] = c.id;
+          },
+        );
+        rainResults[i].data.forEach(
+          (c: { id: string; x: number; y: number }) => {
+            rainIds[`${h}_cell_${c.x}_${c.y}`] = c.id;
+          },
+        );
       });
 
       setDamageCellsMap(damageMap);
+      setBanCellsMap(banMap);
+      setRainCellsMap(rainMap);
       setDamageCellIdMap(damageIds);
+      setBanCellIdMap(banIds);
+      setRainCellIdMap(rainIds);
     }
 
     fetchAllCells();
   }, []);
 
   const handleCellClick = async (cellId: string) => {
-    if (cellMode !== "damage") return;
-
     const parts = cellId.split("_");
     const x = Number(parts[1]);
     const y = Number(parts[2]);
-    const currentCells = damageCellsMap[selectedHole] || [];
+
+    const endpoint =
+      cellMode === "damage"
+        ? "damage-cells"
+        : cellMode === "ban"
+          ? "ban-cells"
+          : "rain-cells";
+
+    const cellsMap =
+      cellMode === "damage"
+        ? damageCellsMap
+        : cellMode === "ban"
+          ? banCellsMap
+          : rainCellsMap;
+
+    const idMap =
+      cellMode === "damage"
+        ? damageCellIdMap
+        : cellMode === "ban"
+          ? banCellIdMap
+          : rainCellIdMap;
+
+    const setMap =
+      cellMode === "damage"
+        ? setDamageCellsMap
+        : cellMode === "ban"
+          ? setBanCellsMap
+          : setRainCellsMap;
+
+    const setIdMap =
+      cellMode === "damage"
+        ? setDamageCellIdMap
+        : cellMode === "ban"
+          ? setBanCellIdMap
+          : setRainCellIdMap;
+
+    const currentCells = cellsMap[selectedHole] || [];
     const isAlreadySelected = currentCells.includes(cellId);
     const key = `${selectedHole}_${cellId}`;
 
     if (isAlreadySelected) {
-      const dbId = damageCellIdMap[key];
+      const dbId = idMap[key];
       if (dbId) {
-        await api.delete(`/api/damage-cells/${dbId}`);
-        setDamageCellIdMap((prev) => {
+        await api.delete(`/api/${endpoint}/${dbId}`);
+        setIdMap((prev) => {
           const next = { ...prev };
           delete next[key];
           return next;
         });
       }
-      setDamageCellsMap((prev) => ({
+      setMap((prev) => ({
         ...prev,
         [selectedHole]: currentCells.filter((id) => id !== cellId),
       }));
     } else {
-      const response = await api.post("/api/damage-cells", {
+      const response = await api.post(`/api/${endpoint}`, {
         hole_number: selectedHole,
         x,
         y,
       });
-      setDamageCellIdMap((prev) => ({ ...prev, [key]: response.data.id }));
-      setDamageCellsMap((prev) => ({
+      setIdMap((prev) => ({ ...prev, [key]: response.data.id }));
+      setMap((prev) => ({
         ...prev,
         [selectedHole]: [...currentCells, cellId],
       }));
