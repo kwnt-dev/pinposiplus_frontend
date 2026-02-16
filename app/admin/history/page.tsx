@@ -21,34 +21,81 @@ type DateGroup = {
   inSubmitter: string | null;
 };
 
-const mockData: DateGroup[] = [
-  {
-    date: "2026-02-15",
-    eventName: "月例杯",
-    groupCount: 42,
-    outSubmitter: "田中",
-    inSubmitter: "上田",
-  },
-  {
-    date: "2026-02-10",
-    eventName: null,
-    groupCount: 38,
-    outSubmitter: "田中",
-    inSubmitter: "中村",
-  },
-  {
-    date: "2026-02-05",
-    eventName: "クラブ選手権",
-    groupCount: 45,
-    outSubmitter: "佐藤",
-    inSubmitter: "田中",
-  },
-];
-
 export default function HistoryPage() {
-  const [histories] = useState<DateGroup[]>(mockData);
+  const [histories, setHistories] = useState<DateGroup[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  useEffect(() => {
+    Promise.all([
+      api.get("/api/pin-histories"),
+      api.get("/api/schedules"),
+      api.get("/api/users"),
+    ]).then(([pinRes, scheduleRes, userRes]) => {
+      const pins = pinRes.data;
+      const schedules = scheduleRes.data;
+      const users = userRes.data;
+
+      // userIdからnameへのマップ
+      const userMap: Record<string, string> = {};
+      users.forEach((u: { id: string; name: string }) => {
+        userMap[u.id] = u.name;
+      });
+
+      // scheduleのdateからevent_name/group_countへのマップ
+      const scheduleMap: Record<
+        string,
+        { event_name: string | null; group_count: number | null }
+      > = {};
+      schedules.forEach(
+        (s: {
+          date: string;
+          event_name: string | null;
+          group_count: number | null;
+        }) => {
+          scheduleMap[s.date] = {
+            event_name: s.event_name,
+            group_count: s.group_count,
+          };
+        },
+      );
+
+      // pin_historiesを日付でグループ化
+      const grouped: Record<
+        string,
+        { outSubmitter: string | null; inSubmitter: string | null }
+      > = {};
+      pins.forEach(
+        (p: {
+          date: string;
+          hole_number: number;
+          submitted_by: string | null;
+        }) => {
+          if (!grouped[p.date]) {
+            grouped[p.date] = { outSubmitter: null, inSubmitter: null };
+          }
+          const name = p.submitted_by
+            ? (userMap[p.submitted_by] ?? null)
+            : null;
+          if (p.hole_number <= 9) {
+            grouped[p.date].outSubmitter = name;
+          } else {
+            grouped[p.date].inSubmitter = name;
+          }
+        },
+      );
+
+      const result: DateGroup[] = Object.keys(grouped).map((date) => ({
+        date,
+        eventName: scheduleMap[date]?.event_name ?? null,
+        groupCount: scheduleMap[date]?.group_count ?? null,
+        outSubmitter: grouped[date].outSubmitter,
+        inSubmitter: grouped[date].inSubmitter,
+      }));
+
+      setHistories(result);
+    });
+  }, []);
 
   const filtered = histories.filter((h) => h.date.includes(searchTerm));
   const sorted = [...filtered].sort((a, b) =>
