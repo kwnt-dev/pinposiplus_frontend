@@ -47,13 +47,37 @@ export default function SchedulePage() {
   for (let i = 0; i < firstDayOfWeek; i++) calendarDays.push(null);
   for (let d = 1; d <= daysInMonth; d++) calendarDays.push(d);
 
+  // 月が変わるたびにAPIから取得
+  useEffect(() => {
+    const startDate = format(startOfMonth(currentMonth), "yyyy-MM-dd");
+    const endDate = format(endOfMonth(currentMonth), "yyyy-MM-dd");
+    api
+      .get(`/api/schedules?start_date=${startDate}&end_date=${endDate}`)
+      .then((response) => {
+        setSchedules(response.data);
+      });
+  }, [currentMonth]);
+
+  async function fetchSchedules() {
+    const startDate = format(startOfMonth(currentMonth), "yyyy-MM-dd");
+    const endDate = format(endOfMonth(currentMonth), "yyyy-MM-dd");
+    const response = await api.get(
+      `/api/schedules?start_date=${startDate}&end_date=${endDate}`,
+    );
+    setSchedules(response.data);
+  }
+
   function toDateStr(day: number) {
     return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
   }
 
+  function getExisting(dateStr: string) {
+    return schedules.find((s) => s.date === dateStr);
+  }
+
   function handleDayClick(day: number) {
     const dateStr = toDateStr(day);
-    const existing = schedules.find((s) => s.date === dateStr);
+    const existing = getExisting(dateStr);
     setEventName(existing?.event_name ?? "");
     setGroupCount(existing?.group_count?.toString() ?? "");
     setSelectedDate(dateStr);
@@ -123,7 +147,7 @@ export default function SchedulePage() {
             const holiday = isHoliday
               ? holidayJp.between(date, date)[0].name
               : null;
-            const schedule = schedules.find((s) => s.date === dateStr);
+            const schedule = getExisting(dateStr);
 
             return (
               <div
