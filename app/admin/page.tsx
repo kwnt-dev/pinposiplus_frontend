@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getAutoSuggestData } from "@/lib/autoSuggest";
 
 export default function DashboardPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
@@ -56,11 +57,59 @@ export default function DashboardPage() {
     };
     loadAll();
   }, []);
+
   const [coursePins, setCoursePins] = useState<HolePin[]>([]);
   const [rightPanelMode, setRightPanelMode] = useState<
     "auto-suggest" | "pin-edit"
   >("auto-suggest");
   const [editingHole, setEditingHole] = useState<number>(1);
+  const [damageCellsMap, setDamageCellsMap] = useState<
+    Record<number, string[]>
+  >({});
+  const [banCellsMap, setBanCellsMap] = useState<Record<number, string[]>>({});
+  const [rainCellsMap, setRainCellsMap] = useState<Record<number, string[]>>(
+    {},
+  );
+  const [pastPinsMap, setPastPinsMap] = useState<Record<number, Pin[]>>({});
+  const [cellMode, setCellMode] = useState<"damage" | "ban" | "rain">("damage");
+
+  useEffect(() => {
+    const loadCells = async () => {
+      try {
+        const data = await getAutoSuggestData();
+
+        const damageMap: Record<number, string[]> = {};
+        const banMap: Record<number, string[]> = {};
+        const rainMap: Record<number, string[]> = {};
+        const pinsMap: Record<number, Pin[]> = {};
+
+        for (const [hole, cells] of Object.entries(data.damage_cells)) {
+          damageMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+        }
+        for (const [hole, cells] of Object.entries(data.ban_cells)) {
+          banMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+        }
+        for (const [hole, cells] of Object.entries(data.rain_cells)) {
+          rainMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+        }
+        for (const [hole, pins] of Object.entries(data.past_pins)) {
+          pinsMap[Number(hole)] = pins.map((p, i) => ({
+            id: `past${i + 1}`,
+            x: p.x,
+            y: p.y,
+          }));
+        }
+
+        setDamageCellsMap(damageMap);
+        setBanCellsMap(banMap);
+        setRainCellsMap(rainMap);
+        setPastPinsMap(pinsMap);
+      } catch (err) {
+        console.error("セルデータ取得エラー:", err);
+      }
+    };
+    loadCells();
+  }, []);
 
   const handleCourseGenerate = () => {
     const holes =
@@ -80,19 +129,20 @@ export default function DashboardPage() {
         };
       }
 
+      const holeNum = parseInt(h, 10);
       const input: AutoProposalInput = {
         holeData: hData,
         exit: config.exit,
-        damageCells: [],
-        banCells: [],
-        rainCells: [],
-        pastPins: [],
+        damageCells: damageCellsMap[holeNum] || [],
+        banCells: banCellsMap[holeNum] || [],
+        rainCells: rainCellsMap[holeNum] || [],
+        pastPins: pastPinsMap[holeNum] || [],
         isRainyDay,
       };
 
       const candidates = generateProposals(input);
       return {
-        holeNumber: parseInt(h, 10),
+        holeNumber: holeNum,
         candidates,
         isShortHole: config.isShortHole,
         cells: hData.cells,
@@ -115,15 +165,6 @@ export default function DashboardPage() {
   };
 
   const editingPin = coursePins.find((p) => p.hole === editingHole);
-
-  const [damageCellsMap, setDamageCellsMap] = useState<
-    Record<number, string[]>
-  >({});
-  const [banCellsMap, setBanCellsMap] = useState<Record<number, string[]>>({});
-  const [rainCellsMap, setRainCellsMap] = useState<Record<number, string[]>>(
-    {},
-  );
-  const [cellMode, setCellMode] = useState<"damage" | "ban" | "rain">("damage");
 
   const handleCellClick = (cellId: string) => {
     const updateCells =
