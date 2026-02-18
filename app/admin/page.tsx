@@ -119,7 +119,7 @@ export default function DashboardPage() {
     loadCells();
   }, []);
 
-  // 自動提案実行 → セッション作成 → ピン生成
+  // 自動提案実行 → セッション作成 → ピン生成 → ピンAPI保存
   const handleCourseGenerate = async () => {
     const dateStr = format(selectedDate, "yyyy-MM-dd");
 
@@ -211,7 +211,7 @@ export default function DashboardPage() {
     const currentSession = course === "out" ? outSession : inSession;
     if (!currentSession) return;
 
-    // 既存ピンを削除して新規保存
+    // 該当ホールの既存ピンを削除して新規保存
     const existing = await api.get(`/api/pins?hole_number=${editingHole}`);
     const sessionPins = existing.data.filter(
       (p: { session_id: string }) => p.session_id === currentSession.id,
