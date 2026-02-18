@@ -29,7 +29,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getAutoSuggestData } from "@/lib/autoSuggest";
-import { createPinSession, PinSession } from "@/lib/pinSession";
+import {
+  createPinSession,
+  checkSession,
+  publishSession,
+  PinSession,
+} from "@/lib/pinSession";
 import api from "@/lib/axios";
 
 export default function DashboardPage() {
@@ -375,12 +380,44 @@ export default function DashboardPage() {
                 >
                   雨天
                 </Button>
+              </div>
 
-                <div className="mt-8">
-                  <Button className="w-full mt-4" onClick={handlePinSave}>
-                    ピンを保存
-                  </Button>
-                </div>
+              <div className="mt-8 space-y-2">
+                {/* ピン保存 */}
+                <Button className="w-full" onClick={handlePinSave}>
+                  ピンを保存
+                </Button>
+                {/* 編集完了 → checked */}
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={async () => {
+                    const currentSession =
+                      course === "out" ? outSession : inSession;
+                    if (!currentSession) return;
+                    const updated = await checkSession(currentSession.id);
+                    if (course === "out") setOutSession(updated);
+                    else setInSession(updated);
+                    alert("編集完了しました");
+                  }}
+                >
+                  編集完了
+                </Button>
+                {/* スタッフに公開 → published */}
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={async () => {
+                    if (!outSession || !inSession) return;
+                    const updatedOut = await publishSession(outSession.id);
+                    const updatedIn = await publishSession(inSession.id);
+                    setOutSession(updatedOut);
+                    setInSession(updatedIn);
+                    alert("スタッフに公開しました");
+                  }}
+                >
+                  スタッフに公開
+                </Button>
               </div>
             </div>
           )}
