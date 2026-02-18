@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import GreenCanvas from "@/components/greens/GreenCanvas";
-
 import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
 import { generateProposals, AutoProposalInput } from "@/lib/autoProposal";
 import {
@@ -29,7 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getAutoSuggestData } from "@/lib/autoSuggest";
+import { createPinSession, PinSession } from "@/lib/pinSession";
+import api from "@/lib/axios";
 
 export default function DashboardPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
@@ -40,6 +40,7 @@ export default function DashboardPage() {
 
   const [allHoleData, setAllHoleData] = useState<Record<string, HoleData>>({});
 
+  // 18ホール分のグリーンJSON読み込み
   useEffect(() => {
     const loadAll = async () => {
       const data: Record<string, HoleData> = {};
@@ -63,55 +64,30 @@ export default function DashboardPage() {
     "auto-suggest" | "pin-edit"
   >("auto-suggest");
   const [editingHole, setEditingHole] = useState<number>(1);
-  const [damageCellsMap, setDamageCellsMap] = useState<
-    Record<number, string[]>
-  >({});
-  const [banCellsMap, setBanCellsMap] = useState<Record<number, string[]>>({});
-  const [rainCellsMap, setRainCellsMap] = useState<Record<number, string[]>>(
-    {},
-  );
-  const [pastPinsMap, setPastPinsMap] = useState<Record<number, Pin[]>>({});
-  const [cellMode, setCellMode] = useState<"damage" | "ban" | "rain">("damage");
 
-  useEffect(() => {
-    const loadCells = async () => {
-      try {
-        const data = await getAutoSuggestData();
+  // セッション管理
+  const [outSession, setOutSession] = useState<PinSession | null>(null);
+  const [inSession, setInSession] = useState<PinSession | null>(null);
 
-        const damageMap: Record<number, string[]> = {};
-        const banMap: Record<number, string[]> = {};
-        const rainMap: Record<number, string[]> = {};
-        const pinsMap: Record<number, Pin[]> = {};
+  // 自動提案実行 → セッション作成 → ピン生成 → ピン保存
+  const handleCourseGenerate = async () => {
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
 
-        for (const [hole, cells] of Object.entries(data.damage_cells)) {
-          damageMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
-        }
-        for (const [hole, cells] of Object.entries(data.ban_cells)) {
-          banMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
-        }
-        for (const [hole, cells] of Object.entries(data.rain_cells)) {
-          rainMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
-        }
-        for (const [hole, pins] of Object.entries(data.past_pins)) {
-          pinsMap[Number(hole)] = pins.map((p, i) => ({
-            id: `past${i + 1}`,
-            x: p.x,
-            y: p.y,
-          }));
-        }
+    // OUT/INセッション作成
+    const outSess = await createPinSession({
+      course: "OUT",
+      target_date: dateStr,
+      is_rainy: isRainyDay,
+    });
+    const inSess = await createPinSession({
+      course: "IN",
+      target_date: dateStr,
+      is_rainy: isRainyDay,
+    });
+    setOutSession(outSess);
+    setInSession(inSess);
 
-        setDamageCellsMap(damageMap);
-        setBanCellsMap(banMap);
-        setRainCellsMap(rainMap);
-        setPastPinsMap(pinsMap);
-      } catch (err) {
-        console.error("セルデータ取得エラー:", err);
-      }
-    };
-    loadCells();
-  }, []);
-
-  const handleCourseGenerate = () => {
+    // 9ホール分のピン生成
     const holes =
       course === "out"
         ? ["01", "02", "03", "04", "05", "06", "07", "08", "09"]
@@ -159,12 +135,33 @@ export default function DashboardPage() {
       y: h.selectedPin.y,
     }));
 
+    // ピンをsession_id付きでAPIに保存
+    const currentSession = course === "out" ? outSess : inSess;
+    for (const pin of pins) {
+      await api.post("/api/pins", {
+        hole_number: pin.hole,
+        x: pin.x,
+        y: pin.y,
+        session_id: currentSession.id,
+      });
+    }
+
     setCoursePins(pins);
     setRightPanelMode("pin-edit");
     setEditingHole(course === "out" ? 1 : 10);
   };
 
   const editingPin = coursePins.find((p) => p.hole === editingHole);
+
+  const [damageCellsMap, setDamageCellsMap] = useState<
+    Record<number, string[]>
+  >({});
+  const [banCellsMap, setBanCellsMap] = useState<Record<number, string[]>>({});
+  const [rainCellsMap, setRainCellsMap] = useState<Record<number, string[]>>(
+    {},
+  );
+  const [pastPinsMap, setPastPinsMap] = useState<Record<number, Pin[]>>({});
+  const [cellMode, setCellMode] = useState<"damage" | "ban" | "rain">("damage");
 
   const handleCellClick = (cellId: string) => {
     const updateCells =
@@ -180,7 +177,7 @@ export default function DashboardPage() {
       return {
         ...prev,
         [editingHole]: isAlreadySelected
-          ? currentCells.filter((id) => id !== cellId)
+          ? currentCells.filter((id: string) => id !== cellId)
           : [...currentCells, cellId],
       };
     });
