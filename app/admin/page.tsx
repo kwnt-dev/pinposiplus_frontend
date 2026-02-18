@@ -256,6 +256,21 @@ export default function DashboardPage() {
   return (
     <div>
       <h1>ダッシュボード</h1>
+      {/* セッションステータス表示 */}
+      {(outSession || inSession) && (
+        <div className="flex gap-4 mb-4">
+          {outSession && (
+            <div className="px-3 py-1 rounded bg-gray-100 text-sm">
+              OUT: {outSession.status}
+            </div>
+          )}
+          {inSession && (
+            <div className="px-3 py-1 rounded bg-gray-100 text-sm">
+              IN: {inSession.status}
+            </div>
+          )}
+        </div>
+      )}
       <div className="flex gap-4">
         <div className="flex-1">
           {/* 左パネル */}
