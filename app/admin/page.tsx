@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getAutoSuggestData } from "@/lib/autoSuggest";
 import { createPinSession, PinSession } from "@/lib/pinSession";
 import api from "@/lib/axios";
 
@@ -69,7 +70,56 @@ export default function DashboardPage() {
   const [outSession, setOutSession] = useState<PinSession | null>(null);
   const [inSession, setInSession] = useState<PinSession | null>(null);
 
-  // 自動提案実行 → セッション作成 → ピン生成 → ピン保存
+  const [damageCellsMap, setDamageCellsMap] = useState<
+    Record<number, string[]>
+  >({});
+  const [banCellsMap, setBanCellsMap] = useState<Record<number, string[]>>({});
+  const [rainCellsMap, setRainCellsMap] = useState<Record<number, string[]>>(
+    {},
+  );
+  const [pastPinsMap, setPastPinsMap] = useState<Record<number, Pin[]>>({});
+  const [cellMode, setCellMode] = useState<"damage" | "ban" | "rain">("damage");
+
+  // セルデータ・過去ピンをAPI取得
+  useEffect(() => {
+    const loadCells = async () => {
+      try {
+        const data = await getAutoSuggestData();
+
+        const damageMap: Record<number, string[]> = {};
+        const banMap: Record<number, string[]> = {};
+        const rainMap: Record<number, string[]> = {};
+        const pinsMap: Record<number, Pin[]> = {};
+
+        for (const [hole, cells] of Object.entries(data.damage_cells)) {
+          damageMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+        }
+        for (const [hole, cells] of Object.entries(data.ban_cells)) {
+          banMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+        }
+        for (const [hole, cells] of Object.entries(data.rain_cells)) {
+          rainMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+        }
+        for (const [hole, pins] of Object.entries(data.past_pins)) {
+          pinsMap[Number(hole)] = pins.map((p, i) => ({
+            id: `past${i + 1}`,
+            x: p.x,
+            y: p.y,
+          }));
+        }
+
+        setDamageCellsMap(damageMap);
+        setBanCellsMap(banMap);
+        setRainCellsMap(rainMap);
+        setPastPinsMap(pinsMap);
+      } catch (err) {
+        console.error("セルデータ取得エラー:", err);
+      }
+    };
+    loadCells();
+  }, []);
+
+  // 自動提案実行 → セッション作成 → ピン生成
   const handleCourseGenerate = async () => {
     const dateStr = format(selectedDate, "yyyy-MM-dd");
 
@@ -135,7 +185,7 @@ export default function DashboardPage() {
       y: h.selectedPin.y,
     }));
 
-    // ピンをsession_id付きでAPIに保存
+    // ピンをsession_id付きでAPI保存
     const currentSession = course === "out" ? outSess : inSess;
     for (const pin of pins) {
       await api.post("/api/pins", {
@@ -153,15 +203,30 @@ export default function DashboardPage() {
 
   const editingPin = coursePins.find((p) => p.hole === editingHole);
 
-  const [damageCellsMap, setDamageCellsMap] = useState<
-    Record<number, string[]>
-  >({});
-  const [banCellsMap, setBanCellsMap] = useState<Record<number, string[]>>({});
-  const [rainCellsMap, setRainCellsMap] = useState<Record<number, string[]>>(
-    {},
-  );
-  const [pastPinsMap, setPastPinsMap] = useState<Record<number, Pin[]>>({});
-  const [cellMode, setCellMode] = useState<"damage" | "ban" | "rain">("damage");
+  // ピン編集後にAPI保存
+  const handlePinSave = async () => {
+    const pin = coursePins.find((p) => p.hole === editingHole);
+    if (!pin) return;
+
+    const currentSession = course === "out" ? outSession : inSession;
+    if (!currentSession) return;
+
+    // 既存ピンを削除して新規保存
+    const existing = await api.get(`/api/pins?hole_number=${editingHole}`);
+    const sessionPins = existing.data.filter(
+      (p: { session_id: string }) => p.session_id === currentSession.id,
+    );
+    for (const p of sessionPins) {
+      await api.delete(`/api/pins/${p.id}`);
+    }
+
+    await api.post("/api/pins", {
+      hole_number: editingHole,
+      x: pin.x,
+      y: pin.y,
+      session_id: currentSession.id,
+    });
+  };
 
   const handleCellClick = (cellId: string) => {
     const updateCells =
@@ -312,15 +377,7 @@ export default function DashboardPage() {
                 </Button>
 
                 <div className="mt-8">
-                  <Button
-                    className="w-full mt-4"
-                    onClick={() => {
-                      console.log("ピン保存", {
-                        hole: editingHole,
-                        pin: coursePins.find((p) => p.hole === editingHole),
-                      });
-                    }}
-                  >
+                  <Button className="w-full mt-4" onClick={handlePinSave}>
                     ピンを保存
                   </Button>
                 </div>
