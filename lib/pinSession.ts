@@ -63,3 +63,9 @@ export async function approveSession(id: string): Promise<PinSession> {
   const res = await api.patch(`/api/pin-sessions/${id}/approve`);
   return res.data;
 }
+
+// マスター室に送信 → sent（pin_history保存）
+export async function sendSession(id: string): Promise<PinSession> {
+  const res = await api.patch(`/api/pin-sessions/${id}/send`);
+  return res.data;
+}
