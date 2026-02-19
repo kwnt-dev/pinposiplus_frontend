@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
-import { getPinSessions, PinSession } from "@/lib/pinSession";
+import { getPinSessions, confirmSession, PinSession } from "@/lib/pinSession";
 import { HolePin } from "@/lib/greenCanvas.geometry";
+import { Button } from "@/components/ui/button";
 import api from "@/lib/axios";
 
 export default function StaffInPage() {
@@ -43,6 +44,19 @@ export default function StaffInPage() {
     loadSession();
   }, []);
 
+  const handleConfirm = async () => {
+    if (!session) return;
+
+    try {
+      const updated = await confirmSession(session.id);
+      setSession(updated);
+      alert("確認提出しました");
+    } catch (err) {
+      console.error("確認提出エラー:", err);
+      alert("確認提出に失敗しました");
+    }
+  };
+
   if (loading) {
     return <div className="p-8">読み込み中...</div>;
   }
@@ -69,6 +83,11 @@ export default function StaffInPage() {
           router.push(`/staff/hole/${holeId}?session_id=${session.id}`)
         }
       />
+      {session.status === "published" && (
+        <Button className="mt-6 w-full" onClick={handleConfirm}>
+          確認提出
+        </Button>
+      )}
     </div>
   );
 }
