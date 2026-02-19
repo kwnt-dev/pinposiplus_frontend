@@ -34,6 +34,7 @@ import {
   checkSession,
   publishSession,
   approveSession,
+  sendSession,
   getPinSessions,
   PinSession,
 } from "@/lib/pinSession";
@@ -84,17 +85,24 @@ export default function DashboardPage() {
   );
   const [reviewPins, setReviewPins] = useState<HolePin[]>([]);
 
-  // confirmedセッション取得
+  // approved セッション送信用
+  const [approvedSessions, setApprovedSessions] = useState<PinSession[]>([]);
+
+  // confirmed・approvedセッション取得
   useEffect(() => {
-    const loadConfirmed = async () => {
+    const loadSessions = async () => {
       try {
-        const sessions = await getPinSessions({ status: "confirmed" });
-        setConfirmedSessions(sessions);
+        const [confirmed, approved] = await Promise.all([
+          getPinSessions({ status: "confirmed" }),
+          getPinSessions({ status: "approved" }),
+        ]);
+        setConfirmedSessions(confirmed);
+        setApprovedSessions(approved);
       } catch (err) {
-        console.error("confirmedセッション取得エラー:", err);
+        console.error("セッション取得エラー:", err);
       }
     };
-    loadConfirmed();
+    loadSessions();
   }, []);
 
   const [damageCellsMap, setDamageCellsMap] = useState<
@@ -164,66 +172,77 @@ export default function DashboardPage() {
     setOutSession(outSess);
     setInSession(inSess);
 
-    // 9ホール分のピン生成
-    const holes =
-      course === "out"
-        ? ["01", "02", "03", "04", "05", "06", "07", "08", "09"]
-        : ["10", "11", "12", "13", "14", "15", "16", "17", "18"];
+    // 18ホール分のピン生成
+    const outHoles = ["01", "02", "03", "04", "05", "06", "07", "08", "09"];
+    const inHoles = ["10", "11", "12", "13", "14", "15", "16", "17", "18"];
 
-    const holeCandidates: HoleCandidates[] = holes.map((h) => {
-      const hData = allHoleData[h];
-      const config = HOLE_CONFIGS[h];
-      if (!hData || !config) {
-        return {
-          holeNumber: parseInt(h, 10),
-          candidates: [],
-          isShortHole: false,
-          cells: [],
+    const generateHolePins = (holes: string[]) => {
+      const holeCandidates: HoleCandidates[] = holes.map((h) => {
+        const hData = allHoleData[h];
+        const config = HOLE_CONFIGS[h];
+        if (!hData || !config) {
+          return {
+            holeNumber: parseInt(h, 10),
+            candidates: [],
+            isShortHole: false,
+            cells: [],
+          };
+        }
+
+        const holeNum = parseInt(h, 10);
+        const input: AutoProposalInput = {
+          holeData: hData,
+          exit: config.exit,
+          damageCells: damageCellsMap[holeNum] || [],
+          banCells: banCellsMap[holeNum] || [],
+          rainCells: rainCellsMap[holeNum] || [],
+          pastPins: pastPinsMap[holeNum] || [],
+          isRainyDay,
         };
-      }
 
-      const holeNum = parseInt(h, 10);
-      const input: AutoProposalInput = {
-        holeData: hData,
-        exit: config.exit,
-        damageCells: damageCellsMap[holeNum] || [],
-        banCells: banCellsMap[holeNum] || [],
-        rainCells: rainCellsMap[holeNum] || [],
-        pastPins: pastPinsMap[holeNum] || [],
-        isRainyDay,
-      };
+        const candidates = generateProposals(input);
+        return {
+          holeNumber: holeNum,
+          candidates,
+          isShortHole: config.isShortHole,
+          cells: hData.cells,
+        };
+      });
 
-      const candidates = generateProposals(input);
-      return {
-        holeNumber: holeNum,
-        candidates,
-        isShortHole: config.isShortHole,
-        cells: hData.cells,
-      };
-    });
+      const result = generateCourseProposal({
+        holes: holeCandidates,
+        courseDifficulty,
+      });
+      return result.holes.map((h) => ({
+        hole: h.holeNumber,
+        x: h.selectedPin.x,
+        y: h.selectedPin.y,
+      }));
+    };
 
-    const result = generateCourseProposal({
-      holes: holeCandidates,
-      courseDifficulty,
-    });
-    const pins: HolePin[] = result.holes.map((h) => ({
-      hole: h.holeNumber,
-      x: h.selectedPin.x,
-      y: h.selectedPin.y,
-    }));
+    const outPins = generateHolePins(outHoles);
+    const inPins = generateHolePins(inHoles);
 
-    // ピンをsession_id付きでAPI保存
-    const currentSession = course === "out" ? outSess : inSess;
-    for (const pin of pins) {
+    // OUT/INそれぞれのピンをAPI保存
+    for (const pin of outPins) {
       await api.post("/api/pins", {
         hole_number: pin.hole,
         x: pin.x,
         y: pin.y,
-        session_id: currentSession.id,
+        session_id: outSess.id,
+      });
+    }
+    for (const pin of inPins) {
+      await api.post("/api/pins", {
+        hole_number: pin.hole,
+        x: pin.x,
+        y: pin.y,
+        session_id: inSess.id,
       });
     }
 
-    setCoursePins(pins);
+    const allPins: HolePin[] = [...outPins, ...inPins];
+    setCoursePins(allPins);
     setRightPanelMode("pin-edit");
     setEditingHole(course === "out" ? 1 : 10);
   };
@@ -429,12 +448,11 @@ export default function DashboardPage() {
                   className="w-full"
                   variant="outline"
                   onClick={async () => {
-                    const currentSession =
-                      course === "out" ? outSession : inSession;
-                    if (!currentSession) return;
-                    const updated = await checkSession(currentSession.id);
-                    if (course === "out") setOutSession(updated);
-                    else setInSession(updated);
+                    if (!outSession || !inSession) return;
+                    const updatedOut = await checkSession(outSession.id);
+                    const updatedIn = await checkSession(inSession.id);
+                    setOutSession(updatedOut);
+                    setInSession(updatedIn);
                     alert("編集完了しました");
                   }}
                 >
@@ -519,6 +537,46 @@ export default function DashboardPage() {
                     承認
                   </Button>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* approved セッション送信エリア */}
+      {approvedSessions.length > 0 && (
+        <div className="mt-8">
+          <h2 className="font-bold mb-4">送信待ちセッション</h2>
+          <div className="space-y-2">
+            {approvedSessions.map((s) => (
+              <div
+                key={s.id}
+                className="flex items-center justify-between p-3 rounded bg-gray-50 border"
+              >
+                <div className="text-sm">
+                  <span className="font-bold">{s.course}</span>
+                  {s.target_date && ` - ${s.target_date}`}
+                  <span className="ml-2 text-gray-500">
+                    承認者: {s.approved_by}
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      await sendSession(s.id);
+                      setApprovedSessions((prev) =>
+                        prev.filter((as) => as.id !== s.id),
+                      );
+                      alert(`${s.course} をマスター室に送信しました`);
+                    } catch (err) {
+                      console.error("送信エラー:", err);
+                      alert("送信に失敗しました");
+                    }
+                  }}
+                >
+                  マスター室に送信
+                </Button>
               </div>
             ))}
           </div>
