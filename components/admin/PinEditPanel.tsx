@@ -1,5 +1,3 @@
-"use client";
-
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
