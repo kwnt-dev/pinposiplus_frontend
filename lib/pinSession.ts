@@ -51,3 +51,15 @@ export async function publishSession(id: string): Promise<PinSession> {
   const res = await api.patch(`/api/pin-sessions/${id}/publish`);
   return res.data;
 }
+
+// スタッフが確認提出 → confirmed
+export async function confirmSession(id: string): Promise<PinSession> {
+  const res = await api.patch(`/api/pin-sessions/${id}/confirm`);
+  return res.data;
+}
+
+// 管理者が承認 → approved
+export async function approveSession(id: string): Promise<PinSession> {
+  const res = await api.patch(`/api/pin-sessions/${id}/approve`);
+  return res.data;
+}

@@ -33,6 +33,8 @@ import {
   createPinSession,
   checkSession,
   publishSession,
+  approveSession,
+  getPinSessions,
   PinSession,
 } from "@/lib/pinSession";
 import api from "@/lib/axios";
@@ -67,13 +69,33 @@ export default function DashboardPage() {
 
   const [coursePins, setCoursePins] = useState<HolePin[]>([]);
   const [rightPanelMode, setRightPanelMode] = useState<
-    "auto-suggest" | "pin-edit"
+    "auto-suggest" | "pin-edit" | "confirm-review"
   >("auto-suggest");
   const [editingHole, setEditingHole] = useState<number>(1);
 
   // セッション管理
   const [outSession, setOutSession] = useState<PinSession | null>(null);
   const [inSession, setInSession] = useState<PinSession | null>(null);
+
+  // confirmed セッション確認用
+  const [confirmedSessions, setConfirmedSessions] = useState<PinSession[]>([]);
+  const [reviewingSession, setReviewingSession] = useState<PinSession | null>(
+    null,
+  );
+  const [reviewPins, setReviewPins] = useState<HolePin[]>([]);
+
+  // confirmedセッション取得
+  useEffect(() => {
+    const loadConfirmed = async () => {
+      try {
+        const sessions = await getPinSessions({ status: "confirmed" });
+        setConfirmedSessions(sessions);
+      } catch (err) {
+        console.error("confirmedセッション取得エラー:", err);
+      }
+    };
+    loadConfirmed();
+  }, []);
 
   const [damageCellsMap, setDamageCellsMap] = useState<
     Record<number, string[]>
@@ -438,6 +460,70 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* confirmed セッション確認エリア */}
+      {confirmedSessions.length > 0 && (
+        <div className="mt-8">
+          <h2 className="font-bold mb-4">確認待ちセッション</h2>
+          <div className="space-y-2">
+            {confirmedSessions.map((s) => (
+              <div
+                key={s.id}
+                className="flex items-center justify-between p-3 rounded bg-gray-50 border"
+              >
+                <div className="text-sm">
+                  <span className="font-bold">{s.course}</span>
+                  {s.target_date && ` - ${s.target_date}`}
+                  <span className="ml-2 text-gray-500">
+                    提出者: {s.submitted_by_name}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      const res = await api.get(`/api/pin-sessions/${s.id}`);
+                      const pins: HolePin[] = res.data.pins.map(
+                        (p: { hole_number: number; x: number; y: number }) => ({
+                          hole: p.hole_number,
+                          x: p.x,
+                          y: p.y,
+                        }),
+                      );
+                      setReviewingSession(s);
+                      setReviewPins(pins);
+                      setCoursePins(pins);
+                      setCourse(s.course === "OUT" ? "out" : "in");
+                      setRightPanelMode("pin-edit");
+                    }}
+                  >
+                    確認
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        await approveSession(s.id);
+                        setConfirmedSessions((prev) =>
+                          prev.filter((cs) => cs.id !== s.id),
+                        );
+                        setReviewingSession(null);
+                        alert(`${s.course} を承認しました`);
+                      } catch (err) {
+                        console.error("承認エラー:", err);
+                        alert("承認に失敗しました");
+                      }
+                    }}
+                  >
+                    承認
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
