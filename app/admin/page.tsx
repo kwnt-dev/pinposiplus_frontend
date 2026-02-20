@@ -10,9 +10,16 @@ import {
 import { HOLE_CONFIGS } from "@/config/holes";
 import { HoleData, Pin, HolePin } from "@/lib/greenCanvas.geometry";
 import { getAutoSuggestData } from "@/lib/autoSuggest";
-import { createPinSession, getPinSessions, PinSession } from "@/lib/pinSession";
+import {
+  createPinSession,
+  getPinSessions,
+  approveSession,
+  sendSession,
+  PinSession,
+} from "@/lib/pinSession";
 import { format } from "date-fns";
 import api from "@/lib/axios";
+import { Button } from "@/components/ui/button";
 import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
@@ -305,18 +312,108 @@ export default function DashboardPage() {
               inSession={inSession}
               onOutSessionUpdate={setOutSession}
               onInSessionUpdate={setInSession}
-              confirmedSessions={confirmedSessions}
-              onConfirmedSessionsUpdate={setConfirmedSessions}
-              onReviewSession={(session, pins) => {
-                setCoursePins(pins);
-                setCourse(session.course === "OUT" ? "out" : "in");
-              }}
-              approvedSessions={approvedSessions}
-              onApprovedSessionsUpdate={setApprovedSessions}
             />
           )}
         </div>
       </div>
+
+      {/* confirmed セッション確認エリア（常に表示） */}
+      {confirmedSessions.length > 0 && (
+        <div className="mt-8">
+          <h2 className="font-bold mb-4">確認待ちセッション</h2>
+          <div className="space-y-2">
+            {confirmedSessions.map((s) => (
+              <div
+                key={s.id}
+                className="flex items-center justify-between p-3 rounded bg-gray-50 border"
+              >
+                <div className="text-sm">
+                  <span className="font-bold">{s.course}</span>
+                  {s.target_date && ` - ${s.target_date}`}
+                  <span className="ml-2 text-gray-500">
+                    提出者: {s.submitted_by_name}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      const res = await api.get(`/api/pin-sessions/${s.id}`);
+                      const pins: HolePin[] = res.data.pins.map(
+                        (p: { hole_number: number; x: number; y: number }) => ({
+                          hole: p.hole_number,
+                          x: p.x,
+                          y: p.y,
+                        }),
+                      );
+                      setCoursePins(pins);
+                      setCourse(s.course === "OUT" ? "out" : "in");
+                      setRightPanelMode("pin-edit");
+                    }}
+                  >
+                    確認
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        await approveSession(s.id);
+                        setConfirmedSessions((prev) =>
+                          prev.filter((cs) => cs.id !== s.id),
+                        );
+                        alert(`${s.course} を承認しました`);
+                      } catch (err) {
+                        console.error("承認エラー:", err);
+                        alert("承認に失敗しました");
+                      }
+                    }}
+                  >
+                    承認
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* approved セッション送信エリア（常に表示） */}
+      {approvedSessions.length > 0 && (
+        <div className="mt-8">
+          <h2 className="font-bold mb-4">送信待ちセッション</h2>
+          <div className="space-y-2">
+            {approvedSessions.map((s) => (
+              <div
+                key={s.id}
+                className="flex items-center justify-between p-3 rounded bg-gray-50 border"
+              >
+                <div className="text-sm">
+                  <span className="font-bold">{s.course}</span>
+                  {s.target_date && ` - ${s.target_date}`}
+                </div>
+                <Button
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      await sendSession(s.id);
+                      setApprovedSessions((prev) =>
+                        prev.filter((as) => as.id !== s.id),
+                      );
+                      alert(`${s.course} をマスター室に送信しました`);
+                    } catch (err) {
+                      console.error("送信エラー:", err);
+                      alert("送信に失敗しました");
+                    }
+                  }}
+                >
+                  マスター室に送信
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
