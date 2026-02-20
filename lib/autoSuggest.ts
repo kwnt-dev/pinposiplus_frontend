@@ -20,6 +20,6 @@ export interface AutoSuggestData {
 }
 
 export async function getAutoSuggestData(): Promise<AutoSuggestData> {
-  const res = await axios.get("/auto-suggest-data");
+  const res = await axios.get("/api/auto-suggest-data");
   return res.data;
 }
