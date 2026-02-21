@@ -13,6 +13,25 @@ import {
 
 type CellType = "damage" | "ban" | "rain";
 
+// 登録済みセルをcellId形式に変換（表示用）
+function groupsToCellIds(groups: CellGroup[], holeNumber: number): string[] {
+  return groups
+    .filter((g) => g.hole_number === holeNumber)
+    .flatMap((g) => g.cells.map((c) => `cell_${c.x}_${c.y}`));
+}
+
+// 全ホールの登録済みセルマップ（GreenCardGrid用）
+function groupsToCellsMap(groups: CellGroup[]): Record<number, string[]> {
+  const map: Record<number, string[]> = {};
+  groups.forEach((g) => {
+    if (!map[g.hole_number]) map[g.hole_number] = [];
+    g.cells.forEach((c) => {
+      map[g.hole_number].push(`cell_${c.x}_${c.y}`);
+    });
+  });
+  return map;
+}
+
 export default function CellsEditPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
   const [selectedHole, setSelectedHole] = useState<number>(1);
@@ -57,25 +76,6 @@ export default function CellsEditPage() {
       : cellMode === "ban"
         ? setBanGroups
         : setRainGroups;
-
-  // 登録済みセルをcellId形式に変換（表示用）
-  function groupsToCellIds(groups: CellGroup[], holeNumber: number): string[] {
-    return groups
-      .filter((g) => g.hole_number === holeNumber)
-      .flatMap((g) => g.cells.map((c) => `cell_${c.x}_${c.y}`));
-  }
-
-  // 全ホールの登録済みセルマップ（GreenCardGrid用）
-  function groupsToCellsMap(groups: CellGroup[]): Record<number, string[]> {
-    const map: Record<number, string[]> = {};
-    groups.forEach((g) => {
-      if (!map[g.hole_number]) map[g.hole_number] = [];
-      g.cells.forEach((c) => {
-        map[g.hole_number].push(`cell_${c.x}_${c.y}`);
-      });
-    });
-    return map;
-  }
 
   const damageCellsMap = groupsToCellsMap(damageGroups);
   const banCellsMap = groupsToCellsMap(banGroups);
@@ -285,7 +285,7 @@ export default function CellsEditPage() {
                   onClick={handleSave}
                   disabled={saving || newCells.length === 0}
                 >
-                  {saving ? "保存中..." : "保存"}
+                  保存
                 </Button>
                 <Button
                   variant="outline"
