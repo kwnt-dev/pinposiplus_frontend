@@ -4,165 +4,165 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import GreenCardGrid from "@/components/greens/GreenCardGrid";
 import GreenCanvas from "@/components/greens/GreenCanvas";
-import api from "@/lib/axios";
+import {
+  getCellGroups,
+  createCellGroup,
+  deleteCellGroup,
+  CellGroup,
+} from "@/lib/cellGroups";
+
+type CellType = "damage" | "ban" | "rain";
 
 export default function CellsEditPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
   const [selectedHole, setSelectedHole] = useState<number>(1);
-  const [cellMode, setCellMode] = useState<"damage" | "ban" | "rain">("damage");
-  const [damageCellsMap, setDamageCellsMap] = useState<
-    Record<number, string[]>
-  >({});
-  const [banCellsMap, setBanCellsMap] = useState<Record<number, string[]>>({});
-  const [rainCellsMap, setRainCellsMap] = useState<Record<number, string[]>>(
-    {},
-  );
-  const [damageCellIdMap, setDamageCellIdMap] = useState<
-    Record<string, string>
-  >({});
-  const [banCellIdMap, setBanCellIdMap] = useState<Record<string, string>>({});
-  const [rainCellIdMap, setRainCellIdMap] = useState<Record<string, string>>(
-    {},
-  );
+  const [cellMode, setCellMode] = useState<CellType>("damage");
 
+  // 登録済みグループ（全ホール分）
+  const [damageGroups, setDamageGroups] = useState<CellGroup[]>([]);
+  const [banGroups, setBanGroups] = useState<CellGroup[]>([]);
+  const [rainGroups, setRainGroups] = useState<CellGroup[]>([]);
+
+  // 新規入力中のセル（ローカルstate、未保存）
+  const [newCells, setNewCells] = useState<string[]>([]);
+  const [comment, setComment] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // 全グループ取得
   useEffect(() => {
-    async function fetchAllCells() {
-      const holes = Array.from({ length: 18 }, (_, i) => i + 1);
-
-      const [damageResults, banResults, rainResults] = await Promise.all([
-        Promise.all(
-          holes.map((h) => api.get(`/api/damage-cells?hole_number=${h}`)),
-        ),
-        Promise.all(
-          holes.map((h) => api.get(`/api/ban-cells?hole_number=${h}`)),
-        ),
-        Promise.all(
-          holes.map((h) => api.get(`/api/rain-cells?hole_number=${h}`)),
-        ),
+    async function fetchAllGroups() {
+      const [damage, ban, rain] = await Promise.all([
+        getCellGroups("damage"),
+        getCellGroups("ban"),
+        getCellGroups("rain"),
       ]);
-
-      const damageMap: Record<number, string[]> = {};
-      const banMap: Record<number, string[]> = {};
-      const rainMap: Record<number, string[]> = {};
-      const damageIds: Record<string, string> = {};
-      const banIds: Record<string, string> = {};
-      const rainIds: Record<string, string> = {};
-
-      holes.forEach((h, i) => {
-        damageMap[h] = damageResults[i].data.map(
-          (c: { x: number; y: number }) => `cell_${c.x}_${c.y}`,
-        );
-        banMap[h] = banResults[i].data.map(
-          (c: { x: number; y: number }) => `cell_${c.x}_${c.y}`,
-        );
-        rainMap[h] = rainResults[i].data.map(
-          (c: { x: number; y: number }) => `cell_${c.x}_${c.y}`,
-        );
-
-        damageResults[i].data.forEach(
-          (c: { id: string; x: number; y: number }) => {
-            damageIds[`${h}_cell_${c.x}_${c.y}`] = c.id;
-          },
-        );
-        banResults[i].data.forEach(
-          (c: { id: string; x: number; y: number }) => {
-            banIds[`${h}_cell_${c.x}_${c.y}`] = c.id;
-          },
-        );
-        rainResults[i].data.forEach(
-          (c: { id: string; x: number; y: number }) => {
-            rainIds[`${h}_cell_${c.x}_${c.y}`] = c.id;
-          },
-        );
-      });
-
-      setDamageCellsMap(damageMap);
-      setBanCellsMap(banMap);
-      setRainCellsMap(rainMap);
-      setDamageCellIdMap(damageIds);
-      setBanCellIdMap(banIds);
-      setRainCellIdMap(rainIds);
+      setDamageGroups(damage);
+      setBanGroups(ban);
+      setRainGroups(rain);
     }
-
-    fetchAllCells();
+    fetchAllGroups();
   }, []);
 
-  const handleCellClick = async (cellId: string) => {
-    const parts = cellId.split("_");
-    const x = Number(parts[1]);
-    const y = Number(parts[2]);
+  // 現在のモードのグループ
+  const currentGroups =
+    cellMode === "damage"
+      ? damageGroups
+      : cellMode === "ban"
+        ? banGroups
+        : rainGroups;
 
-    const endpoint =
-      cellMode === "damage"
-        ? "damage-cells"
-        : cellMode === "ban"
-          ? "ban-cells"
-          : "rain-cells";
+  const setCurrentGroups =
+    cellMode === "damage"
+      ? setDamageGroups
+      : cellMode === "ban"
+        ? setBanGroups
+        : setRainGroups;
 
-    const cellsMap =
-      cellMode === "damage"
-        ? damageCellsMap
-        : cellMode === "ban"
-          ? banCellsMap
-          : rainCellsMap;
+  // 登録済みセルをcellId形式に変換（表示用）
+  function groupsToCellIds(groups: CellGroup[], holeNumber: number): string[] {
+    return groups
+      .filter((g) => g.hole_number === holeNumber)
+      .flatMap((g) => g.cells.map((c) => `cell_${c.x}_${c.y}`));
+  }
 
-    const idMap =
-      cellMode === "damage"
-        ? damageCellIdMap
-        : cellMode === "ban"
-          ? banCellIdMap
-          : rainCellIdMap;
-
-    const setMap =
-      cellMode === "damage"
-        ? setDamageCellsMap
-        : cellMode === "ban"
-          ? setBanCellsMap
-          : setRainCellsMap;
-
-    const setIdMap =
-      cellMode === "damage"
-        ? setDamageCellIdMap
-        : cellMode === "ban"
-          ? setBanCellIdMap
-          : setRainCellIdMap;
-
-    const currentCells = cellsMap[selectedHole] || [];
-    const isAlreadySelected = currentCells.includes(cellId);
-    const key = `${selectedHole}_${cellId}`;
-
-    if (isAlreadySelected) {
-      const dbId = idMap[key];
-      if (dbId) {
-        await api.delete(`/api/${endpoint}/${dbId}`);
-        setIdMap((prev) => {
-          const next = { ...prev };
-          delete next[key];
-          return next;
-        });
-      }
-      setMap((prev) => ({
-        ...prev,
-        [selectedHole]: currentCells.filter((id) => id !== cellId),
-      }));
-    } else {
-      const response = await api.post(`/api/${endpoint}`, {
-        hole_number: selectedHole,
-        x,
-        y,
+  // 全ホールの登録済みセルマップ（GreenCardGrid用）
+  function groupsToCellsMap(groups: CellGroup[]): Record<number, string[]> {
+    const map: Record<number, string[]> = {};
+    groups.forEach((g) => {
+      if (!map[g.hole_number]) map[g.hole_number] = [];
+      g.cells.forEach((c) => {
+        map[g.hole_number].push(`cell_${c.x}_${c.y}`);
       });
-      setIdMap((prev) => ({ ...prev, [key]: response.data.id }));
-      setMap((prev) => ({
-        ...prev,
-        [selectedHole]: [...currentCells, cellId],
-      }));
+    });
+    return map;
+  }
+
+  const damageCellsMap = groupsToCellsMap(damageGroups);
+  const banCellsMap = groupsToCellsMap(banGroups);
+  const rainCellsMap = groupsToCellsMap(rainGroups);
+
+  // 選択中ホールの登録済みセル
+  const registeredCells = groupsToCellIds(currentGroups, selectedHole);
+
+  // GreenCanvasに渡すセル（登録済み + 新規）
+  const displayCells = [...registeredCells, ...newCells];
+
+  // セルクリック（ローカルstateのみ更新、APIは叩かない）
+  const handleCellClick = (cellId: string) => {
+    // 登録済みセルはクリックで削除しない（グループ単位で削除）
+    if (registeredCells.includes(cellId)) return;
+
+    setNewCells((prev) =>
+      prev.includes(cellId)
+        ? prev.filter((id) => id !== cellId)
+        : [...prev, cellId],
+    );
+  };
+
+  // グループ保存
+  const handleSave = async () => {
+    if (newCells.length === 0) return;
+
+    setSaving(true);
+    try {
+      const cells = newCells.map((cellId) => {
+        const parts = cellId.split("_");
+        return { x: Number(parts[1]), y: Number(parts[2]) };
+      });
+
+      const newGroup = await createCellGroup(cellMode, {
+        hole_number: selectedHole,
+        comment: comment || null,
+        cells,
+      });
+
+      setCurrentGroups((prev) => [...prev, newGroup]);
+      setNewCells([]);
+      setComment("");
+    } catch (err) {
+      console.error("保存エラー:", err);
+      alert("保存に失敗しました");
+    } finally {
+      setSaving(false);
     }
   };
+
+  // グループ削除
+  const handleDeleteGroup = async (groupId: string) => {
+    if (!confirm("このグループを削除しますか？")) return;
+
+    try {
+      await deleteCellGroup(cellMode, groupId);
+      setCurrentGroups((prev) => prev.filter((g) => g.id !== groupId));
+    } catch (err) {
+      console.error("削除エラー:", err);
+      alert("削除に失敗しました");
+    }
+  };
+
+  // 新規セルクリア
+  const handleClear = () => {
+    setNewCells([]);
+    setComment("");
+  };
+
+  // ホール切り替え時に新規セルをリセット
+  const handleHoleChange = (holeNumber: number) => {
+    setSelectedHole(holeNumber);
+    setNewCells([]);
+    setComment("");
+  };
+
+  // 選択中ホールのグループ一覧
+  const holeGroups = currentGroups.filter(
+    (g) => g.hole_number === selectedHole,
+  );
 
   return (
     <div>
       <h1>セル編集</h1>
       <div className="flex gap-4">
+        {/* 左: グリッド一覧 */}
         <div className="flex-1">
           <div className="p-4">
             <div className="flex justify-center gap-2">
@@ -170,7 +170,7 @@ export default function CellsEditPage() {
                 variant={course === "out" ? "default" : "outline"}
                 onClick={() => {
                   setCourse("out");
-                  setSelectedHole(1);
+                  handleHoleChange(1);
                 }}
               >
                 OUT
@@ -179,7 +179,7 @@ export default function CellsEditPage() {
                 variant={course === "in" ? "default" : "outline"}
                 onClick={() => {
                   setCourse("in");
-                  setSelectedHole(10);
+                  handleHoleChange(10);
                 }}
               >
                 IN
@@ -213,7 +213,7 @@ export default function CellsEditPage() {
             >
               <GreenCardGrid
                 course={course}
-                onCardClick={(holeId) => setSelectedHole(Number(holeId))}
+                onCardClick={(holeId) => handleHoleChange(Number(holeId))}
                 holeDamageCells={
                   cellMode === "damage"
                     ? Object.entries(damageCellsMap).map(([hole, cellIds]) => ({
@@ -242,24 +242,95 @@ export default function CellsEditPage() {
             </div>
           </div>
         </div>
+
+        {/* 右: 編集パネル */}
         <div className="flex-1">
           <div className="p-4">
             <h2 className="font-bold mb-4">Hole {selectedHole}</h2>
+
             <GreenCanvas
               hole={String(selectedHole)}
               width={400}
               height={400}
               damageCells={
-                cellMode === "damage" ? damageCellsMap[selectedHole] || [] : []
+                cellMode === "damage" ? displayCells : registeredCells
               }
               banCells={
-                cellMode === "ban" ? banCellsMap[selectedHole] || [] : []
+                cellMode === "ban"
+                  ? displayCells
+                  : groupsToCellIds(banGroups, selectedHole)
               }
               rainCells={
-                cellMode === "rain" ? rainCellsMap[selectedHole] || [] : []
+                cellMode === "rain"
+                  ? displayCells
+                  : groupsToCellIds(rainGroups, selectedHole)
               }
               onCellClick={handleCellClick}
             />
+
+            {/* 新規セル・コメント・保存 */}
+            <div className="mt-4 space-y-2">
+              <p className="text-sm text-gray-600">
+                新規: {newCells.length}セル
+              </p>
+              <input
+                type="text"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="コメント（任意）: 焼け、虫食い、薬害など"
+                className="w-full px-3 py-2 border rounded text-sm"
+              />
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSave}
+                  disabled={saving || newCells.length === 0}
+                >
+                  {saving ? "保存中..." : "保存"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleClear}
+                  disabled={newCells.length === 0}
+                >
+                  クリア
+                </Button>
+              </div>
+            </div>
+
+            {/* 登録済みグループ一覧 */}
+            {holeGroups.length > 0 && (
+              <div className="mt-6">
+                <h3 className="font-bold text-sm mb-2">
+                  登録済み ({holeGroups.length}件)
+                </h3>
+                <div className="space-y-2">
+                  {holeGroups.map((group) => (
+                    <div
+                      key={group.id}
+                      className="flex items-center justify-between p-2 rounded border bg-gray-50 text-sm"
+                    >
+                      <div>
+                        <span className="font-medium">
+                          {group.cells.length}セル
+                        </span>
+                        {group.comment && (
+                          <span className="ml-2 text-gray-500">
+                            {group.comment}
+                          </span>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteGroup(group.id)}
+                      >
+                        削除
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
