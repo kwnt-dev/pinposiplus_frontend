@@ -8,12 +8,14 @@ import {
   Calendar,
   History,
   Users,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
@@ -21,7 +23,7 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 import { GolfIcon } from "@/components/ui/GolfIcon";
-
+import { useAuth } from "../../hooks/useAuth";
 const menuItems: { icon: LucideIcon; label: string; href: string }[] = [
   { icon: BarChart3, label: "ダッシュボード", href: "/admin" },
   { icon: Grid3x3, label: "セル設定", href: "/admin/cells" },
@@ -32,6 +34,7 @@ const menuItems: { icon: LucideIcon; label: string; href: string }[] = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   return (
     <Sidebar>
@@ -66,6 +69,25 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        {user && (
+          <div className="px-1 space-y-2">
+            <div className="px-3 py-2 bg-sidebar-accent rounded-lg">
+              <div className="text-sm font-semibold truncate">{user.name}</div>
+              <div className="text-xs text-muted-foreground truncate">
+                {user.email}
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              className="w-full px-3 py-2 bg-destructive/80 hover:bg-destructive text-destructive-foreground rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <LogOut size={16} />
+              ログアウト
+            </button>
+          </div>
+        )}
+      </SidebarFooter>
     </Sidebar>
   );
 }
