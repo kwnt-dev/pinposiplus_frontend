@@ -1,7 +1,6 @@
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
-import { checkSession, publishSession, PinSession } from "@/lib/pinSession";
 import { MapPin } from "lucide-react";
 
 interface PinEditPanelProps {
@@ -14,11 +13,6 @@ interface PinEditPanelProps {
   onCellModeChange: (mode: "damage" | "ban" | "rain") => void;
   onPinDragged: (pin: { id: string; x: number; y: number }) => void;
   onCellClick: (cellId: string) => void;
-  onPinSave: () => void;
-  outSession: PinSession | null;
-  inSession: PinSession | null;
-  onOutSessionUpdate: (session: PinSession) => void;
-  onInSessionUpdate: (session: PinSession) => void;
 }
 
 export default function PinEditPanel({
@@ -31,11 +25,6 @@ export default function PinEditPanel({
   onCellModeChange,
   onPinDragged,
   onCellClick,
-  onPinSave,
-  outSession,
-  inSession,
-  onOutSessionUpdate,
-  onInSessionUpdate,
 }: PinEditPanelProps) {
   return (
     <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
@@ -93,41 +82,6 @@ export default function PinEditPanel({
           onPinDragged={onPinDragged}
           onCellClick={onCellClick}
         />
-      </div>
-
-      {/* アクションボタン */}
-      <div className="flex-shrink-0 p-4 border-t space-y-2">
-        <Button className="w-full" onClick={onPinSave}>
-          ピンを保存
-        </Button>
-        <Button
-          className="w-full"
-          variant="outline"
-          onClick={async () => {
-            if (!outSession || !inSession) return;
-            const updatedOut = await checkSession(outSession.id);
-            const updatedIn = await checkSession(inSession.id);
-            onOutSessionUpdate(updatedOut);
-            onInSessionUpdate(updatedIn);
-            alert("編集完了しました");
-          }}
-        >
-          編集完了
-        </Button>
-        <Button
-          className="w-full"
-          variant="outline"
-          onClick={async () => {
-            if (!outSession || !inSession) return;
-            const updatedOut = await publishSession(outSession.id);
-            const updatedIn = await publishSession(inSession.id);
-            onOutSessionUpdate(updatedOut);
-            onInSessionUpdate(updatedIn);
-            alert("スタッフに公開しました");
-          }}
-        >
-          スタッフに公開
-        </Button>
       </div>
     </div>
   );

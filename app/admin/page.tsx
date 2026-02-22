@@ -15,13 +15,15 @@ import {
   getPinSessions,
   approveSession,
   sendSession,
+  checkSession,
+  publishSession,
   PinSession,
 } from "@/lib/pinSession";
 import { format } from "date-fns";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, CheckCircle, Eye } from "lucide-react";
 import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
@@ -271,7 +273,40 @@ export default function DashboardPage() {
 
   return (
     <div className="h-full flex flex-col p-4">
-      <PageHeader icon={ShieldCheck} title="ダッシュボード" />
+      <PageHeader icon={ShieldCheck} title="ダッシュボード">
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!outSession || !inSession}
+          onClick={async () => {
+            if (!outSession || !inSession) return;
+            const updatedOut = await checkSession(outSession.id);
+            const updatedIn = await checkSession(inSession.id);
+            setOutSession(updatedOut);
+            setInSession(updatedIn);
+            alert("編集完了しました");
+          }}
+        >
+          <CheckCircle size={14} className="mr-1" />
+          編集完了
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!outSession || !inSession}
+          onClick={async () => {
+            if (!outSession || !inSession) return;
+            const updatedOut = await publishSession(outSession.id);
+            const updatedIn = await publishSession(inSession.id);
+            setOutSession(updatedOut);
+            setInSession(updatedIn);
+            alert("スタッフに公開しました");
+          }}
+        >
+          <Eye size={14} className="mr-1" />
+          スタッフに公開
+        </Button>
+      </PageHeader>
 
       {/* メインコンテンツ: 左グリッド + 右パネル */}
       <div className="flex-1 min-h-0 flex gap-4">
@@ -311,10 +346,6 @@ export default function DashboardPage() {
             }}
             onCellClick={handleCellClick}
             onPinSave={handlePinSave}
-            outSession={outSession}
-            inSession={inSession}
-            onOutSessionUpdate={setOutSession}
-            onInSessionUpdate={setInSession}
           />
         )}
       </div>
