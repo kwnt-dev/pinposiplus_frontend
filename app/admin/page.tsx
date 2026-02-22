@@ -270,9 +270,11 @@ export default function DashboardPage() {
   };
 
   return (
-    <div>
-      <PageHeader icon={ShieldCheck} title="管理者ダッシュボード" />
-      <div className="flex gap-4">
+    <div className="h-full flex flex-col p-4">
+      <PageHeader icon={ShieldCheck} title="ダッシュボード" />
+
+      {/* メインコンテンツ: 左グリッド + 右パネル */}
+      <div className="flex-1 min-h-0 flex gap-4">
         <CourseGridPanel
           course={course}
           onCourseChange={setCourse}
@@ -281,45 +283,43 @@ export default function DashboardPage() {
           outSession={outSession}
           inSession={inSession}
         />
-        <div className="flex-1">
-          {rightPanelMode === "auto-suggest" ? (
-            <AutoSuggestPanel
-              selectedDate={selectedDate}
-              onDateChange={setSelectedDate}
-              isRainyDay={isRainyDay}
-              onRainyDayChange={setIsRainyDay}
-              courseDifficulty={courseDifficulty}
-              onDifficultyChange={setCourseDifficulty}
-              onGenerate={handleCourseGenerate}
-            />
-          ) : (
-            <PinEditPanel
-              editingHole={editingHole}
-              editingPin={editingPin}
-              damageCells={damageCellsMap[editingHole] || []}
-              banCells={banCellsMap[editingHole] || []}
-              rainCells={rainCellsMap[editingHole] || []}
-              cellMode={cellMode}
-              onCellModeChange={setCellMode}
-              onPinDragged={(pin) => {
-                setCoursePins((prev) =>
-                  prev.map((p) =>
-                    p.hole === editingHole ? { ...p, x: pin.x, y: pin.y } : p,
-                  ),
-                );
-              }}
-              onCellClick={handleCellClick}
-              onPinSave={handlePinSave}
-              outSession={outSession}
-              inSession={inSession}
-              onOutSessionUpdate={setOutSession}
-              onInSessionUpdate={setInSession}
-            />
-          )}
-        </div>
+        {rightPanelMode === "auto-suggest" ? (
+          <AutoSuggestPanel
+            selectedDate={selectedDate}
+            onDateChange={setSelectedDate}
+            isRainyDay={isRainyDay}
+            onRainyDayChange={setIsRainyDay}
+            courseDifficulty={courseDifficulty}
+            onDifficultyChange={setCourseDifficulty}
+            onGenerate={handleCourseGenerate}
+          />
+        ) : (
+          <PinEditPanel
+            editingHole={editingHole}
+            editingPin={editingPin}
+            damageCells={damageCellsMap[editingHole] || []}
+            banCells={banCellsMap[editingHole] || []}
+            rainCells={rainCellsMap[editingHole] || []}
+            cellMode={cellMode}
+            onCellModeChange={setCellMode}
+            onPinDragged={(pin) => {
+              setCoursePins((prev) =>
+                prev.map((p) =>
+                  p.hole === editingHole ? { ...p, x: pin.x, y: pin.y } : p,
+                ),
+              );
+            }}
+            onCellClick={handleCellClick}
+            onPinSave={handlePinSave}
+            outSession={outSession}
+            inSession={inSession}
+            onOutSessionUpdate={setOutSession}
+            onInSessionUpdate={setInSession}
+          />
+        )}
       </div>
 
-      {/* confirmed セッション確認エリア（常に表示） */}
+      {/* confirmed セッション確認エリア */}
       {confirmedSessions.length > 0 && (
         <div className="mt-8">
           <h2 className="font-bold mb-4">確認待ちセッション</h2>
@@ -380,7 +380,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* approved セッション送信エリア（常に表示） */}
+      {/* approved セッション送信エリア */}
       {approvedSessions.length > 0 && (
         <div className="mt-8">
           <h2 className="font-bold mb-4">送信待ちセッション</h2>

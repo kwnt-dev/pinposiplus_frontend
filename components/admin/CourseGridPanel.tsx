@@ -21,32 +21,36 @@ export default function CourseGridPanel({
   inSession,
 }: CourseGridPanelProps) {
   return (
-    <div className="flex-1">
-      {/* セッションステータス表示 */}
-      {(outSession || inSession) && (
-        <div className="flex gap-4 mb-4">
-          {outSession && (
-            <div className="px-3 py-1 rounded bg-gray-100 text-sm">
-              OUT: {outSession.status}
-            </div>
-          )}
-          {inSession && (
-            <div className="px-3 py-1 rounded bg-gray-100 text-sm">
-              IN: {inSession.status}
-            </div>
-          )}
-        </div>
-      )}
+    <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
+      {/* セッションステータスヘッダー */}
+      <div className="flex-shrink-0 h-[42px] px-4 bg-gradient-to-r from-gray-700 to-gray-800 flex items-center gap-3">
+        {outSession ? (
+          <span className="text-sm text-white font-medium">
+            OUT: {outSession.status}
+          </span>
+        ) : (
+          <span className="text-sm text-white/60">OUT: 未作成</span>
+        )}
+        {inSession ? (
+          <span className="text-sm text-white font-medium">
+            IN: {inSession.status}
+          </span>
+        ) : (
+          <span className="text-sm text-white/60">IN: 未作成</span>
+        )}
+      </div>
 
       {/* OUT/IN切り替え */}
-      <div className="flex justify-center gap-2">
+      <div className="flex-shrink-0 h-[44px] px-4 bg-muted border-b flex items-center justify-center gap-2">
         <Button
+          size="sm"
           variant={course === "out" ? "default" : "outline"}
           onClick={() => onCourseChange("out")}
         >
           OUT
         </Button>
         <Button
+          size="sm"
           variant={course === "in" ? "default" : "outline"}
           onClick={() => onCourseChange("in")}
         >
@@ -55,17 +59,19 @@ export default function CourseGridPanel({
       </div>
 
       {/* 3×3グリッド */}
-      <div
-        style={{
-          transform: `scale(0.7)`,
-          transformOrigin: "top left",
-        }}
-      >
-        <GreenCardGridPDF
-          course={course}
-          pins={pins}
-          onCardClick={onCardClick}
-        />
+      <div className="flex-1 min-h-0 flex items-center justify-center p-2">
+        <div
+          style={{
+            transform: `scale(0.7)`,
+            transformOrigin: "center center",
+          }}
+        >
+          <GreenCardGridPDF
+            course={course}
+            pins={pins}
+            onCardClick={onCardClick}
+          />
+        </div>
       </div>
     </div>
   );
