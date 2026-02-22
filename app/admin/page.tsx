@@ -20,6 +20,8 @@ import {
 import { format } from "date-fns";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { ShieldCheck } from "lucide-react";
 import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
@@ -269,7 +271,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <h1>ダッシュボード</h1>
+      <PageHeader icon={ShieldCheck} title="管理者ダッシュボード" />
       <div className="flex gap-4">
         <CourseGridPanel
           course={course}

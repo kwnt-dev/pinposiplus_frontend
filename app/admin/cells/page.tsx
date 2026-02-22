@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Grid3x3 } from "lucide-react";
 import GreenCardGrid from "@/components/greens/GreenCardGrid";
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import {
@@ -160,7 +162,7 @@ export default function CellsEditPage() {
 
   return (
     <div>
-      <h1>セル編集</h1>
+      <PageHeader icon={Grid3x3} title="セル設定" />
       <div className="flex gap-4">
         {/* 左: グリッド一覧 */}
         <div className="flex-1">

@@ -19,6 +19,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import api from "@/lib/axios";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Users } from "lucide-react";
 
 type User = {
   id: string;
@@ -91,10 +93,9 @@ export default function UsersPage() {
 
   return (
     <div className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold">ユーザー管理</h1>
+      <PageHeader icon={Users} title="ユーザー管理">
         <Button onClick={openAdd}>新規追加</Button>
-      </div>
+      </PageHeader>
       <Table>
         <TableHeader>
           <TableRow>
