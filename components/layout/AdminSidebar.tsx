@@ -3,6 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
+  Grid3x3,
+  Calendar,
+  History,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
@@ -13,12 +21,12 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 
-const menuItems = [
-  { label: "ダッシュボード", href: "/admin" },
-  { label: "セル設定", href: "/admin/cells" },
-  { label: "予定表", href: "/admin/schedule" },
-  { label: "ピン履歴", href: "/admin/history" },
-  { label: "ユーザー管理", href: "/admin/users" },
+const menuItems: { icon: LucideIcon; label: string; href: string }[] = [
+  { icon: BarChart3, label: "ダッシュボード", href: "/admin" },
+  { icon: Grid3x3, label: "セル設定", href: "/admin/cells" },
+  { icon: Calendar, label: "予定表", href: "/admin/schedule" },
+  { icon: History, label: "ピン履歴", href: "/admin/history" },
+  { icon: Users, label: "ユーザー管理", href: "/admin/users" },
 ];
 
 export function AdminSidebar() {
@@ -43,7 +51,10 @@ export function AdminSidebar() {
                         : pathname.startsWith(item.href)
                     }
                   >
-                    <Link href={item.href}>{item.label}</Link>
+                    <Link href={item.href}>
+                      <item.icon size={20} />
+                      <span>{item.label}</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
