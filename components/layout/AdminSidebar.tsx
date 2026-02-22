@@ -20,6 +20,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
+import { GolfIcon } from "@/components/ui/GolfIcon";
 
 const menuItems: { icon: LucideIcon; label: string; href: string }[] = [
   { icon: BarChart3, label: "ダッシュボード", href: "/admin" },
@@ -35,7 +36,10 @@ export function AdminSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <h1 className="text-lg font-bold px-3 py-2">ピンポジ+</h1>
+        <div className="flex items-center gap-3 px-3 py-2">
+          <GolfIcon size={32} />
+          <h1 className="text-lg font-bold">ピンポジ+</h1>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -52,7 +56,7 @@ export function AdminSidebar() {
                     }
                   >
                     <Link href={item.href}>
-                      <item.icon size={20} />
+                      <item.icon />
                       <span>{item.label}</span>
                     </Link>
                   </SidebarMenuButton>
