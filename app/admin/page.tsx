@@ -23,7 +23,8 @@ import { format } from "date-fns";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { ShieldCheck, CheckCircle, Eye } from "lucide-react";
+import { ShieldCheck, CheckCircle, Eye, FileText, Send } from "lucide-react";
+import Link from "next/link";
 import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
@@ -274,6 +275,12 @@ export default function DashboardPage() {
   return (
     <div className="h-full flex flex-col p-4">
       <PageHeader icon={ShieldCheck} title="ダッシュボード">
+        <Link href="/admin/pdf-preview">
+          <Button size="sm" variant="outline">
+            <FileText size={14} className="mr-1" />
+            PDF確認
+          </Button>
+        </Link>
         <Button
           size="sm"
           variant="outline"
@@ -305,6 +312,27 @@ export default function DashboardPage() {
         >
           <Eye size={14} className="mr-1" />
           スタッフに公開
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!outSession || !inSession}
+          onClick={async () => {
+            if (!outSession || !inSession) return;
+            try {
+              const updatedOut = await sendSession(outSession.id);
+              const updatedIn = await sendSession(inSession.id);
+              setOutSession(updatedOut);
+              setInSession(updatedIn);
+              alert("マスター室に送信しました");
+            } catch (err) {
+              console.error("送信エラー:", err);
+              alert("送信に失敗しました");
+            }
+          }}
+        >
+          <Send size={14} className="mr-1" />
+          マスター室に送信
         </Button>
       </PageHeader>
 
