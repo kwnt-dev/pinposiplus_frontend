@@ -25,6 +25,11 @@ export default function GreenCard({
         damageCells={damageCells}
         banCells={banCells}
         rainCells={rainCells}
+        showExit={false}
+        showYardLines={false}
+        showBoundaryBuffer={false}
+        showSlopeBuffer={false}
+        showExitRoute={false}
       />
     </div>
   );
