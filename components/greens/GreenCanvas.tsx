@@ -455,44 +455,36 @@ export default function GreenCanvas({
 
         {/* 現在のピン（白丸+赤丸の二重丸） */}
         {currentPin && (
-          <>
-            <Circle
-              x={ydToPx(currentPin.x)}
-              y={ydToPx(currentPin.y)}
-              radius={12}
-              fill="white"
-              draggable
-              onDragEnd={(e) => {
-                const snappedX = Math.round(e.target.x() / YD_TO_PX);
-                const snappedY = Math.round(e.target.y() / YD_TO_PX);
+          <Group
+            x={ydToPx(currentPin.x)}
+            y={ydToPx(currentPin.y)}
+            draggable
+            onDragEnd={(e) => {
+              const snappedX = Math.round(e.target.x() / YD_TO_PX);
+              const snappedY = Math.round(e.target.y() / YD_TO_PX);
 
-                if (
-                  isInsideGreen(
-                    { id: currentPin.id, x: snappedX, y: snappedY },
-                    holeData.cells,
-                  ) &&
-                  isPointInPolygon(snappedX, snappedY, boundaryBufferPoints) &&
-                  !isPointInPolygon(snappedX, snappedY, slopeBufferPoints)
-                ) {
-                  onPinDragged?.({
-                    id: currentPin.id,
-                    x: snappedX,
-                    y: snappedY,
-                  });
-                } else {
-                  e.target.x(ydToPx(currentPin.x));
-                  e.target.y(ydToPx(currentPin.y));
-                }
-              }}
-            />
-            <Circle
-              x={ydToPx(currentPin.x)}
-              y={ydToPx(currentPin.y)}
-              radius={9}
-              fill="#ef4444"
-              listening={false}
-            />
-          </>
+              if (
+                isInsideGreen(
+                  { id: currentPin.id, x: snappedX, y: snappedY },
+                  holeData.cells,
+                ) &&
+                isPointInPolygon(snappedX, snappedY, boundaryBufferPoints) &&
+                !isPointInPolygon(snappedX, snappedY, slopeBufferPoints)
+              ) {
+                onPinDragged?.({
+                  id: currentPin.id,
+                  x: snappedX,
+                  y: snappedY,
+                });
+              } else {
+                e.target.x(ydToPx(currentPin.x));
+                e.target.y(ydToPx(currentPin.y));
+              }
+            }}
+          >
+            <Circle radius={12} fill="white" />
+            <Circle radius={9} fill="#ef4444" />
+          </Group>
         )}
 
         {/* 現在ピン出口線 */}

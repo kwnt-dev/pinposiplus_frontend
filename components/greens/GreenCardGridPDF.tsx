@@ -22,7 +22,15 @@ export default function GreenCardGridPDF({
       {holes.map((hole) => {
         const pin = pins?.find((p) => p.hole === hole);
         return (
-          <div key={hole} onClick={() => onCardClick?.(String(hole))}>
+          <div
+            key={hole}
+            onClick={() => onCardClick?.(String(hole))}
+            className={
+              onCardClick
+                ? "cursor-pointer hover:opacity-80 active:scale-95 transition-all"
+                : ""
+            }
+          >
             <GreenCardPDF
               hole={String(hole)}
               currentPin={
