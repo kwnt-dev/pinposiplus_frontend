@@ -90,37 +90,39 @@ export default function GreenCardPDF({ hole, currentPin }: Props) {
                 fill="transparent"
               />
             ) : null}
-            {/* 座標線 */}
-            {[0, 10, 20, 30, 40, 50].map((depth) => {
-              const y = holeData.origin.y - depth;
-              return (
-                <Line
-                  key={`depth-${depth}`}
-                  points={[0, ydToPx(y), CANVAS_SIZE, ydToPx(y)]}
-                  stroke="#000000"
-                  strokeWidth={2}
-                />
-              );
-            })}
-            {/* 座標線ラベル */}
-            {[0, 10, 20, 30, 40, 50].map((depth) => {
-              const y = holeData.origin.y - depth;
-              return (
-                <Text
-                  key={`label-${depth}`}
-                  x={CANVAS_SIZE - 95}
-                  y={ydToPx(y) - 60}
-                  text={`${depth}`}
-                  fontSize={60}
-                  width={80}
-                  align="right"
-                  fontStyle="bold"
-                  fill="#000000"
-                />
-              );
-            })}
-            {/* 中心線 */}
-            {centerLineEdges && (
+            {/* 座標線（ピンありの時のみ） */}
+            {currentPin &&
+              [0, 10, 20, 30, 40, 50].map((depth) => {
+                const y = holeData.origin.y - depth;
+                return (
+                  <Line
+                    key={`depth-${depth}`}
+                    points={[0, ydToPx(y), CANVAS_SIZE, ydToPx(y)]}
+                    stroke="#000000"
+                    strokeWidth={2}
+                  />
+                );
+              })}
+            {/* 座標線ラベル（ピンありの時のみ） */}
+            {currentPin &&
+              [0, 10, 20, 30, 40, 50].map((depth) => {
+                const y = holeData.origin.y - depth;
+                return (
+                  <Text
+                    key={`label-${depth}`}
+                    x={CANVAS_SIZE - 95}
+                    y={ydToPx(y) - 60}
+                    text={`${depth}`}
+                    fontSize={60}
+                    width={80}
+                    align="right"
+                    fontStyle="bold"
+                    fill="#000000"
+                  />
+                );
+              })}
+            {/* 中心線（ピンありの時のみ） */}
+            {currentPin && centerLineEdges && (
               <Line
                 points={[
                   ydToPx(30),
