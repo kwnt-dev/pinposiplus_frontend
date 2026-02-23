@@ -1,8 +1,10 @@
+"use client";
+
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
 import { MapPin, Save } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface PinEditPanelProps {
   editingHole: number;
@@ -26,6 +28,22 @@ export default function PinEditPanel({
   const [showDamage, setShowDamage] = useState(true);
   const [showBan, setShowBan] = useState(true);
   const [showRain, setShowRain] = useState(true);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const [canvasSize, setCanvasSize] = useState(400);
+
+  useEffect(() => {
+    const container = canvasContainerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        setCanvasSize(Math.floor(Math.min(width, height)));
+      }
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
@@ -70,11 +88,14 @@ export default function PinEditPanel({
       </div>
 
       {/* キャンバス */}
-      <div className="flex-1 min-h-0 flex items-center justify-center p-2">
+      <div
+        ref={canvasContainerRef}
+        className="flex-1 min-h-0 flex items-center justify-center p-2"
+      >
         <GreenCanvas
           hole={String(editingHole)}
-          width={400}
-          height={400}
+          width={canvasSize}
+          height={canvasSize}
           damageCells={showDamage ? damageCells : []}
           banCells={showBan ? banCells : []}
           rainCells={showRain ? rainCells : []}
