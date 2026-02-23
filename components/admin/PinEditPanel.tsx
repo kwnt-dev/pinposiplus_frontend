@@ -1,7 +1,8 @@
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
-import { MapPin } from "lucide-react";
+import { MapPin, Save } from "lucide-react";
+import { useState } from "react";
 
 interface PinEditPanelProps {
   editingHole: number;
@@ -9,10 +10,8 @@ interface PinEditPanelProps {
   damageCells: string[];
   banCells: string[];
   rainCells: string[];
-  cellMode: "damage" | "ban" | "rain";
-  onCellModeChange: (mode: "damage" | "ban" | "rain") => void;
   onPinDragged: (pin: { id: string; x: number; y: number }) => void;
-  onCellClick: (cellId: string) => void;
+  onPinSave: () => void;
 }
 
 export default function PinEditPanel({
@@ -21,11 +20,13 @@ export default function PinEditPanel({
   damageCells,
   banCells,
   rainCells,
-  cellMode,
-  onCellModeChange,
   onPinDragged,
-  onCellClick,
+  onPinSave,
 }: PinEditPanelProps) {
+  const [showDamage, setShowDamage] = useState(true);
+  const [showBan, setShowBan] = useState(true);
+  const [showRain, setShowRain] = useState(true);
+
   return (
     <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
       {/* ヘッダーバー */}
@@ -36,28 +37,35 @@ export default function PinEditPanel({
         </h2>
       </div>
 
-      {/* トグルボタン */}
-      <div className="flex-shrink-0 h-[44px] px-4 bg-muted border-b flex items-center gap-2">
+      {/* 表示トグル + 保存 */}
+      <div className="flex-shrink-0 px-4 py-2 bg-muted border-b flex items-center gap-2">
         <Button
           size="sm"
-          variant={cellMode === "damage" ? "default" : "outline"}
-          onClick={() => onCellModeChange("damage")}
+          variant={showDamage ? "default" : "outline"}
+          onClick={() => setShowDamage(!showDamage)}
         >
           傷み
         </Button>
         <Button
           size="sm"
-          variant={cellMode === "ban" ? "default" : "outline"}
-          onClick={() => onCellModeChange("ban")}
+          variant={showBan ? "default" : "outline"}
+          onClick={() => setShowBan(!showBan)}
         >
           禁止
         </Button>
         <Button
           size="sm"
-          variant={cellMode === "rain" ? "default" : "outline"}
-          onClick={() => onCellModeChange("rain")}
+          variant={showRain ? "default" : "outline"}
+          onClick={() => setShowRain(!showRain)}
         >
           雨天
+        </Button>
+
+        <div className="flex-1" />
+
+        <Button size="sm" onClick={onPinSave}>
+          <Save size={14} className="mr-1" />
+          保存
         </Button>
       </div>
 
@@ -67,9 +75,9 @@ export default function PinEditPanel({
           hole={String(editingHole)}
           width={400}
           height={400}
-          damageCells={damageCells}
-          banCells={banCells}
-          rainCells={rainCells}
+          damageCells={showDamage ? damageCells : []}
+          banCells={showBan ? banCells : []}
+          rainCells={showRain ? rainCells : []}
           currentPin={
             editingPin
               ? {
@@ -80,7 +88,6 @@ export default function PinEditPanel({
               : undefined
           }
           onPinDragged={onPinDragged}
-          onCellClick={onCellClick}
         />
       </div>
     </div>

@@ -15,7 +15,6 @@ import {
   getPinSessions,
   approveSession,
   sendSession,
-  checkSession,
   publishSession,
   PinSession,
 } from "@/lib/pinSession";
@@ -23,7 +22,7 @@ import { format } from "date-fns";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { ShieldCheck, CheckCircle, Eye, FileText, Send } from "lucide-react";
+import { ShieldCheck, Eye, FileText, Send } from "lucide-react";
 import Link from "next/link";
 import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
@@ -95,7 +94,6 @@ export default function DashboardPage() {
     {},
   );
   const [pastPinsMap, setPastPinsMap] = useState<Record<number, Pin[]>>({});
-  const [cellMode, setCellMode] = useState<"damage" | "ban" | "rain">("damage");
 
   // セルデータ・過去ピンをAPI取得
   useEffect(() => {
@@ -109,13 +107,13 @@ export default function DashboardPage() {
         const pinsMap: Record<number, Pin[]> = {};
 
         for (const [hole, cells] of Object.entries(data.damage_cells)) {
-          damageMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+          damageMap[Number(hole)] = cells.map((c) => `cell_${c.x}_${c.y}`);
         }
         for (const [hole, cells] of Object.entries(data.ban_cells)) {
-          banMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+          banMap[Number(hole)] = cells.map((c) => `cell_${c.x}_${c.y}`);
         }
         for (const [hole, cells] of Object.entries(data.rain_cells)) {
-          rainMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+          rainMap[Number(hole)] = cells.map((c) => `cell_${c.x}_${c.y}`);
         }
         for (const [hole, pins] of Object.entries(data.past_pins)) {
           pinsMap[Number(hole)] = pins.map((p, i) => ({
@@ -252,26 +250,6 @@ export default function DashboardPage() {
     });
   };
 
-  const handleCellClick = (cellId: string) => {
-    const updateCells =
-      cellMode === "damage"
-        ? setDamageCellsMap
-        : cellMode === "ban"
-          ? setBanCellsMap
-          : setRainCellsMap;
-
-    updateCells((prev) => {
-      const currentCells = prev[editingHole] || [];
-      const isAlreadySelected = currentCells.includes(cellId);
-      return {
-        ...prev,
-        [editingHole]: isAlreadySelected
-          ? currentCells.filter((id: string) => id !== cellId)
-          : [...currentCells, cellId],
-      };
-    });
-  };
-
   return (
     <div className="h-full flex flex-col p-4">
       <PageHeader icon={ShieldCheck} title="ダッシュボード">
@@ -281,22 +259,6 @@ export default function DashboardPage() {
             PDF確認
           </Button>
         </Link>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={!outSession || !inSession}
-          onClick={async () => {
-            if (!outSession || !inSession) return;
-            const updatedOut = await checkSession(outSession.id);
-            const updatedIn = await checkSession(inSession.id);
-            setOutSession(updatedOut);
-            setInSession(updatedIn);
-            alert("編集完了しました");
-          }}
-        >
-          <CheckCircle size={14} className="mr-1" />
-          編集完了
-        </Button>
         <Button
           size="sm"
           variant="outline"
@@ -363,8 +325,6 @@ export default function DashboardPage() {
             damageCells={damageCellsMap[editingHole] || []}
             banCells={banCellsMap[editingHole] || []}
             rainCells={rainCellsMap[editingHole] || []}
-            cellMode={cellMode}
-            onCellModeChange={setCellMode}
             onPinDragged={(pin) => {
               setCoursePins((prev) =>
                 prev.map((p) =>
@@ -372,7 +332,6 @@ export default function DashboardPage() {
                 ),
               );
             }}
-            onCellClick={handleCellClick}
             onPinSave={handlePinSave}
           />
         )}
