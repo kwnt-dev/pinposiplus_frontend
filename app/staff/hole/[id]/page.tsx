@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import GreenCanvas from "@/components/greens/GreenCanvas";
-import { Button } from "@/components/ui/button";
 import api from "@/lib/axios";
 
 export default function StaffHoleEditPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const holeId = params.id as string;
   const holeNumber = Number(holeId);
   const sessionId = searchParams.get("session_id");
@@ -17,6 +17,18 @@ export default function StaffHoleEditPage() {
     { id: string; x: number; y: number } | undefined
   >(undefined);
   const [pinDbId, setPinDbId] = useState<string | null>(null);
+  const [canvasSize, setCanvasSize] = useState(400);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      setCanvasSize(Math.floor(Math.min(width, height)));
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -52,30 +64,40 @@ export default function StaffHoleEditPage() {
       session_id: sessionId,
     });
     setPinDbId(response.data.id);
-    alert("保存しました");
   }
 
-  if (!sessionId) {
-    return (
-      <div className="p-8">
-        <p className="text-gray-500">セッションが指定されていません</p>
-      </div>
-    );
-  }
+  if (!sessionId) return null;
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Hole {holeId}</h1>
-      <GreenCanvas
-        hole={holeId}
-        width={400}
-        height={400}
-        currentPin={pin}
-        onPinDragged={(newPin) => setPin(newPin)}
-      />
-      <Button className="mt-4 w-full" onClick={handleSave}>
-        ピンを保存
-      </Button>
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center justify-between">
+        <button
+          onClick={() => router.back()}
+          className="text-sm font-medium text-gray-600 hover:text-gray-900"
+        >
+          ← 戻る
+        </button>
+        <h1 className="text-lg font-bold">Hole {holeId}</h1>
+        <button
+          onClick={handleSave}
+          className="px-4 py-1.5 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 transition-all"
+        >
+          保存
+        </button>
+      </header>
+
+      <main
+        ref={containerRef}
+        className="flex-1 min-h-0 flex items-center justify-center p-4"
+      >
+        <GreenCanvas
+          hole={holeId}
+          width={canvasSize}
+          height={canvasSize}
+          currentPin={pin}
+          onPinDragged={(newPin) => setPin(newPin)}
+        />
+      </main>
     </div>
   );
 }
