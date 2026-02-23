@@ -28,6 +28,7 @@ export default function GreenCard({
         showExit={false}
         showYardLines={false}
         showCenterLine={false}
+        showBoundaryLine={false}
         showBoundaryBuffer={false}
         showSlopeBuffer={false}
         showExitRoute={false}

@@ -45,6 +45,7 @@ interface Props {
   showGrid?: boolean;
   showYardLines?: boolean;
   showCenterLine?: boolean;
+  showBoundaryLine?: boolean;
   showBoundaryBuffer?: boolean;
   showSlopeBuffer?: boolean;
   showExitRoute?: boolean;
@@ -71,6 +72,7 @@ export default function GreenCanvas({
   showGrid = true,
   showYardLines = true,
   showCenterLine = true,
+  showBoundaryLine = true,
   showBoundaryBuffer = true,
   showSlopeBuffer = true,
   showExitRoute = true,
@@ -176,12 +178,14 @@ export default function GreenCanvas({
         )}
 
         {/* 外周線 */}
-        <Path
-          data={scalePathToPixels(holeData.boundary.d)}
-          stroke="#000000"
-          strokeWidth={2}
-          fill="transparent"
-        />
+        {showBoundaryLine && (
+          <Path
+            data={scalePathToPixels(holeData.boundary.d)}
+            stroke="#000000"
+            strokeWidth={2}
+            fill="transparent"
+          />
+        )}
 
         {/* 外周制限エリア */}
         {showBoundaryBuffer && (
