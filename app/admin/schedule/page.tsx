@@ -110,35 +110,42 @@ export default function SchedulePage() {
   return (
     <div className="p-4 h-full flex flex-col">
       <PageHeader icon={Calendar} title="予定表" />
-      <div className="flex items-center gap-3 mb-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setCurrentMonth((prev) => subMonths(prev, 1))}
-        >
-          ◀
-        </Button>
-        <span className="font-bold text-lg min-w-[140px] text-center">
-          {format(currentMonth, "yyyy年 M月", { locale: ja })}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setCurrentMonth((prev) => addMonths(prev, 1))}
-        >
-          ▶
-        </Button>
-      </div>
 
-      <div className="flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-7">
+      <div className="flex-1 min-h-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
+        {/* ヘッダーバー: 月切り替え */}
+        <div className="flex-shrink-0 h-[42px] px-4 bg-gray-800 flex items-center justify-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white/70 hover:text-white hover:bg-white/20"
+            onClick={() => setCurrentMonth((prev) => subMonths(prev, 1))}
+          >
+            ◀
+          </Button>
+          <span className="font-bold text-sm text-white min-w-[140px] text-center">
+            {format(currentMonth, "yyyy年 M月", { locale: ja })}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white/70 hover:text-white hover:bg-white/20"
+            onClick={() => setCurrentMonth((prev) => addMonths(prev, 1))}
+          >
+            ▶
+          </Button>
+        </div>
+
+        {/* 曜日ヘッダー */}
+        <div className="flex-shrink-0 grid grid-cols-7 border-b bg-muted">
           {["日", "月", "火", "水", "木", "金", "土"].map((d) => (
             <div key={d} className="text-center py-1 text-sm font-bold">
               {d}
             </div>
           ))}
         </div>
-        <div className="flex-1 grid grid-cols-7 auto-rows-fr">
+
+        {/* カレンダー本体 */}
+        <div className="flex-1 min-h-0 grid grid-cols-7 auto-rows-fr">
           {calendarDays.map((day, i) => {
             if (day === null)
               return <div key={`e-${i}`} className="border p-1" />;
