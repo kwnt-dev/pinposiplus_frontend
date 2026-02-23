@@ -380,6 +380,10 @@ export default function CellsEditPage() {
                   : groupsToCellIds(rainGroups, selectedHole)
               }
               onCellClick={handleCellClick}
+              showExit={false}
+              showExitRoute={false}
+              showBoundaryBuffer={false}
+              showSlopeBuffer={false}
             />
           </div>
         </div>

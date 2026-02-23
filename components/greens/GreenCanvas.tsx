@@ -40,6 +40,14 @@ interface Props {
   onPinDragged?: (currentPin: Pin) => void;
   pastPins?: Pin[];
   suggestedPins?: { x: number; y: number }[];
+  // 表示制御
+  showExit?: boolean;
+  showGrid?: boolean;
+  showYardLines?: boolean;
+  showCenterLine?: boolean;
+  showBoundaryBuffer?: boolean;
+  showSlopeBuffer?: boolean;
+  showExitRoute?: boolean;
 }
 
 // 定数
@@ -59,6 +67,13 @@ export default function GreenCanvas({
   onPinDragged,
   pastPins,
   suggestedPins = [],
+  showExit = true,
+  showGrid = true,
+  showYardLines = true,
+  showCenterLine = true,
+  showBoundaryBuffer = true,
+  showSlopeBuffer = true,
+  showExitRoute = true,
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
@@ -135,24 +150,26 @@ export default function GreenCanvas({
         ) : null}
 
         {/* グリッド（縦線） */}
-        {Array.from({ length: 61 }, (_, i) => (
-          <Line
-            key={`grid-v-${i}`}
-            points={[ydToPx(i), 0, ydToPx(i), CANVAS_SIZE]}
-            stroke="rgba(0,0,0,0.15)"
-            strokeWidth={1}
-          />
-        ))}
+        {showGrid &&
+          Array.from({ length: 61 }, (_, i) => (
+            <Line
+              key={`grid-v-${i}`}
+              points={[ydToPx(i), 0, ydToPx(i), CANVAS_SIZE]}
+              stroke="rgba(0,0,0,0.15)"
+              strokeWidth={1}
+            />
+          ))}
 
         {/* グリッド（横線） */}
-        {Array.from({ length: 61 }, (_, i) => (
-          <Line
-            key={`grid-h-${i}`}
-            points={[0, ydToPx(i), CANVAS_SIZE, ydToPx(i)]}
-            stroke="rgba(0,0,0,0.15)"
-            strokeWidth={1}
-          />
-        ))}
+        {showGrid &&
+          Array.from({ length: 61 }, (_, i) => (
+            <Line
+              key={`grid-h-${i}`}
+              points={[0, ydToPx(i), CANVAS_SIZE, ydToPx(i)]}
+              stroke="rgba(0,0,0,0.15)"
+              strokeWidth={1}
+            />
+          ))}
 
         {/* 外周線 */}
         <Path
@@ -163,17 +180,19 @@ export default function GreenCanvas({
         />
 
         {/* 外周制限エリア */}
-        <Group
-          clipFunc={() => {
-            return [new Path2D(scalePathToPixels(holeData.boundary.d))];
-          }}
-        >
-          <Path
-            data={scalePathToPixels(holeData.boundary.d)}
-            stroke="rgba(255, 150, 150, 0.4)"
-            strokeWidth={ydToPx(BOUNDARY_BUFFER * 2)}
-          />
-        </Group>
+        {showBoundaryBuffer && (
+          <Group
+            clipFunc={() => {
+              return [new Path2D(scalePathToPixels(holeData.boundary.d))];
+            }}
+          >
+            <Path
+              data={scalePathToPixels(holeData.boundary.d)}
+              stroke="rgba(255, 150, 150, 0.4)"
+              strokeWidth={ydToPx(BOUNDARY_BUFFER * 2)}
+            />
+          </Group>
+        )}
 
         {/* 傾斜線 */}
 
@@ -187,7 +206,7 @@ export default function GreenCanvas({
         ) : null}
 
         {/* 傾斜制限エリア */}
-        {holeData.slope ? (
+        {showSlopeBuffer && holeData.slope ? (
           <Group
             clipFunc={() => {
               return [new Path2D(scalePathToPixels(holeData.boundary.d))];
@@ -203,78 +222,84 @@ export default function GreenCanvas({
         ) : null}
 
         {/* 座標線 */}
-        {[0, 10, 20, 30, 40].map((depth) => {
-          const y = holeData.origin.y - depth;
-          return (
-            <Line
-              key={`depth-${depth}`}
-              points={[0, ydToPx(y), CANVAS_SIZE, ydToPx(y)]}
-              stroke="#000000"
-              strokeWidth={2}
-            />
-          );
-        })}
+        {showYardLines &&
+          [0, 10, 20, 30, 40].map((depth) => {
+            const y = holeData.origin.y - depth;
+            return (
+              <Line
+                key={`depth-${depth}`}
+                points={[0, ydToPx(y), CANVAS_SIZE, ydToPx(y)]}
+                stroke="#000000"
+                strokeWidth={2}
+              />
+            );
+          })}
 
         {/* 座標線ラベル */}
-        {[0, 10, 20, 30, 40, 50].map((depth) => {
-          const y = holeData.origin.y - depth;
-          return (
-            <Text
-              key={`label-${depth}`}
-              x={CANVAS_SIZE - 95}
-              y={ydToPx(y) - 60}
-              text={`${depth}`}
-              fontSize={60}
-              width={80}
-              align="right"
-              fontStyle="bold"
-              fill="#000000"
-            />
-          );
-        })}
+        {showYardLines &&
+          [0, 10, 20, 30, 40, 50].map((depth) => {
+            const y = holeData.origin.y - depth;
+            return (
+              <Text
+                key={`label-${depth}`}
+                x={CANVAS_SIZE - 95}
+                y={ydToPx(y) - 60}
+                text={`${depth}`}
+                fontSize={60}
+                width={80}
+                align="right"
+                fontStyle="bold"
+                fill="#000000"
+              />
+            );
+          })}
 
         {/* 中心線（黄色破線） */}
-        <Line
-          points={[
-            ydToPx(config.centerLineMarks.front.x),
-            ydToPx(config.centerLineMarks.front.y),
-            ydToPx(config.centerLineMarks.back.x),
-            ydToPx(config.centerLineMarks.back.y),
-          ]}
-          stroke="#fbbf24"
-          strokeWidth={2}
-          dash={[10, 5]}
-        />
-        {/* 中心線マーク（前） */}
-        <Circle
-          x={ydToPx(config.centerLineMarks.front.x)}
-          y={ydToPx(config.centerLineMarks.front.y)}
-          radius={10}
-          fill="white"
-          stroke="#000000"
-          strokeWidth={1.5}
-        />
-        <Circle
-          x={ydToPx(config.centerLineMarks.front.x)}
-          y={ydToPx(config.centerLineMarks.front.y)}
-          radius={7}
-          fill="#fbbf24"
-        />
-        {/* 中心線マーク（後） */}
-        <Circle
-          x={ydToPx(config.centerLineMarks.back.x)}
-          y={ydToPx(config.centerLineMarks.back.y)}
-          radius={10}
-          fill="white"
-          stroke="#000000"
-          strokeWidth={1.5}
-        />
-        <Circle
-          x={ydToPx(config.centerLineMarks.back.x)}
-          y={ydToPx(config.centerLineMarks.back.y)}
-          radius={7}
-          fill="#fbbf24"
-        />
+        {showCenterLine && (
+          <>
+            <Line
+              points={[
+                ydToPx(config.centerLineMarks.front.x),
+                ydToPx(config.centerLineMarks.front.y),
+                ydToPx(config.centerLineMarks.back.x),
+                ydToPx(config.centerLineMarks.back.y),
+              ]}
+              stroke="#fbbf24"
+              strokeWidth={2}
+              dash={[10, 5]}
+            />
+            {/* 中心線マーク（前） */}
+            <Circle
+              x={ydToPx(config.centerLineMarks.front.x)}
+              y={ydToPx(config.centerLineMarks.front.y)}
+              radius={10}
+              fill="white"
+              stroke="#000000"
+              strokeWidth={1.5}
+            />
+            <Circle
+              x={ydToPx(config.centerLineMarks.front.x)}
+              y={ydToPx(config.centerLineMarks.front.y)}
+              radius={7}
+              fill="#fbbf24"
+            />
+            {/* 中心線マーク（後） */}
+            <Circle
+              x={ydToPx(config.centerLineMarks.back.x)}
+              y={ydToPx(config.centerLineMarks.back.y)}
+              radius={10}
+              fill="white"
+              stroke="#000000"
+              strokeWidth={1.5}
+            />
+            <Circle
+              x={ydToPx(config.centerLineMarks.back.x)}
+              y={ydToPx(config.centerLineMarks.back.y)}
+              radius={7}
+              fill="#fbbf24"
+            />
+          </>
+        )}
 
         {/* セル描画（外周でクリップ） */}
         <Group
@@ -390,7 +415,8 @@ export default function GreenCanvas({
           })}
 
         {/* 過去ピン出口線（前回・前々回のみ） */}
-        {pastPins &&
+        {showExitRoute &&
+          pastPins &&
           pastPins
             .slice(0, 2)
             .map((pin) => (
@@ -463,7 +489,7 @@ export default function GreenCanvas({
         )}
 
         {/* 現在ピン出口線 */}
-        {currentPin && (
+        {showExitRoute && currentPin && (
           <Line
             points={[
               ydToPx(currentPin.x),
@@ -478,25 +504,29 @@ export default function GreenCanvas({
         )}
 
         {/* EXIT（最前面） */}
-        <Rect
-          x={ydToPx(config.exit.x) - 45}
-          y={ydToPx(config.exit.y) - 18}
-          width={90}
-          height={36}
-          fill="white"
-          stroke="#f97316"
-          strokeWidth={3}
-        />
-        <Text
-          x={ydToPx(config.exit.x) - 45}
-          y={ydToPx(config.exit.y) - 12}
-          width={90}
-          align="center"
-          text="EXIT"
-          fontSize={24}
-          fontStyle="bold"
-          fill="#f97316"
-        />
+        {showExit && (
+          <>
+            <Rect
+              x={ydToPx(config.exit.x) - 45}
+              y={ydToPx(config.exit.y) - 18}
+              width={90}
+              height={36}
+              fill="white"
+              stroke="#f97316"
+              strokeWidth={3}
+            />
+            <Text
+              x={ydToPx(config.exit.x) - 45}
+              y={ydToPx(config.exit.y) - 12}
+              width={90}
+              align="center"
+              text="EXIT"
+              fontSize={24}
+              fontStyle="bold"
+              fill="#f97316"
+            />
+          </>
+        )}
       </Layer>
     </Stage>
   );
