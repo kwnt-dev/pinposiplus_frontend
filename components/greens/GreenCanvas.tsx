@@ -21,7 +21,12 @@ import {
   isPointInPolygon,
   isInsideGreen,
 } from "@/lib/greenCanvas.geometry";
-import { CANVAS_SIZE, YD_TO_PX, scalePathToPixels, ydToPx } from "@/lib/greenCanvas.convert";
+import {
+  CANVAS_SIZE,
+  YD_TO_PX,
+  scalePathToPixels,
+  ydToPx,
+} from "@/lib/greenCanvas.convert";
 
 interface Props {
   hole: string;
@@ -41,7 +46,6 @@ interface Props {
 const PAST_PIN_RESTRICTION_RADIUS = 7; // 過去ピン制限　半径yd
 const BOUNDARY_BUFFER = 3.5; // 外周制限距離（ヤード）
 const SLOPE_BUFFER = 3;
-
 
 export default function GreenCanvas({
   hole,
@@ -243,10 +247,23 @@ export default function GreenCanvas({
         />
 
         {/* EXIT */}
-        <Circle
-          x={ydToPx(config.exit.x)}
-          y={ydToPx(config.exit.y)}
-          radius={20}
+        <Rect
+          x={ydToPx(config.exit.x) - 45}
+          y={ydToPx(config.exit.y) - 18}
+          width={90}
+          height={36}
+          fill="white"
+          stroke="#f97316"
+          strokeWidth={3}
+        />
+        <Text
+          x={ydToPx(config.exit.x) - 45}
+          y={ydToPx(config.exit.y) - 12}
+          width={90}
+          align="center"
+          text="EXIT"
+          fontSize={24}
+          fontStyle="bold"
           fill="#f97316"
         />
 
@@ -381,7 +398,6 @@ export default function GreenCanvas({
                   y: newY,
                 });
               } else {
-                // グリーン外または外周制限内なら元の位置に戻す
                 e.target.x(ydToPx(currentPin.x));
                 e.target.y(ydToPx(currentPin.y));
               }
