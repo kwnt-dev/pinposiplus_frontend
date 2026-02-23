@@ -418,21 +418,21 @@ export default function GreenCanvas({
               fill="white"
               draggable
               onDragEnd={(e) => {
-                const newX = e.target.x() / YD_TO_PX;
-                const newY = e.target.y() / YD_TO_PX;
+                const snappedX = Math.round(e.target.x() / YD_TO_PX);
+                const snappedY = Math.round(e.target.y() / YD_TO_PX);
 
                 if (
                   isInsideGreen(
-                    { id: currentPin.id, x: newX, y: newY },
+                    { id: currentPin.id, x: snappedX, y: snappedY },
                     holeData.cells,
                   ) &&
-                  isPointInPolygon(newX, newY, boundaryBufferPoints) &&
-                  !isPointInPolygon(newX, newY, slopeBufferPoints)
+                  isPointInPolygon(snappedX, snappedY, boundaryBufferPoints) &&
+                  !isPointInPolygon(snappedX, snappedY, slopeBufferPoints)
                 ) {
                   onPinDragged?.({
                     id: currentPin.id,
-                    x: newX,
-                    y: newY,
+                    x: snappedX,
+                    y: snappedY,
                   });
                 } else {
                   e.target.x(ydToPx(currentPin.x));
