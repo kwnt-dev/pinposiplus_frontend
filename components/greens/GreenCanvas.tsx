@@ -324,41 +324,47 @@ export default function GreenCanvas({
 
         {/* 過去ピン */}
         {pastPins &&
-          pastPins.map((pin) => (
+          pastPins.map((pin, index) => (
             <Fragment key={`pastPin-${pin.id}`}>
-              {/* 制限円 */}
+              {/* 制限円（前回・前々回のみ） */}
+              {index <= 1 && (
+                <Circle
+                  x={ydToPx(pin.x)}
+                  y={ydToPx(pin.y)}
+                  radius={PAST_PIN_RESTRICTION_RADIUS * YD_TO_PX}
+                  fill={index === 0 ? "rgba(0,0,0,0.15)" : "rgba(0,0,0,0.08)"}
+                />
+              )}
+              {/* 過去ピン（新しい順に濃→薄） */}
               <Circle
                 x={ydToPx(pin.x)}
                 y={ydToPx(pin.y)}
-                radius={PAST_PIN_RESTRICTION_RADIUS * YD_TO_PX}
-                fill={`rgb(0, 0, 0, 0.08)`}
-              />
-              {/* 過去ピン */}
-              <Circle
-                x={ydToPx(pin.x)}
-                y={ydToPx(pin.y)}
-                radius={20}
-                fill="#6b7280"
+                radius={8}
+                fill={
+                  index === 0 ? "#374151" : index === 1 ? "#6b7280" : "#9ca3af"
+                }
               />
             </Fragment>
           ))}
 
-        {/* 過去ピン出口線 */}
+        {/* 過去ピン出口線（前回・前々回のみ） */}
         {pastPins &&
-          pastPins.map((pin) => (
-            <Line
-              key={`exit-${pin.id}`}
-              points={[
-                ydToPx(pin.x),
-                ydToPx(pin.y),
-                ydToPx(config.exit.x),
-                ydToPx(config.exit.y),
-              ]}
-              stroke="#f97316"
-              strokeWidth={2}
-              dash={[10, 5]}
-            />
-          ))}
+          pastPins
+            .slice(0, 2)
+            .map((pin) => (
+              <Line
+                key={`exit-${pin.id}`}
+                points={[
+                  ydToPx(pin.x),
+                  ydToPx(pin.y),
+                  ydToPx(config.exit.x),
+                  ydToPx(config.exit.y),
+                ]}
+                stroke="#f97316"
+                strokeWidth={2}
+                dash={[10, 5]}
+              />
+            ))}
 
         {/* 候補ピン */}
         {suggestedPins?.map((pin, i) => (
