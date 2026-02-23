@@ -372,37 +372,46 @@ export default function GreenCanvas({
           />
         ))}
 
-        {/* 現在のピン */}
+        {/* 現在のピン（白丸+赤丸の二重丸） */}
         {currentPin && (
-          <Circle
-            x={ydToPx(currentPin.x)}
-            y={ydToPx(currentPin.y)}
-            radius={20}
-            fill="#ef4444"
-            draggable
-            onDragEnd={(e) => {
-              const newX = e.target.x() / YD_TO_PX;
-              const newY = e.target.y() / YD_TO_PX;
+          <>
+            <Circle
+              x={ydToPx(currentPin.x)}
+              y={ydToPx(currentPin.y)}
+              radius={12}
+              fill="white"
+              draggable
+              onDragEnd={(e) => {
+                const newX = e.target.x() / YD_TO_PX;
+                const newY = e.target.y() / YD_TO_PX;
 
-              if (
-                isInsideGreen(
-                  { id: currentPin.id, x: newX, y: newY },
-                  holeData.cells,
-                ) &&
-                isPointInPolygon(newX, newY, boundaryBufferPoints) &&
-                !isPointInPolygon(newX, newY, slopeBufferPoints)
-              ) {
-                onPinDragged?.({
-                  id: currentPin.id,
-                  x: newX,
-                  y: newY,
-                });
-              } else {
-                e.target.x(ydToPx(currentPin.x));
-                e.target.y(ydToPx(currentPin.y));
-              }
-            }}
-          />
+                if (
+                  isInsideGreen(
+                    { id: currentPin.id, x: newX, y: newY },
+                    holeData.cells,
+                  ) &&
+                  isPointInPolygon(newX, newY, boundaryBufferPoints) &&
+                  !isPointInPolygon(newX, newY, slopeBufferPoints)
+                ) {
+                  onPinDragged?.({
+                    id: currentPin.id,
+                    x: newX,
+                    y: newY,
+                  });
+                } else {
+                  e.target.x(ydToPx(currentPin.x));
+                  e.target.y(ydToPx(currentPin.y));
+                }
+              }}
+            />
+            <Circle
+              x={ydToPx(currentPin.x)}
+              y={ydToPx(currentPin.y)}
+              radius={9}
+              fill="#ef4444"
+              listening={false}
+            />
+          </>
         )}
 
         {/* 現在ピン出口線 */}
