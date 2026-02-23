@@ -199,8 +199,7 @@ export default function GreenCanvas({
         )}
 
         {/* 傾斜線 */}
-
-        {holeData.slope ? (
+        {showSlopeBuffer && holeData.slope ? (
           <Path
             data={scalePathToPixels(holeData.slope.slope.d)}
             stroke="#000000"
