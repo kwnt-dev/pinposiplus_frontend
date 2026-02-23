@@ -333,28 +333,61 @@ export default function GreenCanvas({
 
         {/* 過去ピン */}
         {pastPins &&
-          pastPins.map((pin, index) => (
-            <Fragment key={`pastPin-${pin.id}`}>
-              {/* 制限円（前回・前々回のみ） */}
-              {index <= 1 && (
+          pastPins.map((pin, index) => {
+            const dateLabel = pin.date
+              ? `${new Date(pin.date).getMonth() + 1}/${new Date(pin.date).getDate()}`
+              : null;
+            return (
+              <Fragment key={`pastPin-${pin.id}`}>
+                {/* 制限円（前回・前々回のみ） */}
+                {index <= 1 && (
+                  <Circle
+                    x={ydToPx(pin.x)}
+                    y={ydToPx(pin.y)}
+                    radius={PAST_PIN_RESTRICTION_RADIUS * YD_TO_PX}
+                    fill={index === 0 ? "rgba(0,0,0,0.15)" : "rgba(0,0,0,0.08)"}
+                  />
+                )}
+                {/* 過去ピン（新しい順に濃→薄） */}
                 <Circle
                   x={ydToPx(pin.x)}
                   y={ydToPx(pin.y)}
-                  radius={PAST_PIN_RESTRICTION_RADIUS * YD_TO_PX}
-                  fill={index === 0 ? "rgba(0,0,0,0.15)" : "rgba(0,0,0,0.08)"}
+                  radius={8}
+                  fill={
+                    index === 0
+                      ? "#374151"
+                      : index === 1
+                        ? "#6b7280"
+                        : "#9ca3af"
+                  }
                 />
-              )}
-              {/* 過去ピン（新しい順に濃→薄） */}
-              <Circle
-                x={ydToPx(pin.x)}
-                y={ydToPx(pin.y)}
-                radius={8}
-                fill={
-                  index === 0 ? "#374151" : index === 1 ? "#6b7280" : "#9ca3af"
-                }
-              />
-            </Fragment>
-          ))}
+                {/* 日付ラベル（前回・前々回のみ） */}
+                {index <= 1 && dateLabel && (
+                  <>
+                    <Rect
+                      x={ydToPx(pin.x) - 35}
+                      y={ydToPx(pin.y) - 32}
+                      width={70}
+                      height={22}
+                      fill="white"
+                      stroke={index === 0 ? "#374151" : "#9ca3af"}
+                      strokeWidth={1.5}
+                    />
+                    <Text
+                      x={ydToPx(pin.x) - 35}
+                      y={ydToPx(pin.y) - 30}
+                      width={70}
+                      align="center"
+                      text={dateLabel}
+                      fontSize={16}
+                      fontStyle="bold"
+                      fill={index === 0 ? "#374151" : "#9ca3af"}
+                    />
+                  </>
+                )}
+              </Fragment>
+            );
+          })}
 
         {/* 過去ピン出口線（前回・前々回のみ） */}
         {pastPins &&

@@ -120,6 +120,7 @@ export default function DashboardPage() {
             id: `past${i + 1}`,
             x: p.x,
             y: p.y,
+            date: p.date,
           }));
         }
 

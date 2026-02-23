@@ -15,6 +15,7 @@ export interface Pin {
   id: string;
   x: number;
   y: number;
+  date?: string;
 }
 
 export interface HolePin {
