@@ -149,27 +149,31 @@ export default function GreenCanvas({
           />
         ) : null}
 
-        {/* グリッド（縦線） */}
-        {showGrid &&
-          Array.from({ length: 61 }, (_, i) => (
-            <Line
-              key={`grid-v-${i}`}
-              points={[ydToPx(i), 0, ydToPx(i), CANVAS_SIZE]}
-              stroke="rgba(0,0,0,0.15)"
-              strokeWidth={1}
-            />
-          ))}
-
-        {/* グリッド（横線） */}
-        {showGrid &&
-          Array.from({ length: 61 }, (_, i) => (
-            <Line
-              key={`grid-h-${i}`}
-              points={[0, ydToPx(i), CANVAS_SIZE, ydToPx(i)]}
-              stroke="rgba(0,0,0,0.15)"
-              strokeWidth={1}
-            />
-          ))}
+        {/* グリッド（グリーン面内にクリップ） */}
+        {showGrid && (
+          <Group
+            clipFunc={() => {
+              return [new Path2D(scalePathToPixels(holeData.boundary.d))];
+            }}
+          >
+            {Array.from({ length: 61 }, (_, i) => (
+              <Line
+                key={`grid-v-${i}`}
+                points={[ydToPx(i), 0, ydToPx(i), CANVAS_SIZE]}
+                stroke="rgba(0,0,0,0.15)"
+                strokeWidth={1}
+              />
+            ))}
+            {Array.from({ length: 61 }, (_, i) => (
+              <Line
+                key={`grid-h-${i}`}
+                points={[0, ydToPx(i), CANVAS_SIZE, ydToPx(i)]}
+                stroke="rgba(0,0,0,0.15)"
+                strokeWidth={1}
+              />
+            ))}
+          </Group>
+        )}
 
         {/* 外周線 */}
         <Path
