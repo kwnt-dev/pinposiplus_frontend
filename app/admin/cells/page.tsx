@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Grid3x3 } from "lucide-react";
+import { Grid3x3, Pencil, Save } from "lucide-react";
 import GreenCardGrid from "@/components/greens/GreenCardGrid";
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import {
@@ -49,6 +49,24 @@ export default function CellsEditPage() {
   const [comment, setComment] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // キャンバスサイズ
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const [canvasSize, setCanvasSize] = useState(400);
+
+  useEffect(() => {
+    const container = canvasContainerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        setCanvasSize(Math.floor(Math.min(width, height)));
+      }
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
   // 全グループ取得
   useEffect(() => {
     async function fetchAllGroups() {
@@ -91,7 +109,6 @@ export default function CellsEditPage() {
 
   // セルクリック（ローカルstateのみ更新、APIは叩かない）
   const handleCellClick = (cellId: string) => {
-    // 登録済みセルはクリックで削除しない（グループ単位で削除）
     if (registeredCells.includes(cellId)) return;
 
     setNewCells((prev) =>
@@ -161,56 +178,82 @@ export default function CellsEditPage() {
   );
 
   return (
-    <div>
+    <div className="h-full flex flex-col p-4">
       <PageHeader icon={Grid3x3} title="セル設定" />
-      <div className="flex gap-4">
-        {/* 左: グリッド一覧 */}
-        <div className="flex-1">
-          <div className="p-4">
-            <div className="flex justify-center gap-2">
-              <Button
-                variant={course === "out" ? "default" : "outline"}
-                onClick={() => {
-                  setCourse("out");
-                  handleHoleChange(1);
-                }}
-              >
-                OUT
-              </Button>
-              <Button
-                variant={course === "in" ? "default" : "outline"}
-                onClick={() => {
-                  setCourse("in");
-                  handleHoleChange(10);
-                }}
-              >
-                IN
-              </Button>
-            </div>
-            <div className="flex justify-center gap-2 mt-4">
-              <Button
-                variant={cellMode === "damage" ? "default" : "outline"}
-                onClick={() => setCellMode("damage")}
-              >
-                傷み
-              </Button>
-              <Button
-                variant={cellMode === "ban" ? "default" : "outline"}
-                onClick={() => setCellMode("ban")}
-              >
-                禁止
-              </Button>
-              <Button
-                variant={cellMode === "rain" ? "default" : "outline"}
-                onClick={() => setCellMode("rain")}
-              >
-                雨天
-              </Button>
-            </div>
+
+      <div className="flex-1 min-h-0 flex gap-4">
+        {/* 左: グリッド */}
+        <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
+          {/* セルモード切替（ヘッダー） */}
+          <div className="flex-shrink-0 h-[42px] px-3 bg-gradient-to-r from-gray-800 to-gray-900 flex items-center justify-center gap-2">
+            <Button
+              size="sm"
+              variant={cellMode === "damage" ? "default" : "ghost"}
+              className={
+                cellMode !== "damage"
+                  ? "text-white/70 hover:text-white hover:bg-white/20"
+                  : ""
+              }
+              onClick={() => setCellMode("damage")}
+            >
+              傷み
+            </Button>
+            <Button
+              size="sm"
+              variant={cellMode === "ban" ? "default" : "ghost"}
+              className={
+                cellMode !== "ban"
+                  ? "text-white/70 hover:text-white hover:bg-white/20"
+                  : ""
+              }
+              onClick={() => setCellMode("ban")}
+            >
+              禁止
+            </Button>
+            <Button
+              size="sm"
+              variant={cellMode === "rain" ? "default" : "ghost"}
+              className={
+                cellMode !== "rain"
+                  ? "text-white/70 hover:text-white hover:bg-white/20"
+                  : ""
+              }
+              onClick={() => setCellMode("rain")}
+            >
+              雨天
+            </Button>
+          </div>
+
+          {/* OUT/IN切り替え */}
+          <div className="flex-shrink-0 h-[44px] px-4 bg-muted border-b flex items-center justify-center gap-2">
+            <Button
+              size="sm"
+              variant={course === "out" ? "default" : "outline"}
+              onClick={() => {
+                setCourse("out");
+                handleHoleChange(1);
+              }}
+            >
+              OUT
+            </Button>
+            <Button
+              size="sm"
+              variant={course === "in" ? "default" : "outline"}
+              onClick={() => {
+                setCourse("in");
+                handleHoleChange(10);
+              }}
+            >
+              IN
+            </Button>
+          </div>
+
+          {/* 3×3グリッド */}
+          <div className="flex-1 min-h-0 flex items-center justify-center p-2">
             <div
               style={{
-                transform: `scale(0.7)`,
-                transformOrigin: "top left",
+                transform: "scale(0.7)",
+                transformOrigin: "center center",
               }}
             >
               <GreenCardGrid
@@ -246,14 +289,83 @@ export default function CellsEditPage() {
         </div>
 
         {/* 右: 編集パネル */}
-        <div className="flex-1">
-          <div className="p-4">
-            <h2 className="font-bold mb-4">Hole {selectedHole}</h2>
+        <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
+          {/* ヘッダーバー */}
+          <div className="flex-shrink-0 h-[42px] px-4 bg-gray-800 flex items-center gap-2">
+            <Pencil size={16} className="text-white" />
+            <h2 className="text-sm font-bold text-white">
+              セル編集 - Hole {selectedHole}
+            </h2>
+          </div>
+
+          {/* 新規セル情報 + 保存 */}
+          <div className="flex-shrink-0 px-4 py-2 bg-muted border-b flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              新規: {newCells.length}セル
+            </span>
+            <input
+              type="text"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="コメント（任意）"
+              className="flex-1 px-2 py-1 border rounded text-sm"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleClear}
+              disabled={newCells.length === 0}
+            >
+              クリア
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={saving || newCells.length === 0}
+            >
+              <Save size={14} className="mr-1" />
+              保存
+            </Button>
+          </div>
+
+          {/* キャンバス */}
+          <div
+            ref={canvasContainerRef}
+            className="flex-1 min-h-0 flex items-center justify-center p-2 relative"
+          >
+            {/* 登録済みグループ一覧（上部オーバーレイ） */}
+            {holeGroups.length > 0 && (
+              <div className="absolute top-0 left-0 right-0 bg-card px-3 py-2 max-h-[150px] overflow-y-auto z-20 shadow-lg border-b">
+                <div className="flex flex-wrap gap-2">
+                  {holeGroups.map((group) => (
+                    <div
+                      key={group.id}
+                      className="flex items-center gap-2 px-2 py-1 rounded border bg-muted text-xs"
+                    >
+                      <span className="font-medium">
+                        {group.cells.length}セル
+                      </span>
+                      {group.comment && (
+                        <span className="text-muted-foreground">
+                          {group.comment}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => handleDeleteGroup(group.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <GreenCanvas
               hole={String(selectedHole)}
-              width={400}
-              height={400}
+              width={canvasSize}
+              height={canvasSize}
               damageCells={
                 cellMode === "damage" ? displayCells : registeredCells
               }
@@ -269,70 +381,6 @@ export default function CellsEditPage() {
               }
               onCellClick={handleCellClick}
             />
-
-            {/* 新規セル・コメント・保存 */}
-            <div className="mt-4 space-y-2">
-              <p className="text-sm text-gray-600">
-                新規: {newCells.length}セル
-              </p>
-              <input
-                type="text"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="コメント（任意）: 焼け、虫食い、薬害など"
-                className="w-full px-3 py-2 border rounded text-sm"
-              />
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleSave}
-                  disabled={saving || newCells.length === 0}
-                >
-                  保存
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleClear}
-                  disabled={newCells.length === 0}
-                >
-                  クリア
-                </Button>
-              </div>
-            </div>
-
-            {/* 登録済みグループ一覧 */}
-            {holeGroups.length > 0 && (
-              <div className="mt-6">
-                <h3 className="font-bold text-sm mb-2">
-                  登録済み ({holeGroups.length}件)
-                </h3>
-                <div className="space-y-2">
-                  {holeGroups.map((group) => (
-                    <div
-                      key={group.id}
-                      className="flex items-center justify-between p-2 rounded border bg-gray-50 text-sm"
-                    >
-                      <div>
-                        <span className="font-medium">
-                          {group.cells.length}セル
-                        </span>
-                        {group.comment && (
-                          <span className="ml-2 text-gray-500">
-                            {group.comment}
-                          </span>
-                        )}
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteGroup(group.id)}
-                      >
-                        削除
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
