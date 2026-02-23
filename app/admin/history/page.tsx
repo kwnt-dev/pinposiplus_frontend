@@ -106,59 +106,72 @@ export default function HistoryPage() {
   );
 
   return (
-    <div className="p-4">
-      <PageHeader icon={HistoryIcon} title="ピン履歴">
-        <Input
-          placeholder="日付を検索"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-40"
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
-          }
-        >
-          {sortOrder === "desc" ? "新しい順" : "古い順"}
-        </Button>
-      </PageHeader>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>日付</TableHead>
-            <TableHead>イベント</TableHead>
-            <TableHead>組数</TableHead>
-            <TableHead>作成者</TableHead>
-            <TableHead>操作</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sorted.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center py-8">
-                履歴がありません
-              </TableCell>
-            </TableRow>
-          ) : (
-            sorted.map((h) => (
-              <TableRow key={h.date}>
-                <TableCell>{h.date}</TableCell>
-                <TableCell>{h.eventName ?? "-"}</TableCell>
-                <TableCell>
-                  {h.groupCount ? `${h.groupCount}組` : "-"}
-                </TableCell>
-                <TableCell>
-                  <div>OUT : {h.outSubmitter ?? "-"}</div>
-                  <div>IN : {h.inSubmitter ?? "-"}</div>
-                </TableCell>
-                <TableCell>PDF</TableCell>
+    <div className="p-4 h-full flex flex-col">
+      <PageHeader icon={HistoryIcon} title="ピン履歴" />
+
+      <div className="flex-1 min-h-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
+        {/* ヘッダーバー: 検索・ソート */}
+        <div className="flex-shrink-0 h-[42px] px-4 bg-gray-800 flex items-center">
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="日付を検索"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-40 h-7 text-sm bg-white/10 border-white/20 text-white placeholder:text-white/50"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white/70 hover:text-white hover:bg-white/20"
+              onClick={() =>
+                setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
+              }
+            >
+              {sortOrder === "desc" ? "新しい順" : "古い順"}
+            </Button>
+          </div>
+        </div>
+
+        {/* テーブル */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>日付</TableHead>
+                <TableHead>イベント</TableHead>
+                <TableHead>組数</TableHead>
+                <TableHead>作成者</TableHead>
+                <TableHead>操作</TableHead>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            </TableHeader>
+            <TableBody>
+              {sorted.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    履歴がありません
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sorted.map((h) => (
+                  <TableRow key={h.date}>
+                    <TableCell>{h.date}</TableCell>
+                    <TableCell>{h.eventName ?? "-"}</TableCell>
+                    <TableCell>
+                      {h.groupCount ? `${h.groupCount}組` : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <div>OUT : {h.outSubmitter ?? "-"}</div>
+                      <div>IN : {h.inSubmitter ?? "-"}</div>
+                    </TableCell>
+                    <TableCell>PDF</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
     </div>
   );
 }

@@ -92,42 +92,59 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="p-4">
-      <PageHeader icon={Users} title="ユーザー管理">
-        <Button onClick={openAdd}>新規追加</Button>
-      </PageHeader>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>表示名</TableHead>
-            <TableHead>メール</TableHead>
-            <TableHead>権限</TableHead>
-            <TableHead>登録日</TableHead>
-            <TableHead>操作</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.name}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>
-                {user.role === "admin" ? "管理者" : "スタッフ"}
-              </TableCell>
-              <TableCell>{user.created_at?.split("T")[0]}</TableCell>
-              <TableCell>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openEdit(user)}
-                >
-                  編集
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="p-4 h-full flex flex-col">
+      <PageHeader icon={Users} title="ユーザー管理" />
+
+      <div className="flex-1 min-h-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
+        {/* ヘッダーバー */}
+        <div className="flex-shrink-0 h-[42px] px-4 bg-gray-800 flex items-center">
+          <div className="flex-1" />
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-white hover:bg-white/20"
+            onClick={openAdd}
+          >
+            新規追加
+          </Button>
+        </div>
+
+        {/* テーブル */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>表示名</TableHead>
+                <TableHead>メール</TableHead>
+                <TableHead>権限</TableHead>
+                <TableHead>登録日</TableHead>
+                <TableHead>操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    {user.role === "admin" ? "管理者" : "スタッフ"}
+                  </TableCell>
+                  <TableCell>{user.created_at?.split("T")[0]}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEdit(user)}
+                    >
+                      編集
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
