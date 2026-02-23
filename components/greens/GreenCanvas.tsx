@@ -276,27 +276,6 @@ export default function GreenCanvas({
           fill="#fbbf24"
         />
 
-        {/* EXIT */}
-        <Rect
-          x={ydToPx(config.exit.x) - 45}
-          y={ydToPx(config.exit.y) - 18}
-          width={90}
-          height={36}
-          fill="white"
-          stroke="#f97316"
-          strokeWidth={3}
-        />
-        <Text
-          x={ydToPx(config.exit.x) - 45}
-          y={ydToPx(config.exit.y) - 12}
-          width={90}
-          align="center"
-          text="EXIT"
-          fontSize={24}
-          fontStyle="bold"
-          fill="#f97316"
-        />
-
         {/* セル描画（外周でクリップ） */}
         <Group
           clipFunc={() => {
@@ -464,6 +443,27 @@ export default function GreenCanvas({
             dash={[10, 5]}
           />
         )}
+
+        {/* EXIT（最前面） */}
+        <Rect
+          x={ydToPx(config.exit.x) - 45}
+          y={ydToPx(config.exit.y) - 18}
+          width={90}
+          height={36}
+          fill="white"
+          stroke="#f97316"
+          strokeWidth={3}
+        />
+        <Text
+          x={ydToPx(config.exit.x) - 45}
+          y={ydToPx(config.exit.y) - 12}
+          width={90}
+          align="center"
+          text="EXIT"
+          fontSize={24}
+          fontStyle="bold"
+          fill="#f97316"
+        />
       </Layer>
     </Stage>
   );
