@@ -233,7 +233,7 @@ export default function GreenCanvas({
           );
         })}
 
-        {/* 中心線 */}
+        {/* 中心線（黄色破線） */}
         <Line
           points={[
             ydToPx(config.centerLineMarks.front.x),
@@ -241,9 +241,39 @@ export default function GreenCanvas({
             ydToPx(config.centerLineMarks.back.x),
             ydToPx(config.centerLineMarks.back.y),
           ]}
-          stroke="#000000"
+          stroke="#fbbf24"
           strokeWidth={2}
           dash={[10, 5]}
+        />
+        {/* 中心線マーク（前） */}
+        <Circle
+          x={ydToPx(config.centerLineMarks.front.x)}
+          y={ydToPx(config.centerLineMarks.front.y)}
+          radius={10}
+          fill="white"
+          stroke="#000000"
+          strokeWidth={1.5}
+        />
+        <Circle
+          x={ydToPx(config.centerLineMarks.front.x)}
+          y={ydToPx(config.centerLineMarks.front.y)}
+          radius={7}
+          fill="#fbbf24"
+        />
+        {/* 中心線マーク（後） */}
+        <Circle
+          x={ydToPx(config.centerLineMarks.back.x)}
+          y={ydToPx(config.centerLineMarks.back.y)}
+          radius={10}
+          fill="white"
+          stroke="#000000"
+          strokeWidth={1.5}
+        />
+        <Circle
+          x={ydToPx(config.centerLineMarks.back.x)}
+          y={ydToPx(config.centerLineMarks.back.y)}
+          radius={7}
+          fill="#fbbf24"
         />
 
         {/* EXIT */}
