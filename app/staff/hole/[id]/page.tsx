@@ -70,17 +70,19 @@ export default function StaffHoleEditPage() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center justify-between">
+      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center relative">
         <button
           onClick={() => router.back()}
-          className="text-sm font-medium text-gray-600 hover:text-gray-900"
+          className="text-sm font-medium text-gray-600"
         >
           ← 戻る
         </button>
-        <h1 className="text-lg font-bold">Hole {holeId}</h1>
+        <h1 className="text-lg font-bold absolute left-1/2 -translate-x-1/2">
+          Hole {holeId}
+        </h1>
         <button
           onClick={handleSave}
-          className="px-4 py-1.5 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 transition-all"
+          className="ml-auto px-4 py-1.5 bg-green-600 text-white rounded-lg text-sm font-bold"
         >
           保存
         </button>

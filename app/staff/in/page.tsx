@@ -79,15 +79,17 @@ export default function StaffInPage() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center justify-between">
+      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center relative">
         <button
           onClick={() => router.push("/staff")}
-          className="text-sm font-medium text-gray-600 hover:text-gray-900"
+          className="text-sm font-medium text-gray-600"
         >
           ← 戻る
         </button>
-        <h1 className="text-lg font-bold">IN</h1>
-        <div className="flex items-center gap-2">
+        <h1 className="text-lg font-bold absolute left-1/2 -translate-x-1/2">
+          IN
+        </h1>
+        <div className="ml-auto flex items-center gap-2">
           {session && (
             <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium">
               {session.status}
@@ -97,9 +99,9 @@ export default function StaffInPage() {
             <button
               onClick={handleConfirm}
               disabled={isConfirming}
-              className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 disabled:opacity-50 transition-all"
+              className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-bold disabled:opacity-50"
             >
-              {isConfirming ? "送信中..." : "完了報告"}
+              完了報告
             </button>
           )}
         </div>
