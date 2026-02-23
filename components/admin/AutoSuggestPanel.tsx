@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CourseDifficulty } from "@/lib/courseProposal";
+import { Target } from "lucide-react";
 
 interface AutoSuggestPanelProps {
   selectedDate: Date;
@@ -37,48 +38,56 @@ export default function AutoSuggestPanel({
   onGenerate,
 }: AutoSuggestPanelProps) {
   return (
-    <div className="p-4">
-      <h2 className="font-bold mb-4">自動提案設定</h2>
-      <div>
-        <Label>日付</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full mt-1">
-              {format(selectedDate, "yyyy-MM-dd")}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && onDateChange(date)}
-            />
-          </PopoverContent>
-        </Popover>
+    <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
+      {/* ヘッダーバー */}
+      <div className="flex-shrink-0 h-[42px] px-4 bg-green-600 flex items-center gap-2">
+        <Target size={16} className="text-white" />
+        <h2 className="text-sm font-bold text-white">自動提案設定</h2>
       </div>
-      <div className="flex items-center gap-2 mt-4">
-        <Switch checked={isRainyDay} onCheckedChange={onRainyDayChange} />
-        <Label>雨天モード</Label>
+
+      {/* コンテンツ */}
+      <div className="flex-1 p-4 space-y-4">
+        <div>
+          <Label>日付</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full mt-1">
+                {format(selectedDate, "yyyy-MM-dd")}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent>
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && onDateChange(date)}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch checked={isRainyDay} onCheckedChange={onRainyDayChange} />
+          <Label>雨天モード</Label>
+        </div>
+        <div>
+          <Label>コース難易度</Label>
+          <Select
+            value={courseDifficulty}
+            onValueChange={(v) => onDifficultyChange(v as CourseDifficulty)}
+          >
+            <SelectTrigger className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="easy">Easy</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="hard">Hard</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button className="w-full" onClick={onGenerate}>
+          自動提案を実行
+        </Button>
       </div>
-      <div className="mt-4">
-        <Label>コース難易度</Label>
-        <Select
-          value={courseDifficulty}
-          onValueChange={(v) => onDifficultyChange(v as CourseDifficulty)}
-        >
-          <SelectTrigger className="mt-1">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="easy">Easy</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="hard">Hard</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <Button className="w-full mt-6" onClick={onGenerate}>
-        自動提案を実行
-      </Button>
     </div>
   );
 }

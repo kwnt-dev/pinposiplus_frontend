@@ -1,7 +1,10 @@
+"use client";
+
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
-import { checkSession, publishSession, PinSession } from "@/lib/pinSession";
+import { MapPin, Save } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
 interface PinEditPanelProps {
   editingHole: number;
@@ -9,15 +12,8 @@ interface PinEditPanelProps {
   damageCells: string[];
   banCells: string[];
   rainCells: string[];
-  cellMode: "damage" | "ban" | "rain";
-  onCellModeChange: (mode: "damage" | "ban" | "rain") => void;
   onPinDragged: (pin: { id: string; x: number; y: number }) => void;
-  onCellClick: (cellId: string) => void;
   onPinSave: () => void;
-  outSession: PinSession | null;
-  inSession: PinSession | null;
-  onOutSessionUpdate: (session: PinSession) => void;
-  onInSessionUpdate: (session: PinSession) => void;
 }
 
 export default function PinEditPanel({
@@ -26,91 +22,94 @@ export default function PinEditPanel({
   damageCells,
   banCells,
   rainCells,
-  cellMode,
-  onCellModeChange,
   onPinDragged,
-  onCellClick,
   onPinSave,
-  outSession,
-  inSession,
-  onOutSessionUpdate,
-  onInSessionUpdate,
 }: PinEditPanelProps) {
+  const [showDamage, setShowDamage] = useState(true);
+  const [showBan, setShowBan] = useState(true);
+  const [showRain, setShowRain] = useState(true);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const [canvasSize, setCanvasSize] = useState(400);
+
+  useEffect(() => {
+    const container = canvasContainerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        setCanvasSize(Math.floor(Math.min(width, height)));
+      }
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="p-4">
-      <h2 className="font-bold mb-4">ピン編集 - Hole {editingHole}</h2>
-      <GreenCanvas
-        hole={String(editingHole)}
-        width={400}
-        height={400}
-        damageCells={damageCells}
-        banCells={banCells}
-        rainCells={rainCells}
-        currentPin={
-          editingPin
-            ? {
-                id: `pin-${editingHole}`,
-                x: editingPin.x,
-                y: editingPin.y,
-              }
-            : undefined
-        }
-        onPinDragged={onPinDragged}
-        onCellClick={onCellClick}
-      />
-      <div className="flex gap-2 mt-4">
+    <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
+      {/* ヘッダーバー */}
+      <div className="flex-shrink-0 h-[42px] px-4 bg-blue-600 flex items-center gap-2">
+        <MapPin size={16} className="text-white" />
+        <h2 className="text-sm font-bold text-white">
+          ピン編集 - Hole {editingHole}
+        </h2>
+      </div>
+
+      {/* 表示トグル + 保存 */}
+      <div className="flex-shrink-0 px-4 py-2 bg-muted border-b flex items-center gap-2">
         <Button
-          variant={cellMode === "damage" ? "default" : "outline"}
-          onClick={() => onCellModeChange("damage")}
+          size="sm"
+          variant={showDamage ? "default" : "outline"}
+          onClick={() => setShowDamage(!showDamage)}
         >
           傷み
         </Button>
         <Button
-          variant={cellMode === "ban" ? "default" : "outline"}
-          onClick={() => onCellModeChange("ban")}
+          size="sm"
+          variant={showBan ? "default" : "outline"}
+          onClick={() => setShowBan(!showBan)}
         >
           禁止
         </Button>
         <Button
-          variant={cellMode === "rain" ? "default" : "outline"}
-          onClick={() => onCellModeChange("rain")}
+          size="sm"
+          variant={showRain ? "default" : "outline"}
+          onClick={() => setShowRain(!showRain)}
         >
           雨天
         </Button>
+
+        <div className="flex-1" />
+
+        <Button size="sm" onClick={onPinSave}>
+          <Save size={14} className="mr-1" />
+          保存
+        </Button>
       </div>
 
-      <div className="mt-8 space-y-2">
-        <Button className="w-full" onClick={onPinSave}>
-          ピンを保存
-        </Button>
-        <Button
-          className="w-full"
-          variant="outline"
-          onClick={async () => {
-            if (!outSession || !inSession) return;
-            const updatedOut = await checkSession(outSession.id);
-            const updatedIn = await checkSession(inSession.id);
-            onOutSessionUpdate(updatedOut);
-            onInSessionUpdate(updatedIn);
-            alert("編集完了しました");
-          }}
-        >
-          編集完了
-        </Button>
-        <Button
-          className="w-full"
-          variant="outline"
-          onClick={async () => {
-            if (!outSession || !inSession) return;
-            const updatedOut = await publishSession(outSession.id);
-            const updatedIn = await publishSession(inSession.id);
-            onOutSessionUpdate(updatedOut);
-            onInSessionUpdate(updatedIn);
-            alert("スタッフに公開しました");
-          }}
-        >
-          スタッフに公開
-        </Button>
+      {/* キャンバス */}
+      <div
+        ref={canvasContainerRef}
+        className="flex-1 min-h-0 flex items-center justify-center p-2"
+      >
+        <GreenCanvas
+          hole={String(editingHole)}
+          width={canvasSize}
+          height={canvasSize}
+          damageCells={showDamage ? damageCells : []}
+          banCells={showBan ? banCells : []}
+          rainCells={showRain ? rainCells : []}
+          currentPin={
+            editingPin
+              ? {
+                  id: `pin-${editingHole}`,
+                  x: editingPin.x,
+                  y: editingPin.y,
+                }
+              : undefined
+          }
+          onPinDragged={onPinDragged}
+        />
       </div>
     </div>
   );

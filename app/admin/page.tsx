@@ -15,11 +15,15 @@ import {
   getPinSessions,
   approveSession,
   sendSession,
+  publishSession,
   PinSession,
 } from "@/lib/pinSession";
 import { format } from "date-fns";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { ShieldCheck, Eye, FileText, Send } from "lucide-react";
+import Link from "next/link";
 import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
@@ -90,7 +94,6 @@ export default function DashboardPage() {
     {},
   );
   const [pastPinsMap, setPastPinsMap] = useState<Record<number, Pin[]>>({});
-  const [cellMode, setCellMode] = useState<"damage" | "ban" | "rain">("damage");
 
   // セルデータ・過去ピンをAPI取得
   useEffect(() => {
@@ -104,13 +107,13 @@ export default function DashboardPage() {
         const pinsMap: Record<number, Pin[]> = {};
 
         for (const [hole, cells] of Object.entries(data.damage_cells)) {
-          damageMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+          damageMap[Number(hole)] = cells.map((c) => `cell_${c.x}_${c.y}`);
         }
         for (const [hole, cells] of Object.entries(data.ban_cells)) {
-          banMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+          banMap[Number(hole)] = cells.map((c) => `cell_${c.x}_${c.y}`);
         }
         for (const [hole, cells] of Object.entries(data.rain_cells)) {
-          rainMap[Number(hole)] = cells.map((c) => `${c.x}-${c.y}`);
+          rainMap[Number(hole)] = cells.map((c) => `cell_${c.x}_${c.y}`);
         }
         for (const [hole, pins] of Object.entries(data.past_pins)) {
           pinsMap[Number(hole)] = pins.map((p, i) => ({
@@ -247,30 +250,56 @@ export default function DashboardPage() {
     });
   };
 
-  const handleCellClick = (cellId: string) => {
-    const updateCells =
-      cellMode === "damage"
-        ? setDamageCellsMap
-        : cellMode === "ban"
-          ? setBanCellsMap
-          : setRainCellsMap;
-
-    updateCells((prev) => {
-      const currentCells = prev[editingHole] || [];
-      const isAlreadySelected = currentCells.includes(cellId);
-      return {
-        ...prev,
-        [editingHole]: isAlreadySelected
-          ? currentCells.filter((id: string) => id !== cellId)
-          : [...currentCells, cellId],
-      };
-    });
-  };
-
   return (
-    <div>
-      <h1>ダッシュボード</h1>
-      <div className="flex gap-4">
+    <div className="h-full flex flex-col p-4">
+      <PageHeader icon={ShieldCheck} title="ダッシュボード">
+        <Link href="/admin/pdf-preview">
+          <Button size="sm" variant="outline">
+            <FileText size={14} className="mr-1" />
+            PDF確認
+          </Button>
+        </Link>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!outSession || !inSession}
+          onClick={async () => {
+            if (!outSession || !inSession) return;
+            const updatedOut = await publishSession(outSession.id);
+            const updatedIn = await publishSession(inSession.id);
+            setOutSession(updatedOut);
+            setInSession(updatedIn);
+            alert("スタッフに公開しました");
+          }}
+        >
+          <Eye size={14} className="mr-1" />
+          スタッフに公開
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!outSession || !inSession}
+          onClick={async () => {
+            if (!outSession || !inSession) return;
+            try {
+              const updatedOut = await sendSession(outSession.id);
+              const updatedIn = await sendSession(inSession.id);
+              setOutSession(updatedOut);
+              setInSession(updatedIn);
+              alert("マスター室に送信しました");
+            } catch (err) {
+              console.error("送信エラー:", err);
+              alert("送信に失敗しました");
+            }
+          }}
+        >
+          <Send size={14} className="mr-1" />
+          マスター室に送信
+        </Button>
+      </PageHeader>
+
+      {/* メインコンテンツ: 左グリッド + 右パネル */}
+      <div className="flex-1 min-h-0 flex gap-4">
         <CourseGridPanel
           course={course}
           onCourseChange={setCourse}
@@ -279,45 +308,36 @@ export default function DashboardPage() {
           outSession={outSession}
           inSession={inSession}
         />
-        <div className="flex-1">
-          {rightPanelMode === "auto-suggest" ? (
-            <AutoSuggestPanel
-              selectedDate={selectedDate}
-              onDateChange={setSelectedDate}
-              isRainyDay={isRainyDay}
-              onRainyDayChange={setIsRainyDay}
-              courseDifficulty={courseDifficulty}
-              onDifficultyChange={setCourseDifficulty}
-              onGenerate={handleCourseGenerate}
-            />
-          ) : (
-            <PinEditPanel
-              editingHole={editingHole}
-              editingPin={editingPin}
-              damageCells={damageCellsMap[editingHole] || []}
-              banCells={banCellsMap[editingHole] || []}
-              rainCells={rainCellsMap[editingHole] || []}
-              cellMode={cellMode}
-              onCellModeChange={setCellMode}
-              onPinDragged={(pin) => {
-                setCoursePins((prev) =>
-                  prev.map((p) =>
-                    p.hole === editingHole ? { ...p, x: pin.x, y: pin.y } : p,
-                  ),
-                );
-              }}
-              onCellClick={handleCellClick}
-              onPinSave={handlePinSave}
-              outSession={outSession}
-              inSession={inSession}
-              onOutSessionUpdate={setOutSession}
-              onInSessionUpdate={setInSession}
-            />
-          )}
-        </div>
+        {rightPanelMode === "auto-suggest" ? (
+          <AutoSuggestPanel
+            selectedDate={selectedDate}
+            onDateChange={setSelectedDate}
+            isRainyDay={isRainyDay}
+            onRainyDayChange={setIsRainyDay}
+            courseDifficulty={courseDifficulty}
+            onDifficultyChange={setCourseDifficulty}
+            onGenerate={handleCourseGenerate}
+          />
+        ) : (
+          <PinEditPanel
+            editingHole={editingHole}
+            editingPin={editingPin}
+            damageCells={damageCellsMap[editingHole] || []}
+            banCells={banCellsMap[editingHole] || []}
+            rainCells={rainCellsMap[editingHole] || []}
+            onPinDragged={(pin) => {
+              setCoursePins((prev) =>
+                prev.map((p) =>
+                  p.hole === editingHole ? { ...p, x: pin.x, y: pin.y } : p,
+                ),
+              );
+            }}
+            onPinSave={handlePinSave}
+          />
+        )}
       </div>
 
-      {/* confirmed セッション確認エリア（常に表示） */}
+      {/* confirmed セッション確認エリア */}
       {confirmedSessions.length > 0 && (
         <div className="mt-8">
           <h2 className="font-bold mb-4">確認待ちセッション</h2>
@@ -378,7 +398,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* approved セッション送信エリア（常に表示） */}
+      {/* approved セッション送信エリア */}
       {approvedSessions.length > 0 && (
         <div className="mt-8">
           <h2 className="font-bold mb-4">送信待ちセッション</h2>

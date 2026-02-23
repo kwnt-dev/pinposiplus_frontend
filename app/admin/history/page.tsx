@@ -12,7 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/axios";
-
+import { PageHeader } from "@/components/layout/PageHeader";
+import { History as HistoryIcon } from "lucide-react";
 type DateGroup = {
   date: string;
   eventName: string | null;
@@ -106,26 +107,23 @@ export default function HistoryPage() {
 
   return (
     <div className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold">ピン履歴</h1>
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="日付を検索"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-40"
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
-            }
-          >
-            {sortOrder === "desc" ? "新しい順" : "古い順"}
-          </Button>
-        </div>
-      </div>
+      <PageHeader icon={HistoryIcon} title="ピン履歴">
+        <Input
+          placeholder="日付を検索"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-40"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
+          }
+        >
+          {sortOrder === "desc" ? "新しい順" : "古い順"}
+        </Button>
+      </PageHeader>
       <Table>
         <TableHeader>
           <TableRow>

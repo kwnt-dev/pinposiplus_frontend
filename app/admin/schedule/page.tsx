@@ -22,6 +22,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import api from "@/lib/axios";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { Calendar } from "lucide-react";
 
 type Schedule = {
   id: string;
@@ -107,6 +109,7 @@ export default function SchedulePage() {
 
   return (
     <div className="p-4 h-full flex flex-col">
+      <PageHeader icon={Calendar} title="予定表" />
       <div className="flex items-center gap-3 mb-2">
         <Button
           variant="outline"
