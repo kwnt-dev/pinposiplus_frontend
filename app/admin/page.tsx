@@ -13,7 +13,6 @@ import { getAutoSuggestData } from "@/lib/autoSuggest";
 import {
   createPinSession,
   getPinSessions,
-  approveSession,
   sendSession,
   publishSession,
   PinSession,
@@ -298,7 +297,12 @@ export default function DashboardPage() {
         <Button
           size="sm"
           variant="outline"
-          disabled={!outSession || !inSession}
+          disabled={
+            !outSession ||
+            !inSession ||
+            outSession.status !== "draft" ||
+            inSession.status !== "draft"
+          }
           onClick={async () => {
             if (!outSession || !inSession) return;
             try {
@@ -318,27 +322,12 @@ export default function DashboardPage() {
         <Button
           size="sm"
           variant="outline"
-          disabled={!outSession || !inSession}
-          onClick={async () => {
-            if (!outSession || !inSession) return;
-            try {
-              await approveSession(outSession.id);
-              await approveSession(inSession.id);
-              await loadSessions();
-              alert("承認しました");
-            } catch (err) {
-              console.error("承認エラー:", err);
-              alert("承認に失敗しました");
-            }
-          }}
-        >
-          <ShieldCheck size={14} className="mr-1" />
-          承認
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={!outSession || !inSession}
+          disabled={
+            !outSession ||
+            !inSession ||
+            outSession.status !== "confirmed" ||
+            inSession.status !== "confirmed"
+          }
           onClick={async () => {
             if (!outSession || !inSession) return;
             try {
