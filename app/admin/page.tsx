@@ -414,6 +414,9 @@ export default function DashboardPage() {
             damageCells={damageCellsMap[editingHole] || []}
             banCells={banCellsMap[editingHole] || []}
             rainCells={rainCellsMap[editingHole] || []}
+            readOnly={
+              outSession?.status === "sent" || inSession?.status === "sent"
+            }
             onPinDragged={(pin) => {
               setCoursePins((prev) =>
                 prev.map((p) =>

@@ -14,6 +14,7 @@ interface PinEditPanelProps {
   rainCells: string[];
   onPinDragged: (pin: { id: string; x: number; y: number }) => void;
   onPinSave: () => void;
+  readOnly?: boolean;
 }
 
 export default function PinEditPanel({
@@ -24,6 +25,7 @@ export default function PinEditPanel({
   rainCells,
   onPinDragged,
   onPinSave,
+  readOnly = false,
 }: PinEditPanelProps) {
   const [showDamage, setShowDamage] = useState(true);
   const [showBan, setShowBan] = useState(true);
@@ -81,10 +83,12 @@ export default function PinEditPanel({
 
         <div className="flex-1" />
 
-        <Button size="sm" onClick={onPinSave}>
-          <Save size={14} className="mr-1" />
-          保存
-        </Button>
+        {!readOnly && (
+          <Button size="sm" onClick={onPinSave}>
+            <Save size={14} className="mr-1" />
+            保存
+          </Button>
+        )}
       </div>
 
       {/* キャンバス */}
@@ -108,7 +112,7 @@ export default function PinEditPanel({
                 }
               : undefined
           }
-          onPinDragged={onPinDragged}
+          onPinDragged={readOnly ? undefined : onPinDragged}
         />
       </div>
     </div>
