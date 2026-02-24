@@ -330,12 +330,19 @@ export default function DashboardPage() {
     <div className="h-full flex flex-col p-4">
       <PageHeader icon={ShieldCheck} title="ダッシュボード">
         <StatusBadge session={course === "out" ? outSession : inSession} />
-        <Link href="/admin/pdf-preview">
-          <Button size="sm" variant="outline">
+        {outSession?.status === "sent" || inSession?.status === "sent" ? (
+          <Button size="sm" variant="outline" disabled>
             <FileText size={14} className="mr-1" />
             PDF確認
           </Button>
-        </Link>
+        ) : (
+          <Link href="/admin/pdf-preview">
+            <Button size="sm" variant="outline">
+              <FileText size={14} className="mr-1" />
+              PDF確認
+            </Button>
+          </Link>
+        )}
         <Button
           size="sm"
           variant="outline"
