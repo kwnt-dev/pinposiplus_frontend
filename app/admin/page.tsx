@@ -143,7 +143,8 @@ export default function DashboardPage() {
         allPins.push(...pins);
       }
       setCoursePins(allPins);
-      if (allPins.length > 0) {
+      const isSent = out?.status === "sent" || in_?.status === "sent";
+      if (allPins.length > 0 && !isSent) {
         setRightPanelMode("pin-edit");
       } else {
         setRightPanelMode("auto-suggest");
@@ -393,7 +394,13 @@ export default function DashboardPage() {
           course={course}
           onCourseChange={setCourse}
           pins={coursePins}
-          onCardClick={(holeId) => setEditingHole(Number(holeId))}
+          onCardClick={(holeId) => {
+            const isSent =
+              outSession?.status === "sent" || inSession?.status === "sent";
+            if (isSent) return;
+            setEditingHole(Number(holeId));
+            setRightPanelMode("pin-edit");
+          }}
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
         />
