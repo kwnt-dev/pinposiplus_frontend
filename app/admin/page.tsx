@@ -413,6 +413,9 @@ export default function DashboardPage() {
             courseDifficulty={courseDifficulty}
             onDifficultyChange={setCourseDifficulty}
             onGenerate={handleCourseGenerate}
+            disabled={
+              outSession?.status === "sent" || inSession?.status === "sent"
+            }
           />
         ) : (
           <PinEditPanel

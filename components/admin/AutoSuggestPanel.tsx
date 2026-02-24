@@ -28,6 +28,7 @@ interface AutoSuggestPanelProps {
   courseDifficulty: CourseDifficulty;
   onDifficultyChange: (value: CourseDifficulty) => void;
   onGenerate: () => void;
+  disabled?: boolean;
 }
 
 export default function AutoSuggestPanel({
@@ -38,6 +39,7 @@ export default function AutoSuggestPanel({
   courseDifficulty,
   onDifficultyChange,
   onGenerate,
+  disabled = false,
 }: AutoSuggestPanelProps) {
   const [weatherForecasts, setWeatherForecasts] = useState<DailyForecast[]>([]);
 
@@ -118,7 +120,7 @@ export default function AutoSuggestPanel({
         </div>
 
         {/* 自動提案実行 */}
-        <Button className="w-full" onClick={onGenerate}>
+        <Button className="w-full" onClick={onGenerate} disabled={disabled}>
           自動提案を実行
         </Button>
       </div>
