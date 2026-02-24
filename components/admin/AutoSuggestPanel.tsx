@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { CourseDifficulty } from "@/lib/courseProposal";
 import { Target } from "lucide-react";
+import { fetchWeatherForecast, DailyForecast } from "@/lib/weather";
 
 interface AutoSuggestPanelProps {
   selectedDate: Date;
@@ -31,12 +33,19 @@ interface AutoSuggestPanelProps {
 export default function AutoSuggestPanel({
   selectedDate,
   onDateChange,
-  isRainyDay,
+  isRainyDay: isRainyDayProp,
   onRainyDayChange,
   courseDifficulty,
   onDifficultyChange,
   onGenerate,
 }: AutoSuggestPanelProps) {
+  const [weatherForecasts, setWeatherForecasts] = useState<DailyForecast[]>([]);
+
+  // 天気予報を取得
+  useEffect(() => {
+    fetchWeatherForecast().then(setWeatherForecasts);
+  }, []);
+
   return (
     <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
       {/* ヘッダーバー */}
@@ -47,6 +56,7 @@ export default function AutoSuggestPanel({
 
       {/* コンテンツ */}
       <div className="flex-1 p-4 space-y-4">
+        {/* 日付 */}
         <div>
           <Label>日付</Label>
           <Popover>
@@ -64,10 +74,32 @@ export default function AutoSuggestPanel({
             </PopoverContent>
           </Popover>
         </div>
+
+        {/* 天気予報 */}
+        {weatherForecasts.length > 0 && (
+          <div>
+            <Label>天気予報</Label>
+            <div className="grid grid-cols-5 gap-1 text-center mt-1">
+              {weatherForecasts.map((weather) => (
+                <div key={weather.date} className="text-xs">
+                  <div>{weather.date.slice(8)}</div>
+                  <div className="text-lg">{weather.emoji}</div>
+                  <div>
+                    {weather.tempMin}°/{weather.tempMax}°
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 雨天モード */}
         <div className="flex items-center gap-2">
-          <Switch checked={isRainyDay} onCheckedChange={onRainyDayChange} />
+          <Switch checked={isRainyDayProp} onCheckedChange={onRainyDayChange} />
           <Label>雨天モード</Label>
         </div>
+
+        {/* コース難易度 */}
         <div>
           <Label>コース難易度</Label>
           <Select
@@ -84,6 +116,8 @@ export default function AutoSuggestPanel({
             </SelectContent>
           </Select>
         </div>
+
+        {/* 自動提案実行 */}
         <Button className="w-full" onClick={onGenerate}>
           自動提案を実行
         </Button>
