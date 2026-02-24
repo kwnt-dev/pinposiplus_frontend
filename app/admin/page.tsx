@@ -208,7 +208,7 @@ export default function DashboardPage() {
       }
     };
     loadCells();
-  }, []);
+  }, [selectedDate]);
 
   // 自動提案実行 → セッション作成 → ピン生成 → ピンAPI保存
   const handleCourseGenerate = async () => {
@@ -424,6 +424,7 @@ export default function DashboardPage() {
             damageCells={damageCellsMap[editingHole] || []}
             banCells={banCellsMap[editingHole] || []}
             rainCells={rainCellsMap[editingHole] || []}
+            pastPins={pastPinsMap[editingHole] || []}
             readOnly={
               outSession?.status === "sent" || inSession?.status === "sent"
             }

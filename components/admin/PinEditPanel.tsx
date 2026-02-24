@@ -1,7 +1,7 @@
 "use client";
 
 import GreenCanvas from "@/components/greens/GreenCanvas";
-import { HolePin } from "@/lib/greenCanvas.geometry";
+import { HolePin, Pin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
 import { MapPin, Save } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -12,6 +12,7 @@ interface PinEditPanelProps {
   damageCells: string[];
   banCells: string[];
   rainCells: string[];
+  pastPins: Pin[];
   onPinDragged: (pin: { id: string; x: number; y: number }) => void;
   onPinSave: () => void;
   readOnly?: boolean;
@@ -23,6 +24,7 @@ export default function PinEditPanel({
   damageCells,
   banCells,
   rainCells,
+  pastPins,
   onPinDragged,
   onPinSave,
   readOnly = false,
@@ -103,6 +105,7 @@ export default function PinEditPanel({
           damageCells={showDamage ? damageCells : []}
           banCells={showBan ? banCells : []}
           rainCells={showRain ? rainCells : []}
+          pastPins={pastPins}
           currentPin={
             editingPin
               ? {
