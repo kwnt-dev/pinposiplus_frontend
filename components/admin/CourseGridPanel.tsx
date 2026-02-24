@@ -1,15 +1,12 @@
 import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
-import { PinSession } from "@/lib/pinSession";
 
 interface CourseGridPanelProps {
   course: "out" | "in";
   onCourseChange: (course: "out" | "in") => void;
   pins: HolePin[];
   onCardClick: (holeId: string) => void;
-  outSession: PinSession | null;
-  inSession: PinSession | null;
   selectedDate: string;
   onDateChange: (date: string) => void;
 }
@@ -19,8 +16,6 @@ export default function CourseGridPanel({
   onCourseChange,
   pins,
   onCardClick,
-  outSession,
-  inSession,
   selectedDate,
   onDateChange,
 }: CourseGridPanelProps) {
@@ -34,20 +29,6 @@ export default function CourseGridPanel({
           onChange={(e) => onDateChange(e.target.value)}
           className="px-2 py-1 text-sm font-bold text-white bg-white/20 border border-white/30 rounded-lg cursor-pointer hover:bg-white/30 focus:outline-none"
         />
-        {outSession ? (
-          <span className="text-sm text-white font-medium">
-            OUT: {outSession.status}
-          </span>
-        ) : (
-          <span className="text-sm text-white/60">OUT: 未作成</span>
-        )}
-        {inSession ? (
-          <span className="text-sm text-white font-medium">
-            IN: {inSession.status}
-          </span>
-        ) : (
-          <span className="text-sm text-white/60">IN: 未作成</span>
-        )}
       </div>
 
       {/* OUT/IN切り替え */}

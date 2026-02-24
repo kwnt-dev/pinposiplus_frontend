@@ -21,11 +21,64 @@ import { format } from "date-fns";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { ShieldCheck, Eye, FileText, Send } from "lucide-react";
+import {
+  ShieldCheck,
+  Eye,
+  FileText,
+  Send,
+  CheckCircle,
+  ClipboardList,
+} from "lucide-react";
 import Link from "next/link";
 import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
+
+// ステータスバッジ（v1準拠・日本語表示）
+function StatusBadge({ session }: { session: PinSession | null }) {
+  if (!session) {
+    return (
+      <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs font-medium">
+        未作成
+      </span>
+    );
+  }
+
+  switch (session.status) {
+    case "draft":
+      return (
+        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+          作成中
+        </span>
+      );
+    case "published":
+      return (
+        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium flex items-center gap-1">
+          <Eye size={12} /> スタッフ公開中
+        </span>
+      );
+    case "confirmed":
+      return (
+        <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium flex items-center gap-1">
+          <ClipboardList size={12} /> スタッフ確認済み
+        </span>
+      );
+    case "approved":
+      return (
+        <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium flex items-center gap-1">
+          <CheckCircle size={12} /> 承認済み
+        </span>
+      );
+    case "sent":
+      return (
+        <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium flex items-center gap-1">
+          <Send size={12} /> 送信済み
+        </span>
+      );
+    default:
+      return null;
+  }
+}
 
 export default function DashboardPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
@@ -288,6 +341,7 @@ export default function DashboardPage() {
   return (
     <div className="h-full flex flex-col p-4">
       <PageHeader icon={ShieldCheck} title="ダッシュボード">
+        <StatusBadge session={course === "out" ? outSession : inSession} />
         <Link href="/admin/pdf-preview">
           <Button size="sm" variant="outline">
             <FileText size={14} className="mr-1" />
