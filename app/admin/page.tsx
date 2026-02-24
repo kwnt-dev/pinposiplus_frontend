@@ -30,7 +30,9 @@ import PinEditPanel from "@/components/admin/PinEditPanel";
 
 export default function DashboardPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<string>(
+    format(new Date(), "yyyy-MM-dd"),
+  );
   const [isRainyDay, setIsRainyDay] = useState(false);
   const [courseDifficulty, setCourseDifficulty] =
     useState<CourseDifficulty>("medium");
@@ -66,25 +68,58 @@ export default function DashboardPage() {
   const [outSession, setOutSession] = useState<PinSession | null>(null);
   const [inSession, setInSession] = useState<PinSession | null>(null);
 
-  // confirmed・approved セッション
-  const [confirmedSessions, setConfirmedSessions] = useState<PinSession[]>([]);
-  const [approvedSessions, setApprovedSessions] = useState<PinSession[]>([]);
+  // セッション読み込み（選択日付でフィルタ）
+  const loadSessions = async () => {
+    try {
+      const sessions = await getPinSessions({ target_date: selectedDate });
+      const out = sessions.find((s) => s.course === "OUT");
+      const in_ = sessions.find((s) => s.course === "IN");
+      setOutSession(out || null);
+      setInSession(in_ || null);
+
+      // セッションのピンをグリッドに反映
+      const allPins: HolePin[] = [];
+      if (out) {
+        const res = await api.get(`/api/pin-sessions/${out.id}`);
+        const pins =
+          res.data.pins?.map(
+            (p: { hole_number: number; x: number; y: number }) => ({
+              hole: p.hole_number,
+              x: p.x,
+              y: p.y,
+            }),
+          ) || [];
+        allPins.push(...pins);
+      }
+      if (in_) {
+        const res = await api.get(`/api/pin-sessions/${in_.id}`);
+        const pins =
+          res.data.pins?.map(
+            (p: { hole_number: number; x: number; y: number }) => ({
+              hole: p.hole_number,
+              x: p.x,
+              y: p.y,
+            }),
+          ) || [];
+        allPins.push(...pins);
+      }
+      setCoursePins(allPins);
+      if (allPins.length > 0) {
+        setRightPanelMode("pin-edit");
+      } else {
+        setRightPanelMode("auto-suggest");
+      }
+    } catch (err) {
+      console.error("セッション取得エラー:", err);
+    }
+  };
 
   useEffect(() => {
-    const loadSessions = async () => {
-      try {
-        const [confirmed, approved] = await Promise.all([
-          getPinSessions({ status: "confirmed" }),
-          getPinSessions({ status: "approved" }),
-        ]);
-        setConfirmedSessions(confirmed);
-        setApprovedSessions(approved);
-      } catch (err) {
-        console.error("セッション取得エラー:", err);
-      }
+    const load = async () => {
+      await loadSessions();
     };
-    loadSessions();
-  }, []);
+    load();
+  }, [selectedDate]);
 
   const [damageCellsMap, setDamageCellsMap] = useState<
     Record<number, string[]>
@@ -137,16 +172,14 @@ export default function DashboardPage() {
 
   // 自動提案実行 → セッション作成 → ピン生成 → ピンAPI保存
   const handleCourseGenerate = async () => {
-    const dateStr = format(selectedDate, "yyyy-MM-dd");
-
     const newOutSession = await createPinSession({
       course: "OUT",
-      target_date: dateStr,
+      target_date: selectedDate,
       is_rainy: isRainyDay,
     });
     const newInSession = await createPinSession({
       course: "IN",
-      target_date: dateStr,
+      target_date: selectedDate,
       is_rainy: isRainyDay,
     });
     setOutSession(newOutSession);
@@ -221,6 +254,8 @@ export default function DashboardPage() {
 
     const allPins: HolePin[] = [...outPins, ...inPins];
     setCoursePins(allPins);
+    setOutSession(newOutSession);
+    setInSession(newInSession);
     setRightPanelMode("pin-edit");
     setEditingHole(1);
   };
@@ -266,11 +301,15 @@ export default function DashboardPage() {
           disabled={!outSession || !inSession}
           onClick={async () => {
             if (!outSession || !inSession) return;
-            const updatedOut = await publishSession(outSession.id);
-            const updatedIn = await publishSession(inSession.id);
-            setOutSession(updatedOut);
-            setInSession(updatedIn);
-            alert("スタッフに公開しました");
+            try {
+              await publishSession(outSession.id);
+              await publishSession(inSession.id);
+              await loadSessions();
+              alert("スタッフに公開しました");
+            } catch (err) {
+              console.error("公開エラー:", err);
+              alert("公開に失敗しました");
+            }
           }}
         >
           <Eye size={14} className="mr-1" />
@@ -283,10 +322,29 @@ export default function DashboardPage() {
           onClick={async () => {
             if (!outSession || !inSession) return;
             try {
-              const updatedOut = await sendSession(outSession.id);
-              const updatedIn = await sendSession(inSession.id);
-              setOutSession(updatedOut);
-              setInSession(updatedIn);
+              await approveSession(outSession.id);
+              await approveSession(inSession.id);
+              await loadSessions();
+              alert("承認しました");
+            } catch (err) {
+              console.error("承認エラー:", err);
+              alert("承認に失敗しました");
+            }
+          }}
+        >
+          <ShieldCheck size={14} className="mr-1" />
+          承認
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={!outSession || !inSession}
+          onClick={async () => {
+            if (!outSession || !inSession) return;
+            try {
+              await sendSession(outSession.id);
+              await sendSession(inSession.id);
+              await loadSessions();
               alert("マスター室に送信しました");
             } catch (err) {
               console.error("送信エラー:", err);
@@ -308,11 +366,13 @@ export default function DashboardPage() {
           onCardClick={(holeId) => setEditingHole(Number(holeId))}
           outSession={outSession}
           inSession={inSession}
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
         />
         {rightPanelMode === "auto-suggest" ? (
           <AutoSuggestPanel
-            selectedDate={selectedDate}
-            onDateChange={setSelectedDate}
+            selectedDate={new Date(selectedDate + "T00:00:00")}
+            onDateChange={(date) => setSelectedDate(format(date, "yyyy-MM-dd"))}
             isRainyDay={isRainyDay}
             onRainyDayChange={setIsRainyDay}
             courseDifficulty={courseDifficulty}
@@ -337,104 +397,6 @@ export default function DashboardPage() {
           />
         )}
       </div>
-
-      {/* confirmed セッション確認エリア */}
-      {confirmedSessions.length > 0 && (
-        <div className="mt-8">
-          <h2 className="font-bold mb-4">確認待ちセッション</h2>
-          <div className="space-y-2">
-            {confirmedSessions.map((s) => (
-              <div
-                key={s.id}
-                className="flex items-center justify-between p-3 rounded bg-gray-50 border"
-              >
-                <div className="text-sm">
-                  <span className="font-bold">{s.course}</span>
-                  {s.target_date && ` - ${s.target_date}`}
-                  <span className="ml-2 text-gray-500">
-                    提出者: {s.submitted_by_name}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      const res = await api.get(`/api/pin-sessions/${s.id}`);
-                      const pins: HolePin[] = res.data.pins.map(
-                        (p: { hole_number: number; x: number; y: number }) => ({
-                          hole: p.hole_number,
-                          x: p.x,
-                          y: p.y,
-                        }),
-                      );
-                      setCoursePins(pins);
-                      setCourse(s.course === "OUT" ? "out" : "in");
-                      setRightPanelMode("pin-edit");
-                    }}
-                  >
-                    確認
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={async () => {
-                      try {
-                        await approveSession(s.id);
-                        setConfirmedSessions((prev) =>
-                          prev.filter((cs) => cs.id !== s.id),
-                        );
-                        alert(`${s.course} を承認しました`);
-                      } catch (err) {
-                        console.error("承認エラー:", err);
-                        alert("承認に失敗しました");
-                      }
-                    }}
-                  >
-                    承認
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* approved セッション送信エリア */}
-      {approvedSessions.length > 0 && (
-        <div className="mt-8">
-          <h2 className="font-bold mb-4">送信待ちセッション</h2>
-          <div className="space-y-2">
-            {approvedSessions.map((s) => (
-              <div
-                key={s.id}
-                className="flex items-center justify-between p-3 rounded bg-gray-50 border"
-              >
-                <div className="text-sm">
-                  <span className="font-bold">{s.course}</span>
-                  {s.target_date && ` - ${s.target_date}`}
-                </div>
-                <Button
-                  size="sm"
-                  onClick={async () => {
-                    try {
-                      await sendSession(s.id);
-                      setApprovedSessions((prev) =>
-                        prev.filter((as) => as.id !== s.id),
-                      );
-                      alert(`${s.course} をマスター室に送信しました`);
-                    } catch (err) {
-                      console.error("送信エラー:", err);
-                      alert("送信に失敗しました");
-                    }
-                  }}
-                >
-                  マスター室に送信
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

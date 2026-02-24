@@ -40,12 +40,6 @@ export async function getPinSessions(params?: {
   return res.data;
 }
 
-// 管理者が編集完了 → checked
-export async function checkSession(id: string): Promise<PinSession> {
-  const res = await api.patch(`/api/pin-sessions/${id}/check`);
-  return res.data;
-}
-
 // スタッフに公開 → published
 export async function publishSession(id: string): Promise<PinSession> {
   const res = await api.patch(`/api/pin-sessions/${id}/publish`);

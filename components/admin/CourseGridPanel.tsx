@@ -10,6 +10,8 @@ interface CourseGridPanelProps {
   onCardClick: (holeId: string) => void;
   outSession: PinSession | null;
   inSession: PinSession | null;
+  selectedDate: string;
+  onDateChange: (date: string) => void;
 }
 
 export default function CourseGridPanel({
@@ -19,11 +21,19 @@ export default function CourseGridPanel({
   onCardClick,
   outSession,
   inSession,
+  selectedDate,
+  onDateChange,
 }: CourseGridPanelProps) {
   return (
     <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
-      {/* セッションステータスヘッダー */}
+      {/* ヘッダー: 日付ピッカー + ステータス */}
       <div className="flex-shrink-0 h-[42px] px-4 bg-gradient-to-r from-gray-700 to-gray-800 flex items-center gap-3">
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => onDateChange(e.target.value)}
+          className="px-2 py-1 text-sm font-bold text-white bg-white/20 border border-white/30 rounded-lg cursor-pointer hover:bg-white/30 focus:outline-none"
+        />
         {outSession ? (
           <span className="text-sm text-white font-medium">
             OUT: {outSession.status}
