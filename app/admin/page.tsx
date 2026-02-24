@@ -21,20 +21,13 @@ import { format } from "date-fns";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import {
-  ShieldCheck,
-  Eye,
-  FileText,
-  Send,
-  CheckCircle,
-  ClipboardList,
-} from "lucide-react";
+import { ShieldCheck, Eye, FileText, Send, ClipboardList } from "lucide-react";
 import Link from "next/link";
 import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
 
-// ステータスバッジ（v1準拠・日本語表示）
+// ステータスバッジ
 function StatusBadge({ session }: { session: PinSession | null }) {
   if (!session) {
     return (
@@ -61,12 +54,6 @@ function StatusBadge({ session }: { session: PinSession | null }) {
       return (
         <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium flex items-center gap-1">
           <ClipboardList size={12} /> スタッフ確認済み
-        </span>
-      );
-    case "approved":
-      return (
-        <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium flex items-center gap-1">
-          <CheckCircle size={12} /> 承認済み
         </span>
       );
     case "sent":
@@ -407,8 +394,6 @@ export default function DashboardPage() {
           onCourseChange={setCourse}
           pins={coursePins}
           onCardClick={(holeId) => setEditingHole(Number(holeId))}
-          outSession={outSession}
-          inSession={inSession}
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
         />
