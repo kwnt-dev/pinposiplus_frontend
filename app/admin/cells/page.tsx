@@ -129,9 +129,14 @@ export default function CellsEditPage() {
         return { x: Number(parts[1]), y: Number(parts[2]) };
       });
 
+      const autoComment =
+        cellMode === "rain"
+          ? `${new Date().toLocaleDateString("ja-JP")} 最終更新`
+          : comment || null;
+
       const newGroup = await createCellGroup(cellMode, {
         hole_number: selectedHole,
-        comment: comment || null,
+        comment: autoComment,
         cells,
       });
 
@@ -303,13 +308,19 @@ export default function CellsEditPage() {
             <span className="text-sm text-muted-foreground">
               新規: {newCells.length}セル
             </span>
-            <input
-              type="text"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="コメント（任意）"
-              className="flex-1 px-2 py-1 border rounded text-sm"
-            />
+            {cellMode === "rain" ? (
+              <span className="flex-1 px-2 py-1 text-sm text-muted-foreground">
+                保存時に更新日が自動入力されます
+              </span>
+            ) : (
+              <input
+                type="text"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="コメント（任意）"
+                className="flex-1 px-2 py-1 border rounded text-sm"
+              />
+            )}
             <Button
               size="sm"
               variant="outline"
@@ -366,19 +377,9 @@ export default function CellsEditPage() {
               hole={String(selectedHole)}
               width={canvasSize}
               height={canvasSize}
-              damageCells={
-                cellMode === "damage" ? displayCells : registeredCells
-              }
-              banCells={
-                cellMode === "ban"
-                  ? displayCells
-                  : groupsToCellIds(banGroups, selectedHole)
-              }
-              rainCells={
-                cellMode === "rain"
-                  ? displayCells
-                  : groupsToCellIds(rainGroups, selectedHole)
-              }
+              damageCells={cellMode === "damage" ? displayCells : []}
+              banCells={cellMode === "ban" ? displayCells : []}
+              rainCells={cellMode === "rain" ? displayCells : []}
               onCellClick={handleCellClick}
               showExit={false}
               showExitRoute={false}
