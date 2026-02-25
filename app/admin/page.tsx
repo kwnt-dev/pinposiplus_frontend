@@ -212,15 +212,34 @@ export default function DashboardPage() {
 
   // 自動提案実行 → セッション作成 → ピン生成 → ピンAPI保存
   const handleCourseGenerate = async () => {
+    // 当日の予定表データを取得
+    let eventName: string | undefined;
+    let groupsCount: number | undefined;
+    try {
+      const scheduleRes = await api.get(
+        `/api/schedules?start_date=${selectedDate}&end_date=${selectedDate}`,
+      );
+      if (scheduleRes.data.length > 0) {
+        eventName = scheduleRes.data[0].event_name || undefined;
+        groupsCount = scheduleRes.data[0].group_count ?? undefined;
+      }
+    } catch (err) {
+      console.error("予定表取得エラー:", err);
+    }
+
     const newOutSession = await createPinSession({
       course: "OUT",
       target_date: selectedDate,
       is_rainy: isRainyDay,
+      event_name: eventName,
+      groups_count: groupsCount,
     });
     const newInSession = await createPinSession({
       course: "IN",
       target_date: selectedDate,
       is_rainy: isRainyDay,
+      event_name: eventName,
+      groups_count: groupsCount,
     });
     setOutSession(newOutSession);
     setInSession(newInSession);
