@@ -86,7 +86,7 @@ export default function StaffHoleEditPage() {
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
       <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center justify-between">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push(isOut ? "/staff/out" : "/staff/in")}
           className="text-sm font-medium text-gray-600"
         >
           ← 戻る
