@@ -153,8 +153,13 @@ export default function StaffOutPage() {
             <GreenCardGridPDF
               course="out"
               pins={pins}
-              onCardClick={(holeId) =>
-                router.push(`/hole/${holeId}/edit-pin?session_id=${session.id}`)
+              onCardClick={
+                session.status === "published"
+                  ? (holeId) =>
+                      router.push(
+                        `/staff/hole/${holeId}?session_id=${session.id}`,
+                      )
+                  : undefined
               }
             />
           </div>
