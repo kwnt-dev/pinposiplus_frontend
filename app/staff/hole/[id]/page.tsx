@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import GreenCanvas from "@/components/greens/GreenCanvas";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import api from "@/lib/axios";
 
 export default function StaffHoleEditPage() {
@@ -12,6 +13,12 @@ export default function StaffHoleEditPage() {
   const holeId = params.id as string;
   const holeNumber = Number(holeId);
   const sessionId = searchParams.get("session_id");
+
+  const isOut = holeNumber >= 1 && holeNumber <= 9;
+  const minHole = isOut ? 1 : 10;
+  const maxHole = isOut ? 9 : 18;
+  const hasPrev = holeNumber > minHole;
+  const hasNext = holeNumber < maxHole;
 
   const [pin, setPin] = useState<
     { id: string; x: number; y: number } | undefined
@@ -43,6 +50,9 @@ export default function StaffHoleEditPage() {
         if (holePin) {
           setPin({ id: holePin.id, x: holePin.x, y: holePin.y });
           setPinDbId(holePin.id);
+        } else {
+          setPin(undefined);
+          setPinDbId(null);
         }
       } catch (err) {
         console.error("ピン取得エラー:", err);
@@ -66,23 +76,41 @@ export default function StaffHoleEditPage() {
     setPinDbId(response.data.id);
   }
 
+  function navigateHole(hole: number) {
+    router.push(`/staff/hole/${hole}?session_id=${sessionId}`);
+  }
+
   if (!sessionId) return null;
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center relative">
+      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center justify-between">
         <button
           onClick={() => router.back()}
           className="text-sm font-medium text-gray-600"
         >
           ← 戻る
         </button>
-        <h1 className="text-lg font-bold absolute left-1/2 -translate-x-1/2">
-          Hole {holeId}
-        </h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => hasPrev && navigateHole(holeNumber - 1)}
+            disabled={!hasPrev}
+            className="p-1 rounded disabled:opacity-30"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <h1 className="text-lg font-bold">Hole {holeId}</h1>
+          <button
+            onClick={() => hasNext && navigateHole(holeNumber + 1)}
+            disabled={!hasNext}
+            className="p-1 rounded disabled:opacity-30"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
         <button
           onClick={handleSave}
-          className="ml-auto px-4 py-1.5 bg-green-600 text-white rounded-lg text-sm font-bold"
+          className="px-4 py-1.5 bg-green-600 text-white rounded-lg text-sm font-bold"
         >
           保存
         </button>
