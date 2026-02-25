@@ -458,7 +458,7 @@ export default function GreenCanvas({
           <Group
             x={ydToPx(currentPin.x)}
             y={ydToPx(currentPin.y)}
-            draggable
+            draggable={!!onPinDragged}
             onDragEnd={(e) => {
               const snappedX = Math.round(e.target.x() / YD_TO_PX);
               const snappedY = Math.round(e.target.y() / YD_TO_PX);

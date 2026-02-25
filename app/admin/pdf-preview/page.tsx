@@ -1,31 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { pdf } from "@react-pdf/renderer";
 import GreenCardGridPDFExport from "@/components/greens/GreenCardGridPDFExport";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import PDFDocument from "@/components/pdf/PDFDocument";
-
-const testPins: HolePin[] = [
-  { hole: 1, x: 30, y: 35 },
-  { hole: 2, x: 25, y: 30 },
-  { hole: 3, x: 35, y: 40 },
-  { hole: 4, x: 28, y: 25 },
-  { hole: 5, x: 32, y: 38 },
-  { hole: 6, x: 30, y: 32 },
-  { hole: 7, x: 26, y: 36 },
-  { hole: 8, x: 34, y: 28 },
-  { hole: 9, x: 30, y: 42 },
-  { hole: 10, x: 28, y: 34 },
-  { hole: 11, x: 33, y: 30 },
-  { hole: 12, x: 30, y: 37 },
-  { hole: 13, x: 27, y: 32 },
-  { hole: 14, x: 35, y: 35 },
-  { hole: 15, x: 30, y: 28 },
-  { hole: 16, x: 31, y: 40 },
-  { hole: 17, x: 25, y: 33 },
-  { hole: 18, x: 30, y: 36 },
-];
+import { getPinSessions } from "@/lib/pinSession";
+import api from "@/lib/axios";
 
 const CARD_SIZE = 240;
 
@@ -172,6 +153,32 @@ async function handleDownloadPDF(
 export default function PDFPreviewPage() {
   const outRef = useRef<HTMLDivElement>(null);
   const inRef = useRef<HTMLDivElement>(null);
+  const [pins, setPins] = useState<HolePin[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const sessions = await getPinSessions();
+        const allPins: HolePin[] = [];
+        for (const s of sessions) {
+          const res = await api.get(`/api/pin-sessions/${s.id}`);
+          const sessionPins =
+            res.data.pins?.map(
+              (p: { hole_number: number; x: number; y: number }) => ({
+                hole: p.hole_number,
+                x: p.x,
+                y: p.y,
+              }),
+            ) || [];
+          allPins.push(...sessionPins);
+        }
+        setPins(allPins);
+      } catch (err) {
+        console.error("ピン取得エラー:", err);
+      }
+    };
+    load();
+  }, []);
 
   return (
     <div className="p-8">
@@ -185,7 +192,7 @@ export default function PDFPreviewPage() {
         <div ref={outRef}>
           <GreenCardGridPDFExport
             course="out"
-            pins={testPins}
+            pins={pins}
             cardSize={CARD_SIZE}
           />
         </div>
@@ -195,7 +202,7 @@ export default function PDFPreviewPage() {
         <div ref={inRef}>
           <GreenCardGridPDFExport
             course="in"
-            pins={testPins}
+            pins={pins}
             cardSize={CARD_SIZE}
           />
         </div>

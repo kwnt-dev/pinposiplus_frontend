@@ -1,7 +1,7 @@
 "use client";
 
 import GreenCanvas from "@/components/greens/GreenCanvas";
-import { HolePin } from "@/lib/greenCanvas.geometry";
+import { HolePin, Pin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
 import { MapPin, Save } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -12,8 +12,10 @@ interface PinEditPanelProps {
   damageCells: string[];
   banCells: string[];
   rainCells: string[];
+  pastPins: Pin[];
   onPinDragged: (pin: { id: string; x: number; y: number }) => void;
   onPinSave: () => void;
+  readOnly?: boolean;
 }
 
 export default function PinEditPanel({
@@ -22,8 +24,10 @@ export default function PinEditPanel({
   damageCells,
   banCells,
   rainCells,
+  pastPins,
   onPinDragged,
   onPinSave,
+  readOnly = false,
 }: PinEditPanelProps) {
   const [showDamage, setShowDamage] = useState(true);
   const [showBan, setShowBan] = useState(true);
@@ -81,10 +85,12 @@ export default function PinEditPanel({
 
         <div className="flex-1" />
 
-        <Button size="sm" onClick={onPinSave}>
-          <Save size={14} className="mr-1" />
-          保存
-        </Button>
+        {!readOnly && (
+          <Button size="sm" onClick={onPinSave}>
+            <Save size={14} className="mr-1" />
+            保存
+          </Button>
+        )}
       </div>
 
       {/* キャンバス */}
@@ -99,6 +105,7 @@ export default function PinEditPanel({
           damageCells={showDamage ? damageCells : []}
           banCells={showBan ? banCells : []}
           rainCells={showRain ? rainCells : []}
+          pastPins={pastPins}
           currentPin={
             editingPin
               ? {
@@ -108,7 +115,7 @@ export default function PinEditPanel({
                 }
               : undefined
           }
-          onPinDragged={onPinDragged}
+          onPinDragged={readOnly ? undefined : onPinDragged}
         />
       </div>
     </div>

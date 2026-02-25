@@ -13,7 +13,6 @@ import { getAutoSuggestData } from "@/lib/autoSuggest";
 import {
   createPinSession,
   getPinSessions,
-  approveSession,
   sendSession,
   publishSession,
   PinSession,
@@ -22,15 +21,57 @@ import { format } from "date-fns";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { ShieldCheck, Eye, FileText, Send } from "lucide-react";
+import { ShieldCheck, Eye, FileText, Send, ClipboardList } from "lucide-react";
 import Link from "next/link";
 import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
 
+// ステータスバッジ
+function StatusBadge({ session }: { session: PinSession | null }) {
+  if (!session) {
+    return (
+      <span className="px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs font-medium">
+        未作成
+      </span>
+    );
+  }
+
+  switch (session.status) {
+    case "draft":
+      return (
+        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+          作成中
+        </span>
+      );
+    case "published":
+      return (
+        <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium flex items-center gap-1">
+          <Eye size={12} /> スタッフ公開中
+        </span>
+      );
+    case "confirmed":
+      return (
+        <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium flex items-center gap-1">
+          <ClipboardList size={12} /> スタッフ確認済み
+        </span>
+      );
+    case "sent":
+      return (
+        <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium flex items-center gap-1">
+          <Send size={12} /> 送信済み
+        </span>
+      );
+    default:
+      return null;
+  }
+}
+
 export default function DashboardPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<string>(
+    format(new Date(), "yyyy-MM-dd"),
+  );
   const [isRainyDay, setIsRainyDay] = useState(false);
   const [courseDifficulty, setCourseDifficulty] =
     useState<CourseDifficulty>("medium");
@@ -66,25 +107,59 @@ export default function DashboardPage() {
   const [outSession, setOutSession] = useState<PinSession | null>(null);
   const [inSession, setInSession] = useState<PinSession | null>(null);
 
-  // confirmed・approved セッション
-  const [confirmedSessions, setConfirmedSessions] = useState<PinSession[]>([]);
-  const [approvedSessions, setApprovedSessions] = useState<PinSession[]>([]);
+  // セッション読み込み（選択日付でフィルタ）
+  const loadSessions = async () => {
+    try {
+      const sessions = await getPinSessions({ target_date: selectedDate });
+      const out = sessions.find((s) => s.course === "OUT");
+      const in_ = sessions.find((s) => s.course === "IN");
+      setOutSession(out || null);
+      setInSession(in_ || null);
+
+      // セッションのピンをグリッドに反映
+      const allPins: HolePin[] = [];
+      if (out) {
+        const res = await api.get(`/api/pin-sessions/${out.id}`);
+        const pins =
+          res.data.pins?.map(
+            (p: { hole_number: number; x: number; y: number }) => ({
+              hole: p.hole_number,
+              x: p.x,
+              y: p.y,
+            }),
+          ) || [];
+        allPins.push(...pins);
+      }
+      if (in_) {
+        const res = await api.get(`/api/pin-sessions/${in_.id}`);
+        const pins =
+          res.data.pins?.map(
+            (p: { hole_number: number; x: number; y: number }) => ({
+              hole: p.hole_number,
+              x: p.x,
+              y: p.y,
+            }),
+          ) || [];
+        allPins.push(...pins);
+      }
+      setCoursePins(allPins);
+      const isSent = out?.status === "sent" || in_?.status === "sent";
+      if (allPins.length > 0 && !isSent) {
+        setRightPanelMode("pin-edit");
+      } else {
+        setRightPanelMode("auto-suggest");
+      }
+    } catch (err) {
+      console.error("セッション取得エラー:", err);
+    }
+  };
 
   useEffect(() => {
-    const loadSessions = async () => {
-      try {
-        const [confirmed, approved] = await Promise.all([
-          getPinSessions({ status: "confirmed" }),
-          getPinSessions({ status: "approved" }),
-        ]);
-        setConfirmedSessions(confirmed);
-        setApprovedSessions(approved);
-      } catch (err) {
-        console.error("セッション取得エラー:", err);
-      }
+    const load = async () => {
+      await loadSessions();
     };
-    loadSessions();
-  }, []);
+    load();
+  }, [selectedDate]);
 
   const [damageCellsMap, setDamageCellsMap] = useState<
     Record<number, string[]>
@@ -133,20 +208,18 @@ export default function DashboardPage() {
       }
     };
     loadCells();
-  }, []);
+  }, [selectedDate]);
 
   // 自動提案実行 → セッション作成 → ピン生成 → ピンAPI保存
   const handleCourseGenerate = async () => {
-    const dateStr = format(selectedDate, "yyyy-MM-dd");
-
     const newOutSession = await createPinSession({
       course: "OUT",
-      target_date: dateStr,
+      target_date: selectedDate,
       is_rainy: isRainyDay,
     });
     const newInSession = await createPinSession({
       course: "IN",
-      target_date: dateStr,
+      target_date: selectedDate,
       is_rainy: isRainyDay,
     });
     setOutSession(newOutSession);
@@ -221,6 +294,8 @@ export default function DashboardPage() {
 
     const allPins: HolePin[] = [...outPins, ...inPins];
     setCoursePins(allPins);
+    setOutSession(newOutSession);
+    setInSession(newInSession);
     setRightPanelMode("pin-edit");
     setEditingHole(1);
   };
@@ -254,23 +329,40 @@ export default function DashboardPage() {
   return (
     <div className="h-full flex flex-col p-4">
       <PageHeader icon={ShieldCheck} title="ダッシュボード">
-        <Link href="/admin/pdf-preview">
-          <Button size="sm" variant="outline">
+        <StatusBadge session={course === "out" ? outSession : inSession} />
+        {outSession?.status === "sent" || inSession?.status === "sent" ? (
+          <Button size="sm" variant="outline" disabled>
             <FileText size={14} className="mr-1" />
             PDF確認
           </Button>
-        </Link>
+        ) : (
+          <Link href="/admin/pdf-preview">
+            <Button size="sm" variant="outline">
+              <FileText size={14} className="mr-1" />
+              PDF確認
+            </Button>
+          </Link>
+        )}
         <Button
           size="sm"
           variant="outline"
-          disabled={!outSession || !inSession}
+          disabled={
+            !outSession ||
+            !inSession ||
+            outSession.status !== "draft" ||
+            inSession.status !== "draft"
+          }
           onClick={async () => {
             if (!outSession || !inSession) return;
-            const updatedOut = await publishSession(outSession.id);
-            const updatedIn = await publishSession(inSession.id);
-            setOutSession(updatedOut);
-            setInSession(updatedIn);
-            alert("スタッフに公開しました");
+            try {
+              await publishSession(outSession.id);
+              await publishSession(inSession.id);
+              await loadSessions();
+              alert("スタッフに公開しました");
+            } catch (err) {
+              console.error("公開エラー:", err);
+              alert("公開に失敗しました");
+            }
           }}
         >
           <Eye size={14} className="mr-1" />
@@ -279,14 +371,18 @@ export default function DashboardPage() {
         <Button
           size="sm"
           variant="outline"
-          disabled={!outSession || !inSession}
+          disabled={
+            !outSession ||
+            !inSession ||
+            outSession.status !== "confirmed" ||
+            inSession.status !== "confirmed"
+          }
           onClick={async () => {
             if (!outSession || !inSession) return;
             try {
-              const updatedOut = await sendSession(outSession.id);
-              const updatedIn = await sendSession(inSession.id);
-              setOutSession(updatedOut);
-              setInSession(updatedIn);
+              await sendSession(outSession.id);
+              await sendSession(inSession.id);
+              await loadSessions();
               alert("マスター室に送信しました");
             } catch (err) {
               console.error("送信エラー:", err);
@@ -305,19 +401,28 @@ export default function DashboardPage() {
           course={course}
           onCourseChange={setCourse}
           pins={coursePins}
-          onCardClick={(holeId) => setEditingHole(Number(holeId))}
-          outSession={outSession}
-          inSession={inSession}
+          onCardClick={(holeId) => {
+            const isSent =
+              outSession?.status === "sent" || inSession?.status === "sent";
+            if (isSent) return;
+            setEditingHole(Number(holeId));
+            setRightPanelMode("pin-edit");
+          }}
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
         />
         {rightPanelMode === "auto-suggest" ? (
           <AutoSuggestPanel
-            selectedDate={selectedDate}
-            onDateChange={setSelectedDate}
+            selectedDate={new Date(selectedDate + "T00:00:00")}
+            onDateChange={(date) => setSelectedDate(format(date, "yyyy-MM-dd"))}
             isRainyDay={isRainyDay}
             onRainyDayChange={setIsRainyDay}
             courseDifficulty={courseDifficulty}
             onDifficultyChange={setCourseDifficulty}
             onGenerate={handleCourseGenerate}
+            disabled={
+              outSession?.status === "sent" || inSession?.status === "sent"
+            }
           />
         ) : (
           <PinEditPanel
@@ -326,6 +431,10 @@ export default function DashboardPage() {
             damageCells={damageCellsMap[editingHole] || []}
             banCells={banCellsMap[editingHole] || []}
             rainCells={rainCellsMap[editingHole] || []}
+            pastPins={pastPinsMap[editingHole] || []}
+            readOnly={
+              outSession?.status === "sent" || inSession?.status === "sent"
+            }
             onPinDragged={(pin) => {
               setCoursePins((prev) =>
                 prev.map((p) =>
@@ -337,104 +446,6 @@ export default function DashboardPage() {
           />
         )}
       </div>
-
-      {/* confirmed セッション確認エリア */}
-      {confirmedSessions.length > 0 && (
-        <div className="mt-8">
-          <h2 className="font-bold mb-4">確認待ちセッション</h2>
-          <div className="space-y-2">
-            {confirmedSessions.map((s) => (
-              <div
-                key={s.id}
-                className="flex items-center justify-between p-3 rounded bg-gray-50 border"
-              >
-                <div className="text-sm">
-                  <span className="font-bold">{s.course}</span>
-                  {s.target_date && ` - ${s.target_date}`}
-                  <span className="ml-2 text-gray-500">
-                    提出者: {s.submitted_by_name}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={async () => {
-                      const res = await api.get(`/api/pin-sessions/${s.id}`);
-                      const pins: HolePin[] = res.data.pins.map(
-                        (p: { hole_number: number; x: number; y: number }) => ({
-                          hole: p.hole_number,
-                          x: p.x,
-                          y: p.y,
-                        }),
-                      );
-                      setCoursePins(pins);
-                      setCourse(s.course === "OUT" ? "out" : "in");
-                      setRightPanelMode("pin-edit");
-                    }}
-                  >
-                    確認
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={async () => {
-                      try {
-                        await approveSession(s.id);
-                        setConfirmedSessions((prev) =>
-                          prev.filter((cs) => cs.id !== s.id),
-                        );
-                        alert(`${s.course} を承認しました`);
-                      } catch (err) {
-                        console.error("承認エラー:", err);
-                        alert("承認に失敗しました");
-                      }
-                    }}
-                  >
-                    承認
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* approved セッション送信エリア */}
-      {approvedSessions.length > 0 && (
-        <div className="mt-8">
-          <h2 className="font-bold mb-4">送信待ちセッション</h2>
-          <div className="space-y-2">
-            {approvedSessions.map((s) => (
-              <div
-                key={s.id}
-                className="flex items-center justify-between p-3 rounded bg-gray-50 border"
-              >
-                <div className="text-sm">
-                  <span className="font-bold">{s.course}</span>
-                  {s.target_date && ` - ${s.target_date}`}
-                </div>
-                <Button
-                  size="sm"
-                  onClick={async () => {
-                    try {
-                      await sendSession(s.id);
-                      setApprovedSessions((prev) =>
-                        prev.filter((as) => as.id !== s.id),
-                      );
-                      alert(`${s.course} をマスター室に送信しました`);
-                    } catch (err) {
-                      console.error("送信エラー:", err);
-                      alert("送信に失敗しました");
-                    }
-                  }}
-                >
-                  マスター室に送信
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
