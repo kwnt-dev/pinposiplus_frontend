@@ -26,8 +26,8 @@ export default function StaffPage() {
     async function loadSessions() {
       try {
         const [outSessions, inSessions] = await Promise.all([
-          getPinSessions({ status: "published", course: "OUT" }),
-          getPinSessions({ status: "published", course: "IN" }),
+          getPinSessions({ status: ["published", "confirmed"], course: "OUT" }),
+          getPinSessions({ status: ["published", "confirmed"], course: "IN" }),
         ]);
         if (outSessions.length > 0) setOutSession(outSessions[0]);
         if (inSessions.length > 0) setInSession(inSessions[0]);
@@ -65,6 +65,19 @@ export default function StaffPage() {
                 {formatDate(outSession.target_date)}
               </span>
             )}
+            {outSession && (
+              <span
+                className={`mt-2 px-2 py-0.5 rounded text-xs font-medium ${
+                  outSession.status === "confirmed"
+                    ? "bg-gray-200 text-gray-700"
+                    : "bg-blue-100 text-blue-700"
+                }`}
+              >
+                {outSession.status === "confirmed"
+                  ? "完了報告済み"
+                  : "作業待ち"}
+              </span>
+            )}
           </div>
           <div
             onClick={() => router.push("/staff/in")}
@@ -75,6 +88,17 @@ export default function StaffPage() {
             {inSession && (
               <span className="text-xs text-gray-400 mt-1">
                 {formatDate(inSession.target_date)}
+              </span>
+            )}
+            {inSession && (
+              <span
+                className={`mt-2 px-2 py-0.5 rounded text-xs font-medium ${
+                  inSession.status === "confirmed"
+                    ? "bg-gray-200 text-gray-700"
+                    : "bg-blue-100 text-blue-700"
+                }`}
+              >
+                {inSession.status === "confirmed" ? "完了報告済み" : "作業待ち"}
               </span>
             )}
           </div>

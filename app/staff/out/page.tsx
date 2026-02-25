@@ -47,7 +47,7 @@ export default function StaffOutPage() {
     const loadSession = async () => {
       try {
         const sessions = await getPinSessions({
-          status: "published",
+          status: ["published", "confirmed"],
           course: "OUT",
         });
         if (sessions.length > 0) {
@@ -113,13 +113,18 @@ export default function StaffOutPage() {
                 {session.event_name}
               </span>
             )}
-            {session.groups_count && (
+            {session.groups_count != null && (
               <span className="text-sm bg-white text-gray-700 px-2 py-0.5 rounded">
                 {session.groups_count}組
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
+            {session.status === "confirmed" && (
+              <span className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs font-medium">
+                完了報告済み
+              </span>
+            )}
             {session.status === "published" && (
               <button
                 onClick={handleConfirm}
@@ -149,7 +154,7 @@ export default function StaffOutPage() {
               course="out"
               pins={pins}
               onCardClick={(holeId) =>
-                router.push(`/staff/hole/${holeId}?session_id=${session.id}`)
+                router.push(`/hole/${holeId}/edit-pin?session_id=${session.id}`)
               }
             />
           </div>
