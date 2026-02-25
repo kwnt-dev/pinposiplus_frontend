@@ -7,6 +7,16 @@ import { getPinSessions, confirmSession, PinSession } from "@/lib/pinSession";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import api from "@/lib/axios";
 
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return "";
+  const date = new Date(dateStr + "T00:00:00");
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  const weekday = weekdays[date.getDay()];
+  return `${month}月${day}日（${weekday}）`;
+}
+
 export default function StaffInPage() {
   const router = useRouter();
   const [session, setSession] = useState<PinSession | null>(null);
@@ -37,7 +47,7 @@ export default function StaffInPage() {
     const loadSession = async () => {
       try {
         const sessions = await getPinSessions({
-          status: "published",
+          status: ["published", "confirmed"],
           course: "IN",
         });
         if (sessions.length > 0) {
@@ -79,34 +89,56 @@ export default function StaffInPage() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center relative">
+      {/* ヘッダー */}
+      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center justify-between">
         <button
           onClick={() => router.push("/staff")}
           className="text-sm font-medium text-gray-600"
         >
           ← 戻る
         </button>
-        <h1 className="text-lg font-bold absolute left-1/2 -translate-x-1/2">
-          IN
-        </h1>
-        <div className="ml-auto flex items-center gap-2">
-          {session && (
-            <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium">
-              {session.status}
-            </span>
-          )}
-          {session?.status === "published" && (
-            <button
-              onClick={handleConfirm}
-              disabled={isConfirming}
-              className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-bold disabled:opacity-50"
-            >
-              完了報告
-            </button>
-          )}
-        </div>
+        <h1 className="text-lg font-bold">IN</h1>
+        <div className="w-12" />
       </header>
 
+      {/* セッション情報バー */}
+      {session && (
+        <div className="flex-shrink-0 h-10 px-4 bg-gray-100 border-b flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-bold text-gray-700">
+              {formatDate(session.target_date)}
+            </span>
+            {session.event_name && (
+              <span className="text-sm bg-white text-gray-700 px-2 py-0.5 rounded">
+                {session.event_name}
+              </span>
+            )}
+            {session.groups_count != null && (
+              <span className="text-sm bg-white text-gray-700 px-2 py-0.5 rounded">
+                {session.groups_count}組
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {session.status === "confirmed" && (
+              <span className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs font-medium">
+                完了報告済み
+              </span>
+            )}
+            {session.status === "published" && (
+              <button
+                onClick={handleConfirm}
+                disabled={isConfirming}
+                className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-bold disabled:opacity-50"
+              >
+                完了報告
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* グリッド */}
       <main
         ref={containerRef}
         className="flex-1 min-h-0 flex items-center justify-center"
@@ -121,8 +153,13 @@ export default function StaffInPage() {
             <GreenCardGridPDF
               course="in"
               pins={pins}
-              onCardClick={(holeId) =>
-                router.push(`/staff/hole/${holeId}?session_id=${session.id}`)
+              onCardClick={
+                session.status === "published"
+                  ? (holeId) =>
+                      router.push(
+                        `/staff/hole/${holeId}?session_id=${session.id}`,
+                      )
+                  : undefined
               }
             />
           </div>
