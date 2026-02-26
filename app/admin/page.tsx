@@ -13,7 +13,6 @@ import { getAutoSuggestData } from "@/lib/autoSuggest";
 import {
   createPinSession,
   getPinSessions,
-  sendSession,
   publishSession,
   PinSession,
 } from "@/lib/pinSession";
@@ -390,31 +389,21 @@ export default function DashboardPage() {
           <Eye size={14} className="mr-1" />
           スタッフに公開
         </Button>
-        <Button
-          size="sm"
-          className="bg-blue-500 text-white hover:bg-blue-600"
-          disabled={
-            !outSession ||
-            !inSession ||
-            outSession.status !== "confirmed" ||
-            inSession.status !== "confirmed"
-          }
-          onClick={async () => {
-            if (!outSession || !inSession) return;
-            try {
-              await sendSession(outSession.id);
-              await sendSession(inSession.id);
-              await loadSessions();
-              alert("マスター室に送信しました");
-            } catch (err) {
-              console.error("送信エラー:", err);
-              alert("送信に失敗しました");
+        <Link href="/admin/pdf-preview?send=true">
+          <Button
+            size="sm"
+            className="bg-blue-500 text-white hover:bg-blue-600"
+            disabled={
+              !outSession ||
+              !inSession ||
+              outSession.status !== "confirmed" ||
+              inSession.status !== "confirmed"
             }
-          }}
-        >
-          <Send size={14} className="mr-1" />
-          マスター室に送信
-        </Button>
+          >
+            <Send size={14} className="mr-1" />
+            マスター室に送信
+          </Button>
+        </Link>
       </PageHeader>
 
       {/* メインコンテンツ: 左グリッド + 右パネル */}
