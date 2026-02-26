@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { pdf } from "@react-pdf/renderer";
 import GreenCardGridPDFExport from "@/components/greens/GreenCardGridPDFExport";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import PDFDocument from "@/components/pdf/PDFDocument";
-import { getPinSessions } from "@/lib/pinSession";
+import { getPinSessions, sendSession } from "@/lib/pinSession";
 import api from "@/lib/axios";
 
 const CARD_SIZE = 240;
@@ -151,13 +152,31 @@ export default function PDFPreviewPage() {
   const outRef = useRef<HTMLDivElement>(null);
   const inRef = useRef<HTMLDivElement>(null);
   const [pins, setPins] = useState<HolePin[]>([]);
+  const [sending, setSending] = useState(false);
+  const [sessionIds, setSessionIds] = useState<{
+    out: string;
+    in: string;
+  } | null>(null);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  // ダッシュボードの「マスター室に送信」ボタンから遷移してきた場合のみ送信モード
+  const isSendMode = searchParams.get("send") === "true";
 
   useEffect(() => {
     const load = async () => {
       try {
         const sessions = await getPinSessions();
         const allPins: HolePin[] = [];
+
+        // OUT/INのセッションIDを保持（送信時に使う）
+        let outId = "";
+        let inId = "";
+
         for (const s of sessions) {
+          if (s.course === "OUT") outId = s.id;
+          if (s.course === "IN") inId = s.id;
+
           const res = await api.get(`/api/pin-sessions/${s.id}`);
           const sessionPins =
             res.data.pins?.map(
@@ -169,7 +188,11 @@ export default function PDFPreviewPage() {
             ) || [];
           allPins.push(...sessionPins);
         }
+
         setPins(allPins);
+        if (outId && inId) {
+          setSessionIds({ out: outId, in: inId });
+        }
       } catch (err) {
         console.error("ピン取得エラー:", err);
       }
@@ -201,10 +224,44 @@ export default function PDFPreviewPage() {
     URL.revokeObjectURL(downloadUrl);
   };
 
+  /**
+   * PDF生成 → base64化 → API送信（S3保存 + SESメール送信）
+   * generatePdfBlobで生成したBlobをbase64に変換してAPIに渡す
+   */
+  const handleSend = async () => {
+    if (!sessionIds) return;
+    setSending(true);
+    try {
+      const blob = await generatePdfBlob(outRef, inRef);
+      if (!blob) return;
+
+      const base64 = await blobToBase64(blob);
+      // OUTにPDF付きで送信（S3にアップロードされる）
+      await sendSession(sessionIds.out, base64);
+      // INはステータス変更のみ
+      await sendSession(sessionIds.in);
+      router.push("/admin");
+    } catch (err) {
+      console.error("送信エラー:", err);
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <div className="p-8">
-      <div className="mb-6">
+      <div className="mb-6 flex gap-4">
         <button onClick={handleDownloadPDF}>PDFダウンロード</button>
+        {/* ダッシュボードから?send=trueで遷移してきた場合のみ送信ボタンを表示 */}
+        {isSendMode && sessionIds && (
+          <button
+            onClick={handleSend}
+            disabled={sending}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
+          >
+            {sending ? "送信中..." : "送信確定"}
+          </button>
+        )}
       </div>
 
       <div className="mb-4">
