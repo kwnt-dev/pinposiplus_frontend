@@ -137,8 +137,11 @@ export default function SchedulePage() {
 
         {/* 曜日ヘッダー */}
         <div className="flex-shrink-0 grid grid-cols-7 border-b bg-muted">
-          {["日", "月", "火", "水", "木", "金", "土"].map((d) => (
-            <div key={d} className="text-center py-1 text-sm font-bold">
+          {["日", "月", "火", "水", "木", "金", "土"].map((d, i) => (
+            <div
+              key={d}
+              className={`text-center py-1 text-sm font-bold ${i < 6 ? "border-r border-gray-300" : ""}`}
+            >
               {d}
             </div>
           ))}
@@ -195,7 +198,7 @@ export default function SchedulePage() {
                   )}
                 </div>
                 {schedule?.event_name && (
-                  <div className="text-xs text-blue-600 mt-1">
+                  <div className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded mt-1 inline-block">
                     {schedule.event_name}
                   </div>
                 )}

@@ -35,14 +35,14 @@ export default function CourseGridPanel({
       <div className="flex-shrink-0 h-[44px] px-4 bg-muted border-b flex items-center justify-center gap-2">
         <Button
           size="sm"
-          variant={course === "out" ? "default" : "outline"}
+          className={`w-20 ${course === "out" ? "bg-green-500 text-white hover:bg-green-600" : "bg-white text-gray-500 hover:bg-gray-100"}`}
           onClick={() => onCourseChange("out")}
         >
           OUT
         </Button>
         <Button
           size="sm"
-          variant={course === "in" ? "default" : "outline"}
+          className={`w-20 ${course === "in" ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-white text-gray-500 hover:bg-gray-100"}`}
           onClick={() => onCourseChange("in")}
         >
           IN

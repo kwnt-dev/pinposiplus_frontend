@@ -3,7 +3,7 @@
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import { HolePin, Pin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
-import { MapPin, Save } from "lucide-react";
+import { MapPin, Save, Flame, Ban, CloudRain } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 interface PinEditPanelProps {
@@ -63,27 +63,30 @@ export default function PinEditPanel({
 
       {/* 表示トグル + 保存 */}
       <div className="flex-shrink-0 px-4 py-2 bg-muted border-b flex items-center gap-2">
-        <Button
-          size="sm"
-          variant={showDamage ? "default" : "outline"}
+        <button
+          className={`px-3 py-1 rounded text-xs font-medium flex items-center gap-1 ${
+            showDamage ? "bg-red-500 text-white" : "bg-gray-200 text-gray-500"
+          }`}
           onClick={() => setShowDamage(!showDamage)}
         >
-          傷み
-        </Button>
-        <Button
-          size="sm"
-          variant={showBan ? "default" : "outline"}
+          <Flame size={12} /> 傷み
+        </button>
+        <button
+          className={`px-3 py-1 rounded text-xs font-medium flex items-center gap-1 ${
+            showBan ? "bg-gray-600 text-white" : "bg-gray-200 text-gray-500"
+          }`}
           onClick={() => setShowBan(!showBan)}
         >
-          禁止
-        </Button>
-        <Button
-          size="sm"
-          variant={showRain ? "default" : "outline"}
+          <Ban size={12} /> 禁止
+        </button>
+        <button
+          className={`px-3 py-1 rounded text-xs font-medium flex items-center gap-1 ${
+            showRain ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-500"
+          }`}
           onClick={() => setShowRain(!showRain)}
         >
-          雨天
-        </Button>
+          <CloudRain size={12} /> 雨天
+        </button>
 
         <div className="flex-1" />
 

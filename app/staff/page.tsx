@@ -40,14 +40,15 @@ export default function StaffPage() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center justify-between">
-        <span className="text-sm text-gray-500">{user?.name}</span>
+      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center">
         <h1 className="text-lg font-bold">スタッフホーム</h1>
+        <div className="flex-1" />
+        <span className="text-sm text-gray-500 mr-3">{user?.name}</span>
         <button
           onClick={logout}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+          className="px-3 py-1.5 bg-destructive/80 hover:bg-destructive text-white rounded-lg text-sm font-medium flex items-center gap-1"
         >
-          <LogOut size={16} />
+          <LogOut size={14} />
           ログアウト
         </button>
       </header>
@@ -70,7 +71,7 @@ export default function StaffPage() {
                 className={`mt-2 px-2 py-0.5 rounded text-xs font-medium ${
                   outSession.status === "confirmed"
                     ? "bg-gray-200 text-gray-700"
-                    : "bg-blue-100 text-blue-700"
+                    : "bg-green-100 text-green-700"
                 }`}
               >
                 {outSession.status === "confirmed"
