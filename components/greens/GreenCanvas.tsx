@@ -49,6 +49,7 @@ interface Props {
   showBoundaryBuffer?: boolean;
   showSlopeBuffer?: boolean;
   showExitRoute?: boolean;
+  isRainyDay?: boolean;
 }
 
 // 定数
@@ -76,6 +77,7 @@ export default function GreenCanvas({
   showBoundaryBuffer = true,
   showSlopeBuffer = true,
   showExitRoute = true,
+  isRainyDay = false,
 }: Props) {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 
@@ -463,13 +465,33 @@ export default function GreenCanvas({
               const snappedX = Math.round(e.target.x() / YD_TO_PX);
               const snappedY = Math.round(e.target.y() / YD_TO_PX);
 
+              const surroundingCellIds = [
+                `cell_${Math.floor(snappedX)}_${Math.floor(snappedY)}`,
+                `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY)}`,
+                `cell_${Math.floor(snappedX)}_${Math.floor(snappedY) - 1}`,
+                `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY) - 1}`,
+              ];
+
+              const isOnBanCell = surroundingCellIds.some((id) =>
+                banCells.includes(id),
+              );
+              const isOnDamageCell = surroundingCellIds.some((id) =>
+                damageCells.includes(id),
+              );
+              const isOnRainCell =
+                isRainyDay &&
+                surroundingCellIds.some((id) => rainCells.includes(id));
+
               if (
                 isInsideGreen(
                   { id: currentPin.id, x: snappedX, y: snappedY },
                   holeData.cells,
                 ) &&
                 isPointInPolygon(snappedX, snappedY, boundaryBufferPoints) &&
-                !isPointInPolygon(snappedX, snappedY, slopeBufferPoints)
+                !isPointInPolygon(snappedX, snappedY, slopeBufferPoints) &&
+                !isOnBanCell &&
+                !isOnDamageCell &&
+                !isOnRainCell
               ) {
                 onPinDragged?.({
                   id: currentPin.id,
