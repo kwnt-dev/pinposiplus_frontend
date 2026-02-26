@@ -9,16 +9,9 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { CourseDifficulty } from "@/lib/courseProposal";
-import { Target, Users, Rocket, ClipboardList } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Target, Users, Rocket, ClipboardList, CloudRain } from "lucide-react";
 import { fetchWeatherForecast, DailyForecast } from "@/lib/weather";
 import api from "@/lib/axios";
 
@@ -144,10 +137,20 @@ export default function AutoSuggestPanel({
           </div>
         )}
 
-        {/* 雨天モード */}
-        <div className="flex items-center gap-2">
-          <Switch checked={isRainyDayProp} onCheckedChange={onRainyDayChange} />
-          <Label>雨天モード</Label>
+        {/* 雨天禁止モード */}
+        <div className="flex items-center justify-between bg-muted rounded-lg px-3 py-2.5">
+          <span
+            className={`text-sm font-medium flex items-center gap-1 ${
+              isRainyDayProp ? "text-blue-500" : "text-gray-400"
+            }`}
+          >
+            <CloudRain size={14} /> 雨天禁止モード
+          </span>
+          <Switch
+            checked={isRainyDayProp}
+            onCheckedChange={onRainyDayChange}
+            className="h-6 w-11 [&_span]:size-5 data-[state=checked]:bg-blue-500"
+          />
         </div>
 
         {/* コース難易度 */}
@@ -165,27 +168,28 @@ export default function AutoSuggestPanel({
           </div>
           <div className="grid grid-cols-3 gap-2 mt-1">
             {(["easy", "medium", "hard"] as const).map((diff) => (
-              <button
+              <Button
                 key={diff}
+                variant="ghost"
                 onClick={() => onDifficultyChange(diff)}
                 className={`py-2 rounded-lg font-bold text-sm transition-all ${
                   courseDifficulty === diff
                     ? diff === "easy"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-blue-600 text-white hover:bg-blue-700 hover:text-white"
                       : diff === "medium"
-                        ? "bg-yellow-500 text-white"
-                        : "bg-red-600 text-white"
+                        ? "bg-yellow-500 text-white hover:bg-yellow-600 hover:text-white"
+                        : "bg-red-600 text-white hover:bg-red-700 hover:text-white"
                     : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                 }`}
               >
                 {diff === "easy" ? "易" : diff === "medium" ? "中" : "難"}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
 
         {/* 自動提案実行 */}
-        <button
+        <Button
           className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 ${
             disabled
               ? "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -195,7 +199,7 @@ export default function AutoSuggestPanel({
           disabled={disabled}
         >
           <Rocket size={16} /> 自動提案生成
-        </button>
+        </Button>
 
         {/* ワークフロー説明 */}
         <div className="bg-blue-50 rounded-lg p-2 border border-blue-200">
