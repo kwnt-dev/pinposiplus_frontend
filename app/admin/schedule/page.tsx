@@ -195,7 +195,7 @@ export default function SchedulePage() {
                   )}
                 </div>
                 {schedule?.event_name && (
-                  <div className="text-xs text-blue-600 mt-1">
+                  <div className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded mt-1 inline-block">
                     {schedule.event_name}
                   </div>
                 )}
