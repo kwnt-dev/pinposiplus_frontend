@@ -1,6 +1,11 @@
+import { useRef, useState, useEffect, useCallback } from "react";
 import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
+
+// GreenCardGridPDFの固定サイズ（240px × 3 + gap 16px × 2 = 752px）
+const GRID_INTRINSIC_WIDTH = 752;
+const GRID_INTRINSIC_HEIGHT = 880; // カード(240+40)×3 + gap×2
 
 interface CourseGridPanelProps {
   course: "out" | "in";
@@ -19,6 +24,23 @@ export default function CourseGridPanel({
   selectedDate,
   onDateChange,
 }: CourseGridPanelProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.65);
+
+  const updateScale = useCallback(() => {
+    if (!containerRef.current) return;
+    const { clientWidth, clientHeight } = containerRef.current;
+    const scaleX = clientWidth / GRID_INTRINSIC_WIDTH;
+    const scaleY = clientHeight / GRID_INTRINSIC_HEIGHT;
+    setScale(Math.min(scaleX, scaleY, 1));
+  }, []);
+
+  useEffect(() => {
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [updateScale]);
   return (
     <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
       {/* ヘッダー: 日付ピッカー + ステータス */}
@@ -50,10 +72,13 @@ export default function CourseGridPanel({
       </div>
 
       {/* 3×3グリッド */}
-      <div className="flex-1 min-h-0 flex items-center justify-center p-2">
+      <div
+        ref={containerRef}
+        className="flex-1 min-h-0 flex items-center justify-center p-2 overflow-hidden"
+      >
         <div
           style={{
-            transform: `scale(0.7)`,
+            transform: `scale(${scale})`,
             transformOrigin: "center center",
           }}
         >
