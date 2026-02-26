@@ -138,10 +138,10 @@ export default function HistoryPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>日付</TableHead>
-                <TableHead>イベント</TableHead>
-                <TableHead>組数</TableHead>
-                <TableHead>作成者</TableHead>
+                <TableHead className="border-r">日付</TableHead>
+                <TableHead className="border-r">イベント</TableHead>
+                <TableHead className="border-r">組数</TableHead>
+                <TableHead className="border-r">作成者</TableHead>
                 <TableHead>PDF</TableHead>
               </TableRow>
             </TableHeader>
@@ -154,13 +154,15 @@ export default function HistoryPage() {
                 </TableRow>
               ) : (
                 sorted.map((h) => (
-                  <TableRow key={h.date}>
-                    <TableCell>{h.date}</TableCell>
-                    <TableCell>{h.eventName ?? "-"}</TableCell>
-                    <TableCell>
+                  <TableRow key={h.date} className="border-b">
+                    <TableCell className="border-r">{h.date}</TableCell>
+                    <TableCell className="border-r">
+                      {h.eventName ?? "-"}
+                    </TableCell>
+                    <TableCell className="border-r">
                       {h.groupCount ? `${h.groupCount}組` : "-"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="border-r">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                           <span className="inline-block w-10 text-center px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">

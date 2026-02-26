@@ -137,8 +137,11 @@ export default function SchedulePage() {
 
         {/* 曜日ヘッダー */}
         <div className="flex-shrink-0 grid grid-cols-7 border-b bg-muted">
-          {["日", "月", "火", "水", "木", "金", "土"].map((d) => (
-            <div key={d} className="text-center py-1 text-sm font-bold">
+          {["日", "月", "火", "水", "木", "金", "土"].map((d, i) => (
+            <div
+              key={d}
+              className={`text-center py-1 text-sm font-bold ${i < 6 ? "border-r border-gray-300" : ""}`}
+            >
               {d}
             </div>
           ))}

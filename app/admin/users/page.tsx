@@ -96,7 +96,7 @@ export default function UsersPage() {
       <PageHeader icon={Users} title="ユーザー管理">
         <Button
           size="sm"
-          className="bg-green-600 text-white hover:bg-green-600"
+          className="bg-green-500 text-white hover:bg-green-600"
           onClick={openAdd}
         >
           新規追加
@@ -113,19 +113,19 @@ export default function UsersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>表示名</TableHead>
-                <TableHead>メール</TableHead>
-                <TableHead>権限</TableHead>
-                <TableHead>登録日</TableHead>
+                <TableHead className="border-r">表示名</TableHead>
+                <TableHead className="border-r">メール</TableHead>
+                <TableHead className="border-r">権限</TableHead>
+                <TableHead className="border-r">登録日</TableHead>
                 <TableHead>操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
+                <TableRow key={user.id} className="border-b">
+                  <TableCell className="border-r">{user.name}</TableCell>
+                  <TableCell className="border-r">{user.email}</TableCell>
+                  <TableCell className="border-r">
                     <span
                       className={`inline-block w-16 text-center px-2 py-0.5 rounded text-xs font-medium ${
                         user.role === "admin"
@@ -136,7 +136,9 @@ export default function UsersPage() {
                       {user.role === "admin" ? "管理者" : "スタッフ"}
                     </span>
                   </TableCell>
-                  <TableCell>{user.created_at?.split("T")[0]}</TableCell>
+                  <TableCell className="border-r">
+                    {user.created_at?.split("T")[0]}
+                  </TableCell>
                   <TableCell>
                     <Button
                       variant="outline"
