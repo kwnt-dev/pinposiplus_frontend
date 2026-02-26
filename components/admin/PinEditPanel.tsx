@@ -16,6 +16,7 @@ interface PinEditPanelProps {
   onPinDragged: (pin: { id: string; x: number; y: number }) => void;
   onPinSave: () => void;
   readOnly?: boolean;
+  isRainyDay?: boolean;
 }
 
 export default function PinEditPanel({
@@ -28,6 +29,7 @@ export default function PinEditPanel({
   onPinDragged,
   onPinSave,
   readOnly = false,
+  isRainyDay = false,
 }: PinEditPanelProps) {
   const [showDamage, setShowDamage] = useState(true);
   const [showBan, setShowBan] = useState(true);
@@ -116,6 +118,7 @@ export default function PinEditPanel({
               : undefined
           }
           onPinDragged={readOnly ? undefined : onPinDragged}
+          isRainyDay={isRainyDay}
         />
       </div>
     </div>

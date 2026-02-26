@@ -462,6 +462,7 @@ export default function DashboardPage() {
               );
             }}
             onPinSave={handlePinSave}
+            isRainyDay={isRainyDay}
           />
         )}
       </div>

@@ -26,6 +26,10 @@ export default function StaffHoleEditPage() {
   const [pinDbId, setPinDbId] = useState<string | null>(null);
   const [canvasSize, setCanvasSize] = useState(400);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isRainyDay, setIsRainyDay] = useState(false);
+  const [banCells, setBanCells] = useState<string[]>([]);
+  const [damageCells, setDamageCells] = useState<string[]>([]);
+  const [rainCells, setRainCells] = useState<string[]>([]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -43,6 +47,7 @@ export default function StaffHoleEditPage() {
     const loadPin = async () => {
       try {
         const res = await api.get(`/api/pin-sessions/${sessionId}`);
+        setIsRainyDay(res.data.is_rainy ?? false);
         const sessionPins = res.data.pins;
         const holePin = sessionPins.find(
           (p: { hole_number: number }) => p.hole_number === holeNumber,
@@ -60,6 +65,33 @@ export default function StaffHoleEditPage() {
     };
     loadPin();
   }, [holeNumber, sessionId]);
+
+  useEffect(() => {
+    const loadCells = async () => {
+      try {
+        const res = await api.get("/api/auto-suggest-data");
+        const holeKey = String(holeNumber);
+        setBanCells(
+          (res.data.ban_cells[holeKey] || []).map(
+            (c: { x: number; y: number }) => `cell_${c.x}_${c.y}`,
+          ),
+        );
+        setDamageCells(
+          (res.data.damage_cells[holeKey] || []).map(
+            (c: { x: number; y: number }) => `cell_${c.x}_${c.y}`,
+          ),
+        );
+        setRainCells(
+          (res.data.rain_cells[holeKey] || []).map(
+            (c: { x: number; y: number }) => `cell_${c.x}_${c.y}`,
+          ),
+        );
+      } catch (err) {
+        console.error("セルデータ取得エラー:", err);
+      }
+    };
+    loadCells();
+  }, [holeNumber]);
 
   async function handleSave() {
     if (!pin || !sessionId) return;
@@ -125,6 +157,10 @@ export default function StaffHoleEditPage() {
           width={canvasSize}
           height={canvasSize}
           currentPin={pin}
+          damageCells={damageCells}
+          banCells={banCells}
+          rainCells={rainCells}
+          isRainyDay={isRainyDay}
           onPinDragged={(newPin) => setPin(newPin)}
         />
       </main>
