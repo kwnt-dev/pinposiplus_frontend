@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { Suspense, useRef, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { pdf } from "@react-pdf/renderer";
 import GreenCardGridPDFExport from "@/components/greens/GreenCardGridPDFExport";
@@ -148,7 +148,7 @@ function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-export default function PDFPreviewPage() {
+function PDFPreviewContent() {
   const outRef = useRef<HTMLDivElement>(null);
   const inRef = useRef<HTMLDivElement>(null);
   const [pins, setPins] = useState<HolePin[]>([]);
@@ -268,7 +268,7 @@ export default function PDFPreviewPage() {
     <div className="p-8">
       <div className="mb-6 flex gap-4">
         <button onClick={handleDownloadPDF}>PDFダウンロード</button>
-        {/* 送信モードの場合、送信ボタンを表示 */}
+        {/* ダッシュボードから?send=trueで遷移してきた場合のみ送信ボタンを表示 */}
         {isSendMode && sessionIds && (
           <button
             onClick={handleSend}
@@ -300,5 +300,13 @@ export default function PDFPreviewPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PDFPreviewPage() {
+  return (
+    <Suspense fallback={<div className="p-8">読み込み中...</div>}>
+      <PDFPreviewContent />
+    </Suspense>
   );
 }
