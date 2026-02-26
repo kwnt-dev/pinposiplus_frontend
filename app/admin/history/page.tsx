@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/axios";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { History as HistoryIcon } from "lucide-react";
+import { History as HistoryIcon, FileText } from "lucide-react";
 type DateGroup = {
   date: string;
   eventName: string | null;
@@ -142,7 +142,7 @@ export default function HistoryPage() {
                 <TableHead>イベント</TableHead>
                 <TableHead>組数</TableHead>
                 <TableHead>作成者</TableHead>
-                <TableHead>操作</TableHead>
+                <TableHead>PDF</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -161,10 +161,31 @@ export default function HistoryPage() {
                       {h.groupCount ? `${h.groupCount}組` : "-"}
                     </TableCell>
                     <TableCell>
-                      <div>OUT : {h.outSubmitter ?? "-"}</div>
-                      <div>IN : {h.inSubmitter ?? "-"}</div>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-block w-10 text-center px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">
+                            OUT
+                          </span>
+                          <span className="text-sm">
+                            {h.outSubmitter ?? "-"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-block w-10 text-center px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                            IN
+                          </span>
+                          <span className="text-sm">
+                            {h.inSubmitter ?? "-"}
+                          </span>
+                        </div>
+                      </div>
                     </TableCell>
-                    <TableCell>PDF</TableCell>
+                    <TableCell>
+                      <button className="px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200">
+                        <FileText size={14} className="inline mr-1" />
+                        PDF
+                      </button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
