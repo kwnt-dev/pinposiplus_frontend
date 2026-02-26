@@ -49,7 +49,26 @@ export default function CellsEditPage() {
   const [comment, setComment] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // キャンバスサイズ
+  // グリッドサイズ
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const [gridScale, setGridScale] = useState(0.65);
+
+  useEffect(() => {
+    const container = gridContainerRef.current;
+    if (!container) return;
+
+    const updateGridScale = () => {
+      const { clientWidth, clientHeight } = container;
+      const scaleX = clientWidth / 752; // グリッド固定幅
+      const scaleY = clientHeight / 880; // カード(240+40)×3 + gap×2
+      setGridScale(Math.min(scaleX, scaleY, 1));
+    };
+
+    updateGridScale();
+    const observer = new ResizeObserver(updateGridScale);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState(400);
 
@@ -248,10 +267,13 @@ export default function CellsEditPage() {
           </div>
 
           {/* 3×3グリッド */}
-          <div className="flex-1 min-h-0 flex items-center justify-center p-2">
+          <div
+            ref={gridContainerRef}
+            className="flex-1 min-h-0 flex items-center justify-center p-2 overflow-hidden"
+          >
             <div
               style={{
-                transform: "scale(0.7)",
+                transform: `scale(${gridScale})`,
                 transformOrigin: "center center",
               }}
             >
