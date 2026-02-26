@@ -350,13 +350,16 @@ export default function DashboardPage() {
       <PageHeader icon={ShieldCheck} title="ダッシュボード">
         <StatusBadge session={course === "out" ? outSession : inSession} />
         {outSession?.status === "sent" || inSession?.status === "sent" ? (
-          <Button size="sm" variant="outline" disabled>
+          <Button size="sm" className="bg-blue-100 text-blue-700" disabled>
             <FileText size={14} className="mr-1" />
             PDF確認
           </Button>
         ) : (
           <Link href="/admin/pdf-preview">
-            <Button size="sm" variant="outline">
+            <Button
+              size="sm"
+              className="bg-blue-100 text-blue-700 hover:bg-blue-200"
+            >
               <FileText size={14} className="mr-1" />
               PDF確認
             </Button>
@@ -364,7 +367,7 @@ export default function DashboardPage() {
         )}
         <Button
           size="sm"
-          variant="outline"
+          className="bg-green-500 text-white hover:bg-green-600"
           disabled={
             !outSession ||
             !inSession ||
@@ -389,7 +392,7 @@ export default function DashboardPage() {
         </Button>
         <Button
           size="sm"
-          variant="outline"
+          className="bg-blue-500 text-white hover:bg-blue-600"
           disabled={
             !outSession ||
             !inSession ||
