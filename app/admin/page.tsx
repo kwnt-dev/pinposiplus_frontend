@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { generateProposals, AutoProposalInput } from "@/lib/autoProposal";
 import {
   generateCourseProposal,
@@ -13,7 +14,6 @@ import { getAutoSuggestData } from "@/lib/autoSuggest";
 import {
   createPinSession,
   getPinSessions,
-  sendSession,
   publishSession,
   PinSession,
 } from "@/lib/pinSession";
@@ -21,8 +21,7 @@ import { format } from "date-fns";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { ShieldCheck, Eye, FileText, Send, ClipboardList } from "lucide-react";
-import Link from "next/link";
+import { ShieldCheck, Eye, Send, ClipboardList } from "lucide-react";
 import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
@@ -68,6 +67,7 @@ function StatusBadge({ session }: { session: PinSession | null }) {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [course, setCourse] = useState<"out" | "in">("out");
   const [selectedDate, setSelectedDate] = useState<string>(
     format(new Date(), "yyyy-MM-dd"),
@@ -349,22 +349,6 @@ export default function DashboardPage() {
     <div className="h-full flex flex-col p-4">
       <PageHeader icon={ShieldCheck} title="ダッシュボード">
         <StatusBadge session={course === "out" ? outSession : inSession} />
-        {outSession?.status === "sent" || inSession?.status === "sent" ? (
-          <Button size="sm" className="bg-blue-100 text-blue-700" disabled>
-            <FileText size={14} className="mr-1" />
-            PDF確認
-          </Button>
-        ) : (
-          <Link href="/admin/pdf-preview">
-            <Button
-              size="sm"
-              className="bg-blue-100 text-blue-700 hover:bg-blue-200"
-            >
-              <FileText size={14} className="mr-1" />
-              PDF確認
-            </Button>
-          </Link>
-        )}
         <Button
           size="sm"
           className="bg-green-500 text-white hover:bg-green-600"
@@ -380,10 +364,8 @@ export default function DashboardPage() {
               await publishSession(outSession.id);
               await publishSession(inSession.id);
               await loadSessions();
-              alert("スタッフに公開しました");
             } catch (err) {
               console.error("公開エラー:", err);
-              alert("公開に失敗しました");
             }
           }}
         >
@@ -399,17 +381,8 @@ export default function DashboardPage() {
             outSession.status !== "confirmed" ||
             inSession.status !== "confirmed"
           }
-          onClick={async () => {
-            if (!outSession || !inSession) return;
-            try {
-              await sendSession(outSession.id);
-              await sendSession(inSession.id);
-              await loadSessions();
-              alert("マスター室に送信しました");
-            } catch (err) {
-              console.error("送信エラー:", err);
-              alert("送信に失敗しました");
-            }
+          onClick={() => {
+            router.push(`/admin/pdf-preview?send=true&date=${selectedDate}`);
           }}
         >
           <Send size={14} className="mr-1" />

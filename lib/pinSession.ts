@@ -16,6 +16,7 @@ export interface PinSession {
   approved_by: string | null;
   approved_at: string | null;
   published_at: string | null;
+  pdf_url: string | null;
 }
 
 // セッション作成（自動提案実行時にOUT/INそれぞれ作成）
@@ -52,8 +53,13 @@ export async function confirmSession(id: string): Promise<PinSession> {
   return res.data;
 }
 
-// マスター室に送信 → sent（pin_history保存）
-export async function sendSession(id: string): Promise<PinSession> {
-  const res = await api.patch(`/api/pin-sessions/${id}/send`);
+// マスター室に送信 → sent（PDF付き）
+export async function sendSession(
+  id: string,
+  pdfBase64?: string,
+): Promise<PinSession> {
+  const res = await api.patch(`/api/pin-sessions/${id}/send`, {
+    pdf_base64: pdfBase64,
+  });
   return res.data;
 }
