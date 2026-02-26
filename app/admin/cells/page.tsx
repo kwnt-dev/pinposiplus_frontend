@@ -190,7 +190,7 @@ export default function CellsEditPage() {
         {/* 左: グリッド */}
         <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
           {/* セルモード切替（ヘッダー） */}
-          <div className="flex-shrink-0 h-[42px] px-3 bg-gradient-to-r from-gray-800 to-gray-900 flex items-center justify-center gap-2">
+          <div className="flex-shrink-0 h-[42px] px-3 bg-gray-800 flex items-center justify-center gap-2">
             <button
               className={`px-3 py-1 rounded text-xs font-medium flex items-center gap-1 ${
                 cellMode === "damage"

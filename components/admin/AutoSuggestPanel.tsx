@@ -65,7 +65,7 @@ export default function AutoSuggestPanel({
   return (
     <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
       {/* ヘッダーバー */}
-      <div className="flex-shrink-0 h-[42px] px-4 bg-gradient-to-r from-gray-800 to-gray-900 flex items-center gap-2">
+      <div className="flex-shrink-0 h-[42px] px-4 bg-gray-800 flex items-center gap-2">
         <Target size={16} className="text-white" />
         <h2 className="text-sm font-bold text-white">自動提案設定</h2>
       </div>

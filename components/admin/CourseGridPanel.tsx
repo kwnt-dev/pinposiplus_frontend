@@ -22,7 +22,7 @@ export default function CourseGridPanel({
   return (
     <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
       {/* ヘッダー: 日付ピッカー + ステータス */}
-      <div className="flex-shrink-0 h-[42px] px-4 bg-gradient-to-r from-gray-700 to-gray-800 flex items-center gap-3">
+      <div className="flex-shrink-0 h-[42px] px-4 bg-gray-800 flex items-center gap-3">
         <input
           type="date"
           value={selectedDate}
