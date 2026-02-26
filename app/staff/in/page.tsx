@@ -109,12 +109,12 @@ export default function StaffInPage() {
               {formatDate(session.target_date)}
             </span>
             {session.event_name && (
-              <span className="text-sm bg-white text-gray-700 px-2 py-0.5 rounded">
+              <span className="text-xs bg-purple-500/80 text-white px-2 py-0.5 rounded">
                 {session.event_name}
               </span>
             )}
             {session.groups_count != null && (
-              <span className="text-sm bg-white text-gray-700 px-2 py-0.5 rounded">
+              <span className="text-sm text-green-600 font-bold">
                 {session.groups_count}組
               </span>
             )}
@@ -129,7 +129,7 @@ export default function StaffInPage() {
               <button
                 onClick={handleConfirm}
                 disabled={isConfirming}
-                className="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-bold disabled:opacity-50"
+                className="px-4 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-bold disabled:opacity-50"
               >
                 完了報告
               </button>
