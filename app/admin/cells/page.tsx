@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Grid3x3, Pencil, Save } from "lucide-react";
+import { Grid3x3, Pencil, Save, Flame, Ban, CloudRain } from "lucide-react";
 import GreenCardGrid from "@/components/greens/GreenCardGrid";
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import {
@@ -191,49 +191,43 @@ export default function CellsEditPage() {
         <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
           {/* セルモード切替（ヘッダー） */}
           <div className="flex-shrink-0 h-[42px] px-3 bg-gradient-to-r from-gray-800 to-gray-900 flex items-center justify-center gap-2">
-            <Button
-              size="sm"
-              variant={cellMode === "damage" ? "default" : "ghost"}
-              className={
-                cellMode !== "damage"
-                  ? "text-white/70 hover:text-white hover:bg-white/20"
-                  : ""
-              }
+            <button
+              className={`px-3 py-1 rounded text-xs font-medium flex items-center gap-1 ${
+                cellMode === "damage"
+                  ? "bg-red-500 text-white"
+                  : "text-white/70 hover:text-white hover:bg-white/20"
+              }`}
               onClick={() => setCellMode("damage")}
             >
-              傷み
-            </Button>
-            <Button
-              size="sm"
-              variant={cellMode === "ban" ? "default" : "ghost"}
-              className={
-                cellMode !== "ban"
-                  ? "text-white/70 hover:text-white hover:bg-white/20"
-                  : ""
-              }
+              <Flame size={12} /> 傷み
+            </button>
+            <button
+              className={`px-3 py-1 rounded text-xs font-medium flex items-center gap-1 ${
+                cellMode === "ban"
+                  ? "bg-gray-600 text-white"
+                  : "text-white/70 hover:text-white hover:bg-white/20"
+              }`}
               onClick={() => setCellMode("ban")}
             >
-              禁止
-            </Button>
-            <Button
-              size="sm"
-              variant={cellMode === "rain" ? "default" : "ghost"}
-              className={
-                cellMode !== "rain"
-                  ? "text-white/70 hover:text-white hover:bg-white/20"
-                  : ""
-              }
+              <Ban size={12} /> 禁止
+            </button>
+            <button
+              className={`px-3 py-1 rounded text-xs font-medium flex items-center gap-1 ${
+                cellMode === "rain"
+                  ? "bg-blue-500 text-white"
+                  : "text-white/70 hover:text-white hover:bg-white/20"
+              }`}
               onClick={() => setCellMode("rain")}
             >
-              雨天
-            </Button>
+              <CloudRain size={12} /> 雨天
+            </button>
           </div>
 
           {/* OUT/IN切り替え */}
           <div className="flex-shrink-0 h-[44px] px-4 bg-muted border-b flex items-center justify-center gap-2">
             <Button
               size="sm"
-              variant={course === "out" ? "default" : "outline"}
+              className={`w-20 ${course === "out" ? "bg-green-500 text-white hover:bg-green-600" : "bg-white text-gray-500 hover:bg-gray-100"}`}
               onClick={() => {
                 setCourse("out");
                 handleHoleChange(1);
@@ -243,7 +237,7 @@ export default function CellsEditPage() {
             </Button>
             <Button
               size="sm"
-              variant={course === "in" ? "default" : "outline"}
+              className={`w-20 ${course === "in" ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-white text-gray-500 hover:bg-gray-100"}`}
               onClick={() => {
                 setCourse("in");
                 handleHoleChange(10);
