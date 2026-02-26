@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
+import { ja } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -17,8 +18,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CourseDifficulty } from "@/lib/courseProposal";
-import { Target } from "lucide-react";
+import { Target, Users } from "lucide-react";
 import { fetchWeatherForecast, DailyForecast } from "@/lib/weather";
+import api from "@/lib/axios";
 
 interface AutoSuggestPanelProps {
   selectedDate: Date;
@@ -42,11 +44,30 @@ export default function AutoSuggestPanel({
   disabled = false,
 }: AutoSuggestPanelProps) {
   const [weatherForecasts, setWeatherForecasts] = useState<DailyForecast[]>([]);
+  const [schedule, setSchedule] = useState<{
+    event_name: string | null;
+    group_count: number | null;
+  } | null>(null);
 
   // 天気予報を取得
   useEffect(() => {
     fetchWeatherForecast().then(setWeatherForecasts);
   }, []);
+
+  // 選択日付の予定を取得
+  useEffect(() => {
+    const dateStr = format(selectedDate, "yyyy-MM-dd");
+    api
+      .get(`/api/schedules?start_date=${dateStr}&end_date=${dateStr}`)
+      .then((res) => {
+        if (res.data.length > 0) {
+          setSchedule(res.data[0]);
+        } else {
+          setSchedule(null);
+        }
+      })
+      .catch(() => setSchedule(null));
+  }, [selectedDate]);
 
   return (
     <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
@@ -58,6 +79,31 @@ export default function AutoSuggestPanel({
 
       {/* コンテンツ */}
       <div className="flex-1 p-4 space-y-4">
+        {/* 選択日付の表示 */}
+        <div className="text-center">
+          <div className="text-xl font-bold">
+            {format(selectedDate, "yyyy年M月d日", { locale: ja })}
+          </div>
+          <div className="text-base text-blue-500 font-medium">
+            （{format(selectedDate, "EEEE", { locale: ja })}）
+          </div>
+          <div className="mt-1 flex items-center justify-center gap-3 text-sm">
+            {schedule?.event_name && (
+              <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-medium">
+                {schedule.event_name}
+              </span>
+            )}
+            {schedule?.group_count && (
+              <span className="text-green-600 font-bold flex items-center gap-1">
+                <Users size={12} /> {schedule.group_count}組
+              </span>
+            )}
+            {!schedule?.event_name && !schedule?.group_count && (
+              <span className="text-gray-400 text-xs">予定なし</span>
+            )}
+          </div>
+        </div>
+
         {/* 日付 */}
         <div>
           <Label>日付</Label>
