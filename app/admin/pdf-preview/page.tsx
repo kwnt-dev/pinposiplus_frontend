@@ -111,43 +111,40 @@ async function exportGridToImage(
 }
 
 /**
- * OUT/INグリッドを画像化してPDFを生成・ダウンロードする
+ * OUT/INグリッドからPDF Blobを生成する共通処理
  */
-async function handleDownloadPDF(
+async function generatePdfBlob(
   outRef: React.RefObject<HTMLDivElement | null>,
   inRef: React.RefObject<HTMLDivElement | null>,
-) {
+): Promise<Blob | null> {
   // Konvaの描画完了を待つ
   await new Promise((r) => setTimeout(r, 500));
 
   const outImage = await exportGridToImage(outRef);
   const inImage = await exportGridToImage(inRef);
 
-  if (!outImage || !inImage) {
-    alert("画像の生成に失敗しました");
-    return;
-  }
+  if (!outImage || !inImage) return null;
 
   // react-pdfでPDF生成
-  const pdfData = await pdf(
+  return await pdf(
     <PDFDocument outImageUrl={outImage} inImageUrl={inImage} />,
   ).toBlob();
+}
 
-  // PDFファイルをダウンロード
-  // ダウンロード用のaタグを作ってクリックする（JSからファイルを保存する定番の方法）
-  const downloadUrl = URL.createObjectURL(pdfData);
-  const link = document.createElement("a");
-  link.href = downloadUrl;
-
-  // ファイル名: ピンポジション_20260210.pdf
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  link.download = `ピンポジション_${year}${month}${day}.pdf`;
-
-  link.click();
-  URL.revokeObjectURL(downloadUrl);
+/**
+ * BlobをBase64文字列に変換
+ */
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      // data:application/pdf;base64,XXXX の "XXXX" 部分だけ取得
+      resolve(result.split(",")[1]);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 export default function PDFPreviewPage() {
@@ -180,12 +177,34 @@ export default function PDFPreviewPage() {
     load();
   }, []);
 
+  /**
+   * PDFをダウンロード
+   * generatePdfBlobで生成したBlobをダウンロードリンクにする
+   */
+  const handleDownloadPDF = async () => {
+    const blob = await generatePdfBlob(outRef, inRef);
+    if (!blob) return;
+
+    // ダウンロード用のaタグを作ってクリックする（JSからファイルを保存する定番の方法）
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+
+    // ファイル名: ピンポジション_20260210.pdf
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    link.download = `ピンポジション_${year}${month}${day}.pdf`;
+
+    link.click();
+    URL.revokeObjectURL(downloadUrl);
+  };
+
   return (
     <div className="p-8">
       <div className="mb-6">
-        <button onClick={() => handleDownloadPDF(outRef, inRef)}>
-          PDFダウンロード
-        </button>
+        <button onClick={handleDownloadPDF}>PDFダウンロード</button>
       </div>
 
       <div className="mb-4">
