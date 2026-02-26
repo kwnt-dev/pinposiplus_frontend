@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { generateProposals, AutoProposalInput } from "@/lib/autoProposal";
 import {
   generateCourseProposal,
@@ -20,8 +21,7 @@ import { format } from "date-fns";
 import api from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { ShieldCheck, Eye, FileText, Send, ClipboardList } from "lucide-react";
-import Link from "next/link";
+import { ShieldCheck, Eye, Send, ClipboardList } from "lucide-react";
 import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
@@ -67,6 +67,7 @@ function StatusBadge({ session }: { session: PinSession | null }) {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [course, setCourse] = useState<"out" | "in">("out");
   const [selectedDate, setSelectedDate] = useState<string>(
     format(new Date(), "yyyy-MM-dd"),
@@ -371,21 +372,22 @@ export default function DashboardPage() {
           <Eye size={14} className="mr-1" />
           スタッフに公開
         </Button>
-        <Link href={`/admin/pdf-preview?send=true&date=${selectedDate}`}>
-          <Button
-            size="sm"
-            className="bg-blue-500 text-white hover:bg-blue-600"
-            disabled={
-              !outSession ||
-              !inSession ||
-              outSession.status !== "confirmed" ||
-              inSession.status !== "confirmed"
-            }
-          >
-            <Send size={14} className="mr-1" />
-            マスター室に送信
-          </Button>
-        </Link>
+        <Button
+          size="sm"
+          className="bg-blue-500 text-white hover:bg-blue-600"
+          disabled={
+            !outSession ||
+            !inSession ||
+            outSession.status !== "confirmed" ||
+            inSession.status !== "confirmed"
+          }
+          onClick={() => {
+            router.push(`/admin/pdf-preview?send=true&date=${selectedDate}`);
+          }}
+        >
+          <Send size={14} className="mr-1" />
+          マスター室に送信
+        </Button>
       </PageHeader>
 
       {/* メインコンテンツ: 左グリッド + 右パネル */}
