@@ -74,16 +74,16 @@ export default function AutoSuggestPanel({
       <div className="flex-shrink-0 h-[44px] px-4 bg-muted border-b border-default flex items-center justify-center"></div>
 
       {/* コンテンツ */}
-      <div className="flex-1 p-4 space-y-4">
+      <div className="flex-1 p-4 space-y-5">
         {/* 選択日付の表示 */}
         <div className="text-center">
-          <div className="text-xl font-bold">
+          <div className="text-2xl font-bold">
             {format(selectedDate, "yyyy年M月d日", { locale: ja })}
           </div>
-          <div className="text-base text-blue-500 font-medium">
+          <div className="text-lg text-blue-500 font-bold">
             （{format(selectedDate, "EEEE", { locale: ja })}）
           </div>
-          <div className="mt-1 flex items-center justify-center gap-3 text-sm">
+          <div className="mt-1 flex items-center justify-center gap-3 text-base">
             {schedule?.event_name && (
               <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-medium">
                 {schedule.event_name}
@@ -189,24 +189,26 @@ export default function AutoSuggestPanel({
         </div>
 
         {/* 自動提案実行 */}
-        <Button
-          className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 ${
-            disabled
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
-          }`}
-          onClick={onGenerate}
-          disabled={disabled}
-        >
-          <Rocket size={16} /> 自動提案生成
-        </Button>
+        <div className="py-3">
+          <Button
+            className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 ${
+              disabled
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
+            }`}
+            onClick={onGenerate}
+            disabled={disabled}
+          >
+            <Rocket size={16} /> 自動提案生成
+          </Button>
+        </div>
 
         {/* ワークフロー説明 */}
-        <div className="bg-blue-50 rounded-lg p-2 border border-blue-200">
-          <h3 className="font-bold text-blue-800 text-xs mb-1 flex items-center gap-1">
-            <ClipboardList size={12} /> ワークフロー
+        <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+          <h3 className="font-bold text-blue-800 text-sm mb-2 flex items-center gap-1">
+            <ClipboardList size={14} /> ワークフロー
           </h3>
-          <ol className="text-[10px] text-blue-700 space-y-0.5 pl-4">
+          <ol className="text-xs text-blue-700 space-y-1 pl-4">
             <li className="list-decimal">
               <span className="inline-block w-[8em]">提案作成</span>-
               管理者が日付・条件を設定して一括生成
