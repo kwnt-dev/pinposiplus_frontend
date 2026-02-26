@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CourseDifficulty } from "@/lib/courseProposal";
-import { Target, Users } from "lucide-react";
+import { Target, Users, Rocket } from "lucide-react";
 import { fetchWeatherForecast, DailyForecast } from "@/lib/weather";
 import api from "@/lib/axios";
 
@@ -182,9 +182,17 @@ export default function AutoSuggestPanel({
         </div>
 
         {/* 自動提案実行 */}
-        <Button className="w-full" onClick={onGenerate} disabled={disabled}>
-          自動提案を実行
-        </Button>
+        <button
+          className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 ${
+            disabled
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
+          }`}
+          onClick={onGenerate}
+          disabled={disabled}
+        >
+          <Rocket size={16} /> 自動提案生成
+        </button>
       </div>
     </div>
   );
