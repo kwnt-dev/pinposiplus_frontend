@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CourseDifficulty } from "@/lib/courseProposal";
-import { Target, Users, Rocket } from "lucide-react";
+import { Target, Users, Rocket, ClipboardList } from "lucide-react";
 import { fetchWeatherForecast, DailyForecast } from "@/lib/weather";
 import api from "@/lib/axios";
 
@@ -193,6 +193,35 @@ export default function AutoSuggestPanel({
         >
           <Rocket size={16} /> 自動提案生成
         </button>
+
+        {/* ワークフロー説明 */}
+        <div className="bg-blue-50 rounded-lg p-2 border border-blue-200">
+          <h3 className="font-bold text-blue-800 text-xs mb-1 flex items-center gap-1">
+            <ClipboardList size={12} /> ワークフロー
+          </h3>
+          <ol className="text-[10px] text-blue-700 space-y-0.5 pl-4">
+            <li className="list-decimal">
+              <span className="inline-block w-[8em]">提案作成</span>-
+              管理者が日付・条件を設定して一括生成
+            </li>
+            <li className="list-decimal">
+              <span className="inline-block w-[8em]">事前に確認</span>-
+              管理者が3×3グリッドでピン位置を確認・編集
+            </li>
+            <li className="list-decimal">
+              <span className="inline-block w-[8em]">スタッフに公開</span>-
+              スタッフが現場で確認し編集
+            </li>
+            <li className="list-decimal">
+              <span className="inline-block w-[8em]">最終確認</span>-
+              管理者がスタッフの現場確認報告を受けて再調整
+            </li>
+            <li className="list-decimal">
+              <span className="inline-block w-[8em]">提案送信</span>-
+              管理者がマスター室へ送信（編集不可）
+            </li>
+          </ol>
+        </div>
       </div>
     </div>
   );
