@@ -77,6 +77,9 @@ export default function AutoSuggestPanel({
         <h2 className="text-sm font-bold text-white">自動提案設定</h2>
       </div>
 
+      {/* 左のOUT/IN切り替えと同じ高さの帯 */}
+      <div className="flex-shrink-0 h-[44px] px-4 bg-muted border-b border-default flex items-center justify-center"></div>
+
       {/* コンテンツ */}
       <div className="flex-1 p-4 space-y-4">
         {/* 選択日付の表示 */}
