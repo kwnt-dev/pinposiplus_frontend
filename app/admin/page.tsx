@@ -348,22 +348,6 @@ export default function DashboardPage() {
     <div className="h-full flex flex-col p-4">
       <PageHeader icon={ShieldCheck} title="ダッシュボード">
         <StatusBadge session={course === "out" ? outSession : inSession} />
-        {outSession?.status === "sent" || inSession?.status === "sent" ? (
-          <Button size="sm" className="bg-blue-100 text-blue-700" disabled>
-            <FileText size={14} className="mr-1" />
-            PDF確認
-          </Button>
-        ) : (
-          <Link href="/admin/pdf-preview">
-            <Button
-              size="sm"
-              className="bg-blue-100 text-blue-700 hover:bg-blue-200"
-            >
-              <FileText size={14} className="mr-1" />
-              PDF確認
-            </Button>
-          </Link>
-        )}
         <Button
           size="sm"
           className="bg-green-500 text-white hover:bg-green-600"
@@ -379,17 +363,15 @@ export default function DashboardPage() {
               await publishSession(outSession.id);
               await publishSession(inSession.id);
               await loadSessions();
-              alert("スタッフに公開しました");
             } catch (err) {
               console.error("公開エラー:", err);
-              alert("公開に失敗しました");
             }
           }}
         >
           <Eye size={14} className="mr-1" />
           スタッフに公開
         </Button>
-        <Link href="/admin/pdf-preview?send=true">
+        <Link href={`/admin/pdf-preview?send=true&date=${selectedDate}`}>
           <Button
             size="sm"
             className="bg-blue-500 text-white hover:bg-blue-600"
