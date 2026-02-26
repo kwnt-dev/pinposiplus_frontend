@@ -6,7 +6,7 @@ import { pdf } from "@react-pdf/renderer";
 import GreenCardGridPDFExport from "@/components/greens/GreenCardGridPDFExport";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import PDFDocument from "@/components/pdf/PDFDocument";
-import { getPinSessions, sendSession } from "@/lib/pinSession";
+import { getPinSessions, sendSession, PinSession } from "@/lib/pinSession";
 import api from "@/lib/axios";
 
 const CARD_SIZE = 240;
@@ -157,25 +157,39 @@ export default function PDFPreviewPage() {
     out: string;
     in: string;
   } | null>(null);
+  // セッションのステータス（送信ボタンの活性/非活性判定に使う）
+  const [isSent, setIsSent] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  // ダッシュボードの「マスター室に送信」ボタンから遷移してきた場合のみ送信モード
   const isSendMode = searchParams.get("send") === "true";
+  const date = searchParams.get("date");
 
   useEffect(() => {
     const load = async () => {
       try {
-        const sessions = await getPinSessions();
+        // 日付でフィルタしてセッション取得
+        const sessions = await getPinSessions({
+          target_date: date ?? undefined,
+        });
         const allPins: HolePin[] = [];
 
         // OUT/INのセッションIDを保持（送信時に使う）
         let outId = "";
         let inId = "";
+        let outStatus = "";
+        let inStatus = "";
 
         for (const s of sessions) {
-          if (s.course === "OUT") outId = s.id;
-          if (s.course === "IN") inId = s.id;
+          if (s.course === "OUT") {
+            outId = s.id;
+            outStatus = s.status;
+          }
+          if (s.course === "IN") {
+            inId = s.id;
+            inStatus = s.status;
+          }
 
           const res = await api.get(`/api/pin-sessions/${s.id}`);
           const sessionPins =
@@ -193,12 +207,14 @@ export default function PDFPreviewPage() {
         if (outId && inId) {
           setSessionIds({ out: outId, in: inId });
         }
+        setIsSent(outStatus === "sent" || inStatus === "sent");
+        setIsConfirmed(outStatus === "confirmed" && inStatus === "confirmed");
       } catch (err) {
         console.error("ピン取得エラー:", err);
       }
     };
     load();
-  }, []);
+  }, [date]);
 
   /**
    * PDFをダウンロード
@@ -252,14 +268,14 @@ export default function PDFPreviewPage() {
     <div className="p-8">
       <div className="mb-6 flex gap-4">
         <button onClick={handleDownloadPDF}>PDFダウンロード</button>
-        {/* ダッシュボードから?send=trueで遷移してきた場合のみ送信ボタンを表示 */}
+        {/* 送信モードの場合、送信ボタンを表示 */}
         {isSendMode && sessionIds && (
           <button
             onClick={handleSend}
-            disabled={sending}
+            disabled={sending || isSent || !isConfirmed}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
           >
-            {sending ? "送信中..." : "送信確定"}
+            {isSent ? "送信済み" : sending ? "送信中..." : "送信確定"}
           </button>
         )}
       </div>
