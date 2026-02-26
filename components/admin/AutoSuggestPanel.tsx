@@ -149,20 +149,36 @@ export default function AutoSuggestPanel({
 
         {/* コース難易度 */}
         <div>
-          <Label>コース難易度</Label>
-          <Select
-            value={courseDifficulty}
-            onValueChange={(v) => onDifficultyChange(v as CourseDifficulty)}
-          >
-            <SelectTrigger className="mt-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="easy">Easy</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="hard">Hard</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center justify-between mb-1">
+            <Label>コース難易度</Label>
+            <span className="text-xs text-gray-400">
+              9ホールごとの割合{" "}
+              {courseDifficulty === "easy"
+                ? "易4:中3:難2"
+                : courseDifficulty === "medium"
+                  ? "易3:中3:難3"
+                  : "易2:中3:難4"}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 mt-1">
+            {(["easy", "medium", "hard"] as const).map((diff) => (
+              <button
+                key={diff}
+                onClick={() => onDifficultyChange(diff)}
+                className={`py-2 rounded-lg font-bold text-sm transition-all ${
+                  courseDifficulty === diff
+                    ? diff === "easy"
+                      ? "bg-blue-600 text-white"
+                      : diff === "medium"
+                        ? "bg-yellow-500 text-white"
+                        : "bg-red-600 text-white"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                }`}
+              >
+                {diff === "easy" ? "易" : diff === "medium" ? "中" : "難"}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* 自動提案実行 */}
