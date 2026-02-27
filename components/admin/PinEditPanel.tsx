@@ -33,7 +33,7 @@ export default function PinEditPanel({
 }: PinEditPanelProps) {
   const [showDamage, setShowDamage] = useState(true);
   const [showBan, setShowBan] = useState(true);
-  const [showRain, setShowRain] = useState(true);
+  const [showRain, setShowRain] = useState(isRainyDay);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState(400);
 

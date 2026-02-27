@@ -159,7 +159,7 @@ export default function StaffHoleEditPage() {
           currentPin={pin}
           damageCells={damageCells}
           banCells={banCells}
-          rainCells={rainCells}
+          rainCells={isRainyDay ? rainCells : []}
           isRainyDay={isRainyDay}
           onPinDragged={(newPin) => setPin(newPin)}
         />
