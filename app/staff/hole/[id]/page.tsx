@@ -128,11 +128,11 @@ export default function StaffHoleEditPage() {
   if (!sessionId) return null;
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center justify-between">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
+      <header className="flex-shrink-0 h-14 px-4 bg-card border-b flex items-center justify-between">
         <button
           onClick={() => router.push(isOut ? "/staff/out" : "/staff/in")}
-          className="text-sm font-medium text-gray-600"
+          className="text-sm font-medium text-muted-foreground"
         >
           ← 戻る
         </button>
