@@ -321,6 +321,28 @@ export default function DashboardPage() {
 
   const editingPin = coursePins.find((p) => p.hole === editingHole);
 
+  // 未保存のドラッグ変更を管理
+  const [savedPins, setSavedPins] = useState<
+    Record<number, { x: number; y: number }>
+  >({});
+  const [dirtyHole, setDirtyHole] = useState<number | null>(null);
+
+  // ホール切替時に未保存なら元に戻す
+  const handleHoleChange = (holeId: number) => {
+    if (dirtyHole !== null && savedPins[dirtyHole]) {
+      setCoursePins((prev) =>
+        prev.map((p) =>
+          p.hole === dirtyHole
+            ? { ...p, x: savedPins[dirtyHole].x, y: savedPins[dirtyHole].y }
+            : p,
+        ),
+      );
+    }
+    setDirtyHole(null);
+    setEditingHole(holeId);
+    setRightPanelMode("pin-edit");
+  };
+
   // ピン編集後にAPI保存
   const handlePinSave = async () => {
     const pin = coursePins.find((p) => p.hole === editingHole);
@@ -328,6 +350,13 @@ export default function DashboardPage() {
 
     const currentSession = course === "out" ? outSession : inSession;
     if (!currentSession) return;
+
+    // 保存済みとして記録（元に戻す必要なくなる）
+    setSavedPins((prev) => ({
+      ...prev,
+      [editingHole]: { x: pin.x, y: pin.y },
+    }));
+    setDirtyHole(null);
 
     const existing = await api.get(`/api/pins?hole_number=${editingHole}`);
     const sessionPins = existing.data.filter(
@@ -400,8 +429,7 @@ export default function DashboardPage() {
             const isSent =
               outSession?.status === "sent" || inSession?.status === "sent";
             if (isSent) return;
-            setEditingHole(Number(holeId));
-            setRightPanelMode("pin-edit");
+            handleHoleChange(Number(holeId));
           }}
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
@@ -431,6 +459,17 @@ export default function DashboardPage() {
               outSession?.status === "sent" || inSession?.status === "sent"
             }
             onPinDragged={(pin) => {
+              // 初回ドラッグ時に元の位置を保存
+              if (dirtyHole !== editingHole) {
+                const original = coursePins.find((p) => p.hole === editingHole);
+                if (original) {
+                  setSavedPins((prev) => ({
+                    ...prev,
+                    [editingHole]: { x: original.x, y: original.y },
+                  }));
+                }
+                setDirtyHole(editingHole);
+              }
               setCoursePins((prev) =>
                 prev.map((p) =>
                   p.hole === editingHole ? { ...p, x: pin.x, y: pin.y } : p,

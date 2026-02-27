@@ -58,7 +58,7 @@ export default function GreenCardPDF({ hole, currentPin }: Props) {
         Hole {hole}
       </div>
       <div className="border-l border-r border-b border-gray-300 overflow-hidden">
-        <Stage width={CARD_SIZE} height={CARD_SIZE}>
+        <Stage width={CARD_SIZE} height={CARD_SIZE} listening={false}>
           <Layer scaleX={scale} scaleY={scale}>
             {/* バンカーとウォーターハザード */}
             {holeData.layers

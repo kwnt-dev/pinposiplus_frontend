@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 
 import { Input } from "@/components/ui/input";
 import api from "@/lib/axios";
+import { GolfIcon } from "@/components/ui/GolfIcon";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -44,6 +45,9 @@ export default function LoginPage() {
     <div className="min-h-screen bg-page-gradient flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
+          <div className="flex justify-center mb-2">
+            <GolfIcon size={48} />
+          </div>
           <CardTitle className="text-2xl font-bold text-center mb-1">
             ピンポジ+
           </CardTitle>

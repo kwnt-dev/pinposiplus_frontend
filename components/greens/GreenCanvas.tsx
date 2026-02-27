@@ -246,16 +246,16 @@ export default function GreenCanvas({
 
         {/* 座標線ラベル */}
         {showYardLines &&
-          [0, 10, 20, 30, 40, 50].map((depth) => {
+          [0, 10, 20, 30, 40].map((depth) => {
             const y = holeData.origin.y - depth;
             return (
               <Text
                 key={`label-${depth}`}
-                x={CANVAS_SIZE - 95}
-                y={ydToPx(y) - 60}
+                x={CANVAS_SIZE - 75}
+                y={ydToPx(y) - 45}
                 text={`${depth}`}
-                fontSize={60}
-                width={80}
+                fontSize={45}
+                width={65}
                 align="right"
                 fontStyle="bold"
                 fill="#000000"
@@ -327,7 +327,7 @@ export default function GreenCanvas({
                 y={ydToPx(cell.y)}
                 width={YD_TO_PX}
                 height={YD_TO_PX}
-                fill="rgba(239, 68, 68, 0.7)"
+                fill="rgba(239, 68, 68, 0.9)"
               />
             );
           })}
@@ -343,7 +343,7 @@ export default function GreenCanvas({
                 y={ydToPx(cell.y)}
                 width={YD_TO_PX}
                 height={YD_TO_PX}
-                fill="rgba(75, 85, 99, 0.7)"
+                fill="rgba(75, 85, 99, 0.9)"
               />
             );
           })}
@@ -359,7 +359,7 @@ export default function GreenCanvas({
                 y={ydToPx(cell.y)}
                 width={YD_TO_PX}
                 height={YD_TO_PX}
-                fill="rgba(59, 130, 246, 0.7)"
+                fill="rgba(59, 130, 246, 0.9)"
               />
             );
           })}

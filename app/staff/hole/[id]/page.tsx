@@ -30,6 +30,9 @@ export default function StaffHoleEditPage() {
   const [banCells, setBanCells] = useState<string[]>([]);
   const [damageCells, setDamageCells] = useState<string[]>([]);
   const [rainCells, setRainCells] = useState<string[]>([]);
+  const [pastPins, setPastPins] = useState<
+    { id: string; x: number; y: number; date?: string }[]
+  >([]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -84,6 +87,16 @@ export default function StaffHoleEditPage() {
         setRainCells(
           (res.data.rain_cells[holeKey] || []).map(
             (c: { x: number; y: number }) => `cell_${c.x}_${c.y}`,
+          ),
+        );
+        setPastPins(
+          (res.data.past_pins[holeKey] || []).map(
+            (p: { x: number; y: number; date?: string }, i: number) => ({
+              id: `past${i + 1}`,
+              x: p.x,
+              y: p.y,
+              date: p.date,
+            }),
           ),
         );
       } catch (err) {
@@ -159,7 +172,8 @@ export default function StaffHoleEditPage() {
           currentPin={pin}
           damageCells={damageCells}
           banCells={banCells}
-          rainCells={rainCells}
+          rainCells={isRainyDay ? rainCells : []}
+          pastPins={pastPins}
           isRainyDay={isRainyDay}
           onPinDragged={(newPin) => setPin(newPin)}
         />

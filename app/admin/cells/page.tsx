@@ -347,6 +347,7 @@ export default function CellsEditPage() {
             </Button>
             <Button
               size="sm"
+              className="bg-green-500 text-white hover:bg-green-600"
               onClick={handleSave}
               disabled={saving || newCells.length === 0}
             >

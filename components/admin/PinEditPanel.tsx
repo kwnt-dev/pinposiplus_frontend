@@ -33,7 +33,7 @@ export default function PinEditPanel({
 }: PinEditPanelProps) {
   const [showDamage, setShowDamage] = useState(true);
   const [showBan, setShowBan] = useState(true);
-  const [showRain, setShowRain] = useState(true);
+  const [showRain, setShowRain] = useState(isRainyDay);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState(400);
 
@@ -91,7 +91,11 @@ export default function PinEditPanel({
         <div className="flex-1" />
 
         {!readOnly && (
-          <Button size="sm" onClick={onPinSave}>
+          <Button
+            size="sm"
+            className="bg-green-500 text-white hover:bg-green-600"
+            onClick={onPinSave}
+          >
             <Save size={14} className="mr-1" />
             保存
           </Button>
