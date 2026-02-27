@@ -458,7 +458,7 @@ export default function DashboardPage() {
             readOnly={
               outSession?.status === "sent" || inSession?.status === "sent"
             }
-            onPinDragged={(pin) => {
+            onPinPlaced={(pin) => {
               // 初回ドラッグ時に元の位置を保存
               if (dirtyHole !== editingHole) {
                 const original = coursePins.find((p) => p.hole === editingHole);

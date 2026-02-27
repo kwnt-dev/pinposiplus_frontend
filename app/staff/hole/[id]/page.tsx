@@ -175,7 +175,7 @@ export default function StaffHoleEditPage() {
           rainCells={isRainyDay ? rainCells : []}
           pastPins={pastPins}
           isRainyDay={isRainyDay}
-          onPinDragged={(newPin) => setPin(newPin)}
+          onPinPlaced={(newPin) => setPin(newPin)}
         />
       </main>
     </div>

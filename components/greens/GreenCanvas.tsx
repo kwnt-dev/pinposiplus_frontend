@@ -37,7 +37,7 @@ interface Props {
   rainCells?: string[];
   onCellClick?: (cellId: string) => void;
   currentPin?: Pin;
-  onPinDragged?: (currentPin: Pin) => void;
+  onPinPlaced?: (currentPin: Pin) => void;
   pastPins?: Pin[];
   suggestedPins?: { x: number; y: number }[];
   // 表示制御
@@ -66,7 +66,7 @@ export default function GreenCanvas({
   rainCells = [],
   onCellClick,
   currentPin,
-  onPinDragged,
+  onPinPlaced,
   pastPins,
   suggestedPins = [],
   showExit = true,
@@ -112,17 +112,62 @@ export default function GreenCanvas({
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
       <Layer
         onClick={(e) => {
-          if (!onCellClick) return;
           const stage = e.target.getStage();
           if (!stage) return;
           const pos = stage.getPointerPosition();
           if (!pos) return;
-          const x = Math.floor(pos.x / scale / YD_TO_PX);
-          const y = Math.floor(pos.y / scale / YD_TO_PX);
-          const cellId = `cell_${x}_${y}`;
-          const cell = holeData.cells.find((c) => c.id === cellId);
-          if (cell) {
-            onCellClick(cellId);
+
+          // セルクリック処理
+          if (onCellClick) {
+            const x = Math.floor(pos.x / scale / YD_TO_PX);
+            const y = Math.floor(pos.y / scale / YD_TO_PX);
+            const cellId = `cell_${x}_${y}`;
+            const cell = holeData.cells.find((c) => c.id === cellId);
+            if (cell) {
+              onCellClick(cellId);
+            }
+            return;
+          }
+
+          // ピン配置処理
+          if (onPinPlaced && currentPin) {
+            const snappedX = Math.round(pos.x / scale / YD_TO_PX);
+            const snappedY = Math.round(pos.y / scale / YD_TO_PX);
+
+            const surroundingCellIds = [
+              `cell_${Math.floor(snappedX)}_${Math.floor(snappedY)}`,
+              `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY)}`,
+              `cell_${Math.floor(snappedX)}_${Math.floor(snappedY) - 1}`,
+              `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY) - 1}`,
+            ];
+
+            const isOnBanCell = surroundingCellIds.some((id) =>
+              banCells.includes(id),
+            );
+            const isOnDamageCell = surroundingCellIds.some((id) =>
+              damageCells.includes(id),
+            );
+            const isOnRainCell =
+              isRainyDay &&
+              surroundingCellIds.some((id) => rainCells.includes(id));
+
+            if (
+              isInsideGreen(
+                { id: currentPin.id, x: snappedX, y: snappedY },
+                holeData.cells,
+              ) &&
+              isPointInPolygon(snappedX, snappedY, boundaryBufferPoints) &&
+              !isPointInPolygon(snappedX, snappedY, slopeBufferPoints) &&
+              !isOnBanCell &&
+              !isOnDamageCell &&
+              !isOnRainCell
+            ) {
+              onPinPlaced({
+                id: currentPin.id,
+                x: snappedX,
+                y: snappedY,
+              });
+            }
           }
         }}
       >
@@ -457,53 +502,7 @@ export default function GreenCanvas({
 
         {/* 現在のピン（白丸+赤丸の二重丸） */}
         {currentPin && (
-          <Group
-            x={ydToPx(currentPin.x)}
-            y={ydToPx(currentPin.y)}
-            draggable={!!onPinDragged}
-            onDragEnd={(e) => {
-              const snappedX = Math.round(e.target.x() / YD_TO_PX);
-              const snappedY = Math.round(e.target.y() / YD_TO_PX);
-
-              const surroundingCellIds = [
-                `cell_${Math.floor(snappedX)}_${Math.floor(snappedY)}`,
-                `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY)}`,
-                `cell_${Math.floor(snappedX)}_${Math.floor(snappedY) - 1}`,
-                `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY) - 1}`,
-              ];
-
-              const isOnBanCell = surroundingCellIds.some((id) =>
-                banCells.includes(id),
-              );
-              const isOnDamageCell = surroundingCellIds.some((id) =>
-                damageCells.includes(id),
-              );
-              const isOnRainCell =
-                isRainyDay &&
-                surroundingCellIds.some((id) => rainCells.includes(id));
-
-              if (
-                isInsideGreen(
-                  { id: currentPin.id, x: snappedX, y: snappedY },
-                  holeData.cells,
-                ) &&
-                isPointInPolygon(snappedX, snappedY, boundaryBufferPoints) &&
-                !isPointInPolygon(snappedX, snappedY, slopeBufferPoints) &&
-                !isOnBanCell &&
-                !isOnDamageCell &&
-                !isOnRainCell
-              ) {
-                onPinDragged?.({
-                  id: currentPin.id,
-                  x: snappedX,
-                  y: snappedY,
-                });
-              } else {
-                e.target.x(ydToPx(currentPin.x));
-                e.target.y(ydToPx(currentPin.y));
-              }
-            }}
-          >
+          <Group x={ydToPx(currentPin.x)} y={ydToPx(currentPin.y)}>
             <Circle radius={12} fill="white" />
             <Circle radius={9} fill="#ef4444" />
           </Group>

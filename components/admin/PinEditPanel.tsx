@@ -13,7 +13,7 @@ interface PinEditPanelProps {
   banCells: string[];
   rainCells: string[];
   pastPins: Pin[];
-  onPinDragged: (pin: { id: string; x: number; y: number }) => void;
+  onPinPlaced: (pin: { id: string; x: number; y: number }) => void;
   onPinSave: () => void;
   readOnly?: boolean;
   isRainyDay?: boolean;
@@ -26,7 +26,7 @@ export default function PinEditPanel({
   banCells,
   rainCells,
   pastPins,
-  onPinDragged,
+  onPinPlaced,
   onPinSave,
   readOnly = false,
   isRainyDay = false,
@@ -124,7 +124,7 @@ export default function PinEditPanel({
                 }
               : undefined
           }
-          onPinDragged={readOnly ? undefined : onPinDragged}
+          onPinPlaced={readOnly ? undefined : onPinPlaced}
           isRainyDay={isRainyDay}
         />
       </div>
