@@ -5,6 +5,7 @@ import { useParams, useSearchParams, useRouter } from "next/navigation";
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import api from "@/lib/axios";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export default function StaffHoleEditPage() {
   const params = useParams();
@@ -153,12 +154,15 @@ export default function StaffHoleEditPage() {
             <ChevronRight size={20} />
           </button>
         </div>
-        <button
-          onClick={handleSave}
-          className="px-4 py-1.5 bg-green-600 text-white rounded-lg text-sm font-bold"
-        >
-          保存
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={handleSave}
+            className="px-4 py-1.5 bg-green-600 text-white rounded-lg text-sm font-bold"
+          >
+            保存
+          </button>
+        </div>
       </header>
 
       <main

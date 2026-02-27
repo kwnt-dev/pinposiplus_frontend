@@ -6,6 +6,7 @@ import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
 import { getPinSessions, confirmSession, PinSession } from "@/lib/pinSession";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import api from "@/lib/axios";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "";
@@ -98,7 +99,7 @@ export default function StaffInPage() {
           ← 戻る
         </button>
         <h1 className="text-lg font-bold">IN</h1>
-        <div className="w-12" />
+        <ThemeToggle />
       </header>
 
       {/* セッション情報バー */}
