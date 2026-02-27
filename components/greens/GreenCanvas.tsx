@@ -327,7 +327,7 @@ export default function GreenCanvas({
                 y={ydToPx(cell.y)}
                 width={YD_TO_PX}
                 height={YD_TO_PX}
-                fill="rgba(239, 68, 68, 0.7)"
+                fill="rgba(239, 68, 68, 0.9)"
               />
             );
           })}
@@ -343,7 +343,7 @@ export default function GreenCanvas({
                 y={ydToPx(cell.y)}
                 width={YD_TO_PX}
                 height={YD_TO_PX}
-                fill="rgba(75, 85, 99, 0.7)"
+                fill="rgba(75, 85, 99, 0.9)"
               />
             );
           })}
@@ -359,7 +359,7 @@ export default function GreenCanvas({
                 y={ydToPx(cell.y)}
                 width={YD_TO_PX}
                 height={YD_TO_PX}
-                fill="rgba(59, 130, 246, 0.7)"
+                fill="rgba(59, 130, 246, 0.9)"
               />
             );
           })}
