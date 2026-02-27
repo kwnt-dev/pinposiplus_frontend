@@ -37,6 +37,8 @@ export function useAuth() {
       // トークン無効でも続行
     } finally {
       localStorage.removeItem("token");
+      localStorage.removeItem("theme");
+      document.documentElement.classList.remove("dark");
       router.push("/login");
     }
   };
