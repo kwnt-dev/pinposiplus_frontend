@@ -20,6 +20,7 @@ type DateGroup = {
   groupCount: number | null;
   outSubmitter: string | null;
   inSubmitter: string | null;
+  pdfUrl: string | null;
 };
 
 export default function HistoryPage() {
@@ -32,10 +33,12 @@ export default function HistoryPage() {
       api.get("/api/pin-histories"),
       api.get("/api/schedules"),
       api.get("/api/users"),
-    ]).then(([pinRes, scheduleRes, userRes]) => {
+      api.get("/api/pin-sessions"),
+    ]).then(([pinRes, scheduleRes, userRes, sessionRes]) => {
       const pins = pinRes.data;
       const schedules = scheduleRes.data;
       const users = userRes.data;
+      const sessions = sessionRes.data;
 
       // userIdからnameへのマップ
       const userMap: Record<string, string> = {};
@@ -58,6 +61,20 @@ export default function HistoryPage() {
             event_name: s.event_name,
             group_count: s.group_count,
           };
+        },
+      );
+
+      // dateからpdf_urlへのマップ（sentのセッションからpdf_urlを取得）
+      const pdfMap: Record<string, string | null> = {};
+      sessions.forEach(
+        (s: {
+          target_date: string;
+          status: string;
+          pdf_url: string | null;
+        }) => {
+          if (s.status === "sent" && s.pdf_url) {
+            pdfMap[s.target_date] = s.pdf_url;
+          }
         },
       );
 
@@ -92,6 +109,7 @@ export default function HistoryPage() {
         groupCount: scheduleMap[date]?.group_count ?? null,
         outSubmitter: grouped[date].outSubmitter,
         inSubmitter: grouped[date].inSubmitter,
+        pdfUrl: pdfMap[date] ?? null,
       }));
 
       setHistories(result);
@@ -183,7 +201,12 @@ export default function HistoryPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <button className="px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200">
+                      <button
+                        className="px-3 py-1 rounded-lg text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200"
+                        onClick={() => {
+                          if (h.pdfUrl) window.open(h.pdfUrl, "_blank");
+                        }}
+                      >
                         <FileText size={14} className="inline mr-1" />
                         PDF
                       </button>
