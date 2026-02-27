@@ -50,7 +50,7 @@ export default function GreenCardPDF({ hole, currentPin }: Props) {
   const centerLineEdges = getBoundaryIntersectionX(holeData.boundary.d, 30);
 
   return (
-    <div className="w-[240px]">
+    <div className="w-[240px] bg-white rounded overflow-hidden">
       <div
         className="h-10 bg-gray-800 text-white font-bold text-center flex items-center justify-center"
         style={{ width: CARD_SIZE }}

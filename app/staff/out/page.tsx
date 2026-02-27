@@ -6,6 +6,7 @@ import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
 import { getPinSessions, confirmSession, PinSession } from "@/lib/pinSession";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import api from "@/lib/axios";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "";
@@ -88,40 +89,40 @@ export default function StaffOutPage() {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* ヘッダー */}
-      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center justify-between">
+      <header className="flex-shrink-0 h-14 px-4 bg-card border-b flex items-center justify-between">
         <button
           onClick={() => router.push("/staff")}
-          className="text-sm font-medium text-gray-600"
+          className="text-sm font-medium text-muted-foreground"
         >
           ← 戻る
         </button>
         <h1 className="text-lg font-bold">OUT</h1>
-        <div className="w-12" />
+        <ThemeToggle />
       </header>
 
       {/* セッション情報バー */}
       {session && (
-        <div className="flex-shrink-0 h-10 px-4 bg-gray-100 border-b flex items-center justify-between">
+        <div className="flex-shrink-0 h-10 px-4 bg-muted border-b flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-bold text-gray-700">
+            <span className="text-sm font-bold">
               {formatDate(session.target_date)}
             </span>
             {session.event_name && (
-              <span className="text-sm bg-white text-gray-700 px-2 py-0.5 rounded">
+              <span className="text-sm bg-card px-2 py-0.5 rounded">
                 {session.event_name}
               </span>
             )}
             {session.groups_count != null && (
-              <span className="text-sm bg-white text-gray-700 px-2 py-0.5 rounded">
+              <span className="text-sm bg-card px-2 py-0.5 rounded">
                 {session.groups_count}組
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
             {session.status === "confirmed" && (
-              <span className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs font-medium">
+              <span className="px-2 py-1 bg-muted text-foreground rounded text-xs font-medium">
                 完了報告済み
               </span>
             )}

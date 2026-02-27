@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { getPinSessions, PinSession } from "@/lib/pinSession";
 import { LogOut } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "";
@@ -39,11 +40,12 @@ export default function StaffPage() {
   }, []);
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <header className="flex-shrink-0 h-14 px-4 bg-white border-b flex items-center">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
+      <header className="flex-shrink-0 h-14 px-4 bg-card border-b flex items-center">
         <h1 className="text-lg font-bold">スタッフホーム</h1>
         <div className="flex-1" />
-        <span className="text-sm text-gray-500 mr-3">{user?.name}</span>
+        <ThemeToggle />
+        <span className="text-sm text-muted-foreground mr-3">{user?.name}</span>
         <button
           onClick={logout}
           className="px-3 py-1.5 bg-destructive/80 hover:bg-destructive text-white rounded-lg text-sm font-medium flex items-center gap-1"
@@ -57,12 +59,14 @@ export default function StaffPage() {
         <div className="grid grid-cols-2 gap-6 w-full max-w-lg">
           <div
             onClick={() => router.push("/staff/out")}
-            className="aspect-square bg-white rounded-2xl shadow-sm border flex flex-col items-center justify-center cursor-pointer hover:shadow-md active:scale-95 transition-all"
+            className="aspect-square bg-card rounded-2xl shadow-sm border flex flex-col items-center justify-center cursor-pointer hover:shadow-md active:scale-95 transition-all"
           >
             <span className="text-4xl font-bold text-green-600">OUT</span>
-            <span className="text-sm text-gray-500 mt-2">Hole 1 - 9</span>
+            <span className="text-sm text-muted-foreground mt-2">
+              Hole 1 - 9
+            </span>
             {outSession && (
-              <span className="text-xs text-gray-400 mt-1">
+              <span className="text-xs text-muted-foreground/70 mt-1">
                 {formatDate(outSession.target_date)}
               </span>
             )}
@@ -70,8 +74,8 @@ export default function StaffPage() {
               <span
                 className={`mt-2 px-2 py-0.5 rounded text-xs font-medium ${
                   outSession.status === "confirmed"
-                    ? "bg-gray-200 text-gray-700"
-                    : "bg-green-100 text-green-700"
+                    ? "bg-muted text-foreground"
+                    : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                 }`}
               >
                 {outSession.status === "confirmed"
@@ -82,12 +86,14 @@ export default function StaffPage() {
           </div>
           <div
             onClick={() => router.push("/staff/in")}
-            className="aspect-square bg-white rounded-2xl shadow-sm border flex flex-col items-center justify-center cursor-pointer hover:shadow-md active:scale-95 transition-all"
+            className="aspect-square bg-card rounded-2xl shadow-sm border flex flex-col items-center justify-center cursor-pointer hover:shadow-md active:scale-95 transition-all"
           >
             <span className="text-4xl font-bold text-blue-600">IN</span>
-            <span className="text-sm text-gray-500 mt-2">Hole 10 - 18</span>
+            <span className="text-sm text-muted-foreground mt-2">
+              Hole 10 - 18
+            </span>
             {inSession && (
-              <span className="text-xs text-gray-400 mt-1">
+              <span className="text-xs text-muted-foreground/70 mt-1">
                 {formatDate(inSession.target_date)}
               </span>
             )}
@@ -95,8 +101,8 @@ export default function StaffPage() {
               <span
                 className={`mt-2 px-2 py-0.5 rounded text-xs font-medium ${
                   inSession.status === "confirmed"
-                    ? "bg-gray-200 text-gray-700"
-                    : "bg-blue-100 text-blue-700"
+                    ? "bg-muted text-foreground"
+                    : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                 }`}
               >
                 {inSession.status === "confirmed" ? "完了報告済み" : "作業待ち"}
