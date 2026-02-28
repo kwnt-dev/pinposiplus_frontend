@@ -11,6 +11,7 @@ import {
   Text,
   Rect,
 } from "react-konva";
+import Konva from "konva";
 import { Fragment } from "react";
 import { HOLE_CONFIGS } from "@/config/holes";
 import {
@@ -103,74 +104,75 @@ export default function GreenCanvas({
   );
 
   //傾斜制限を計算
-
   const slopeBufferPoints = holeData.slope
     ? getOffsetSlope(holeData.slope.slope.d, SLOPE_BUFFER)
     : [];
 
+  // タッチ・クリック共通ハンドラ
+  const handleStageInteraction = (
+    e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
+  ) => {
+    const stage = e.target.getStage();
+    if (!stage) return;
+    const pos = stage.getPointerPosition();
+    if (!pos) return;
+
+    // セルクリック処理
+    if (onCellClick) {
+      const x = Math.floor(pos.x / scale / YD_TO_PX);
+      const y = Math.floor(pos.y / scale / YD_TO_PX);
+      const cellId = `cell_${x}_${y}`;
+      const cell = holeData.cells.find((c) => c.id === cellId);
+      if (cell) {
+        onCellClick(cellId);
+      }
+      return;
+    }
+
+    // ピン配置処理
+    if (onPinPlaced && currentPin) {
+      const snappedX = Math.round(pos.x / scale / YD_TO_PX);
+      const snappedY = Math.round(pos.y / scale / YD_TO_PX);
+
+      const surroundingCellIds = [
+        `cell_${Math.floor(snappedX)}_${Math.floor(snappedY)}`,
+        `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY)}`,
+        `cell_${Math.floor(snappedX)}_${Math.floor(snappedY) - 1}`,
+        `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY) - 1}`,
+      ];
+
+      const isOnBanCell = surroundingCellIds.some((id) =>
+        banCells.includes(id),
+      );
+      const isOnDamageCell = surroundingCellIds.some((id) =>
+        damageCells.includes(id),
+      );
+      const isOnRainCell =
+        isRainyDay && surroundingCellIds.some((id) => rainCells.includes(id));
+
+      if (
+        isInsideGreen(
+          { id: currentPin.id, x: snappedX, y: snappedY },
+          holeData.cells,
+        ) &&
+        isPointInPolygon(snappedX, snappedY, boundaryBufferPoints) &&
+        !isPointInPolygon(snappedX, snappedY, slopeBufferPoints) &&
+        !isOnBanCell &&
+        !isOnDamageCell &&
+        !isOnRainCell
+      ) {
+        onPinPlaced({
+          id: currentPin.id,
+          x: snappedX,
+          y: snappedY,
+        });
+      }
+    }
+  };
+
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
-      <Layer
-        onClick={(e) => {
-          const stage = e.target.getStage();
-          if (!stage) return;
-          const pos = stage.getPointerPosition();
-          if (!pos) return;
-
-          // セルクリック処理
-          if (onCellClick) {
-            const x = Math.floor(pos.x / scale / YD_TO_PX);
-            const y = Math.floor(pos.y / scale / YD_TO_PX);
-            const cellId = `cell_${x}_${y}`;
-            const cell = holeData.cells.find((c) => c.id === cellId);
-            if (cell) {
-              onCellClick(cellId);
-            }
-            return;
-          }
-
-          // ピン配置処理
-          if (onPinPlaced && currentPin) {
-            const snappedX = Math.round(pos.x / scale / YD_TO_PX);
-            const snappedY = Math.round(pos.y / scale / YD_TO_PX);
-
-            const surroundingCellIds = [
-              `cell_${Math.floor(snappedX)}_${Math.floor(snappedY)}`,
-              `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY)}`,
-              `cell_${Math.floor(snappedX)}_${Math.floor(snappedY) - 1}`,
-              `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY) - 1}`,
-            ];
-
-            const isOnBanCell = surroundingCellIds.some((id) =>
-              banCells.includes(id),
-            );
-            const isOnDamageCell = surroundingCellIds.some((id) =>
-              damageCells.includes(id),
-            );
-            const isOnRainCell =
-              isRainyDay &&
-              surroundingCellIds.some((id) => rainCells.includes(id));
-
-            if (
-              isInsideGreen(
-                { id: currentPin.id, x: snappedX, y: snappedY },
-                holeData.cells,
-              ) &&
-              isPointInPolygon(snappedX, snappedY, boundaryBufferPoints) &&
-              !isPointInPolygon(snappedX, snappedY, slopeBufferPoints) &&
-              !isOnBanCell &&
-              !isOnDamageCell &&
-              !isOnRainCell
-            ) {
-              onPinPlaced({
-                id: currentPin.id,
-                x: snappedX,
-                y: snappedY,
-              });
-            }
-          }
-        }}
-      >
+      <Layer onClick={handleStageInteraction} onTap={handleStageInteraction}>
         {/* 背景レイヤー */}
         {holeData.layers.map((layer, index) => (
           <Path
@@ -181,7 +183,6 @@ export default function GreenCanvas({
         ))}
 
         {/* グリーン上段 */}
-
         {holeData.slope ? (
           <Path
             data={scalePathToPixels(holeData.slope.upper.d)}
@@ -190,7 +191,6 @@ export default function GreenCanvas({
         ) : null}
 
         {/* グリーン下段 */}
-
         {holeData.slope ? (
           <Path
             data={scalePathToPixels(holeData.slope.lower.d)}
