@@ -28,6 +28,8 @@ type DepthPosition = "front" | "middle" | "back";
 type HorizontalPosition = "left" | "center" | "right";
 
 //定数
+const GREEN_CENTER_X = 30; // グリーン中央X座標（ヤード）
+
 const DEPTH_DISTRIBUTION: Record<
   CourseDifficulty,
   { back: number; middle: number; front: number }
@@ -144,7 +146,7 @@ export function generateCourseProposal(
 
     // ルール4: グリーン中央に近い候補を選択
     const holeConfig = HOLE_CONFIGS[String(hole.holeNumber).padStart(2, "0")];
-    const centerX = 30;
+    const centerX = GREEN_CENTER_X;
     const centerY =
       (holeConfig.centerLineMarks.front.y + holeConfig.centerLineMarks.back.y) /
       2;

@@ -26,7 +26,12 @@ export interface Candidate {
 
 const PAST_PIN_RESTRICTION_RADIUS = 7; // 過去ピン制限　半径yd
 const BOUNDARY_BUFFER = 3.5; // 外周制限距離（ヤード）
-const SLOPE_BUFFER = 3;
+const SLOPE_BUFFER = 3; // 傾斜制限バッファ（ヤード）
+const SAME_POSITION_THRESHOLD = 1; // 同一座標とみなす距離（ヤード）
+const ROUTE_OVERLAP_ANGLE = 10; // 導線被り判定角度（度）
+const RECENT_PIN_COUNT = 2; // 直近ピン制限の対象数（前回・前々回）
+const MEDIUM_PAST_START = 2; // 中期ピンの開始インデックス（3回前）
+const MEDIUM_PAST_END = 4; // 中期ピンの終了インデックス（5回前）
 
 //メイン関数
 
@@ -118,11 +123,15 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
         Math.pow(c.x - past.x, 2) + Math.pow(c.y - past.y, 2),
       );
       // 前回・前々回: 回避半径内は除外
-      if (i <= 1 && dist < PAST_PIN_RESTRICTION_RADIUS) {
+      if (i < RECENT_PIN_COUNT && dist < PAST_PIN_RESTRICTION_RADIUS) {
         return false;
       }
       // 3〜5回前: 同一座標のみ除外
-      if (i >= 2 && i <= 4 && dist < 1) {
+      if (
+        i >= MEDIUM_PAST_START &&
+        i <= MEDIUM_PAST_END &&
+        dist < SAME_POSITION_THRESHOLD
+      ) {
         return false;
       }
     }
@@ -136,7 +145,7 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
     const candidateAngle =
       Math.atan2(input.exit.y - c.y, input.exit.x - c.x) * (180 / Math.PI);
 
-    const recentPins = input.pastPins.slice(0, 2);
+    const recentPins = input.pastPins.slice(0, RECENT_PIN_COUNT);
     for (const past of recentPins) {
       const pastAngle =
         Math.atan2(input.exit.y - past.y, input.exit.x - past.x) *
@@ -144,7 +153,7 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
       let angleDiff = Math.abs(candidateAngle - pastAngle);
       if (angleDiff > 180) angleDiff = 360 - angleDiff;
 
-      if (angleDiff < 10) return false;
+      if (angleDiff < ROUTE_OVERLAP_ANGLE) return false;
     }
     return true;
   });
