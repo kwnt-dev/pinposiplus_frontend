@@ -5,6 +5,7 @@ import { HolePin, Pin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
 import { MapPin, Save, Flame, Ban, CloudRain } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useContainerSize } from "@/hooks/useContainerSize";
 
 interface PinEditPanelProps {
   editingHole: number;
@@ -34,23 +35,11 @@ export default function PinEditPanel({
   const [showDamage, setShowDamage] = useState(true);
   const [showBan, setShowBan] = useState(true);
   const [showRain, setShowRain] = useState(isRainyDay);
-  const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const [canvasSize, setCanvasSize] = useState(400);
-
-  useEffect(() => {
-    const container = canvasContainerRef.current;
-    if (!container) return;
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setCanvasSize(Math.floor(Math.min(width, height)));
-      }
-    });
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, []);
-
+  const [canvasContainerRef, canvasContainerSize] = useContainerSize();
+  const canvasSize =
+    Math.floor(
+      Math.min(canvasContainerSize.width, canvasContainerSize.height),
+    ) || 400;
   return (
     <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col">
       {/* ヘッダーバー */}
