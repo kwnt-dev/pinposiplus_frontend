@@ -16,6 +16,7 @@ import {
   getPinSessions,
   publishSession,
   PinSession,
+  getPinSessionDetail,
 } from "@/lib/pinSession";
 import { format } from "date-fns";
 import api from "@/lib/axios";
@@ -119,9 +120,9 @@ export default function DashboardPage() {
       // セッションのピンをグリッドに反映
       const allPins: HolePin[] = [];
       if (out) {
-        const res = await api.get(`/api/pin-sessions/${out.id}`);
+        const outDetail = await getPinSessionDetail(out.id);
         const pins =
-          res.data.pins?.map(
+          outDetail.pins?.map(
             (p: { hole_number: number; x: number; y: number }) => ({
               hole: p.hole_number,
               x: p.x,
@@ -131,9 +132,9 @@ export default function DashboardPage() {
         allPins.push(...pins);
       }
       if (in_) {
-        const res = await api.get(`/api/pin-sessions/${in_.id}`);
+        const inDetail = await getPinSessionDetail(in_.id);
         const pins =
-          res.data.pins?.map(
+          inDetail.pins?.map(
             (p: { hole_number: number; x: number; y: number }) => ({
               hole: p.hole_number,
               x: p.x,

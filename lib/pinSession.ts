@@ -41,6 +41,18 @@ export async function getPinSessions(params?: {
   return res.data;
 }
 
+// セッション詳細取得（pins付き）
+export async function getPinSessionDetail(
+  id: string,
+): Promise<
+  PinSession & {
+    pins: { id: string; hole_number: number; x: number; y: number }[];
+  }
+> {
+  const res = await api.get(`/api/pin-sessions/${id}`);
+  return res.data;
+}
+
 // スタッフに公開 → published
 export async function publishSession(id: string): Promise<PinSession> {
   const res = await api.patch(`/api/pin-sessions/${id}/publish`);
