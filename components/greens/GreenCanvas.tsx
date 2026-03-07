@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Stage,
   Layer,
@@ -21,7 +20,6 @@ import {
 } from "@/config/constants";
 import {
   Pin,
-  HoleData,
   getOffsetBoundary,
   getOffsetSlope,
   isPointInPolygon,

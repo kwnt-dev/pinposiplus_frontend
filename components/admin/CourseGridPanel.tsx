@@ -1,4 +1,3 @@
-import { useRef, useState, useEffect, useCallback } from "react";
 import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";

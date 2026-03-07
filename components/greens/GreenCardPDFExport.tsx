@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Stage, Layer, Path, Line, Circle, Text, Rect } from "react-konva";
 import { Fragment } from "react";
-import { HOLE_CONFIGS } from "@/config/holes";
-import { Pin, HoleData } from "@/lib/greenCanvas.geometry";
+import { Pin } from "@/lib/greenCanvas.geometry";
 import {
   getBoundaryIntersectionX,
   getBoundaryIntersectionY,

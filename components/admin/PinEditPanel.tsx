@@ -4,7 +4,7 @@ import GreenCanvas from "@/components/greens/GreenCanvas";
 import { HolePin, Pin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
 import { MapPin, Save, Flame, Ban, CloudRain } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useContainerSize } from "@/hooks/useContainerSize";
 
 interface PinEditPanelProps {

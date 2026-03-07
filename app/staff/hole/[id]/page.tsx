@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import { ChevronLeft, ChevronRight } from "lucide-react";
