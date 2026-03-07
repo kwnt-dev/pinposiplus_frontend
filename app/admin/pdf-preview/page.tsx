@@ -13,6 +13,7 @@ import {
   getPinSessionDetail,
 } from "@/lib/pinSession";
 import api from "@/lib/axios";
+import { PinResponse } from "@/types/api";
 
 const CARD_SIZE = 240;
 
@@ -198,13 +199,11 @@ function PDFPreviewContent() {
 
           const detail = await getPinSessionDetail(s.id);
           const sessionPins =
-            detail.pins?.map(
-              (p: { hole_number: number; x: number; y: number }) => ({
-                hole: p.hole_number,
-                x: p.x,
-                y: p.y,
-              }),
-            ) || [];
+            detail.pins?.map((p: PinResponse) => ({
+              hole: p.hole_number,
+              x: p.x,
+              y: p.y,
+            })) || [];
           allPins.push(...sessionPins);
         }
 
