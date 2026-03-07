@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import api from "@/lib/axios";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { getPinSessionDetail } from "@/lib/pinSession";
+import { useContainerSize } from "@/hooks/useContainerSize";
 
 export default function StaffHoleEditPage() {
   const params = useParams();
@@ -26,8 +27,6 @@ export default function StaffHoleEditPage() {
     { id: string; x: number; y: number } | undefined
   >(undefined);
   const [pinDbId, setPinDbId] = useState<string | null>(null);
-  const [canvasSize, setCanvasSize] = useState(400);
-  const containerRef = useRef<HTMLDivElement>(null);
   const [isRainyDay, setIsRainyDay] = useState(false);
   const [banCells, setBanCells] = useState<string[]>([]);
   const [damageCells, setDamageCells] = useState<string[]>([]);
@@ -35,16 +34,9 @@ export default function StaffHoleEditPage() {
   const [pastPins, setPastPins] = useState<
     { id: string; x: number; y: number; date?: string }[]
   >([]);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      setCanvasSize(Math.floor(Math.min(width, height)));
-    });
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
+  const [containerRef, containerSize] = useContainerSize();
+  const canvasSize =
+    Math.floor(Math.min(containerSize.width, containerSize.height)) || 400;
 
   useEffect(() => {
     if (!sessionId) return;

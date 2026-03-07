@@ -12,6 +12,7 @@ import {
   deleteCellGroup,
   CellGroup,
 } from "@/lib/cellGroups";
+import { useContainerSize } from "@/hooks/useContainerSize";
 
 type CellType = "damage" | "ban" | "rain";
 
@@ -50,41 +51,22 @@ export default function CellsEditPage() {
   const [saving, setSaving] = useState(false);
 
   // グリッドサイズ
-  const gridContainerRef = useRef<HTMLDivElement>(null);
-  const [gridScale, setGridScale] = useState(0.65);
+  const [gridContainerRef, gridContainerSize] = useContainerSize();
+  const gridScale =
+    gridContainerSize.width > 0
+      ? Math.min(
+          gridContainerSize.width / 752,
+          gridContainerSize.height / 880,
+          1,
+        )
+      : 0.65;
 
-  useEffect(() => {
-    const container = gridContainerRef.current;
-    if (!container) return;
-
-    const updateGridScale = () => {
-      const { clientWidth, clientHeight } = container;
-      const scaleX = clientWidth / 752; // グリッド固定幅
-      const scaleY = clientHeight / 880; // カード(240+40)×3 + gap×2
-      setGridScale(Math.min(scaleX, scaleY, 1));
-    };
-
-    updateGridScale();
-    const observer = new ResizeObserver(updateGridScale);
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, []);
-  const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const [canvasSize, setCanvasSize] = useState(400);
-
-  useEffect(() => {
-    const container = canvasContainerRef.current;
-    if (!container) return;
-
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setCanvasSize(Math.floor(Math.min(width, height)));
-      }
-    });
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, []);
+  // キャンバスサイズ
+  const [canvasContainerRef, canvasContainerSize] = useContainerSize();
+  const canvasSize =
+    Math.floor(
+      Math.min(canvasContainerSize.width, canvasContainerSize.height),
+    ) || 400;
 
   // 全グループ取得
   useEffect(() => {
