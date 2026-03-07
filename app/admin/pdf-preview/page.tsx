@@ -6,7 +6,12 @@ import { pdf } from "@react-pdf/renderer";
 import GreenCardGridPDFExport from "@/components/greens/GreenCardGridPDFExport";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import PDFDocument from "@/components/pdf/PDFDocument";
-import { getPinSessions, sendSession, PinSession } from "@/lib/pinSession";
+import {
+  getPinSessions,
+  sendSession,
+  PinSession,
+  getPinSessionDetail,
+} from "@/lib/pinSession";
 import api from "@/lib/axios";
 
 const CARD_SIZE = 240;
@@ -191,9 +196,9 @@ function PDFPreviewContent() {
             inStatus = s.status;
           }
 
-          const res = await api.get(`/api/pin-sessions/${s.id}`);
+          const detail = await getPinSessionDetail(s.id);
           const sessionPins =
-            res.data.pins?.map(
+            detail.pins?.map(
               (p: { hole_number: number; x: number; y: number }) => ({
                 hole: p.hole_number,
                 x: p.x,

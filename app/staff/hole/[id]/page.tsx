@@ -6,6 +6,7 @@ import GreenCanvas from "@/components/greens/GreenCanvas";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import api from "@/lib/axios";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { getPinSessionDetail } from "@/lib/pinSession";
 
 export default function StaffHoleEditPage() {
   const params = useParams();
@@ -50,9 +51,9 @@ export default function StaffHoleEditPage() {
 
     const loadPin = async () => {
       try {
-        const res = await api.get(`/api/pin-sessions/${sessionId}`);
-        setIsRainyDay(res.data.is_rainy ?? false);
-        const sessionPins = res.data.pins;
+        const detail = await getPinSessionDetail(sessionId);
+        setIsRainyDay(detail.is_rainy ?? false);
+        const sessionPins = detail.pins;
         const holePin = sessionPins.find(
           (p: { hole_number: number }) => p.hole_number === holeNumber,
         );

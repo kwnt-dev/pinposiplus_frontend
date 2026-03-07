@@ -3,9 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import GreenCardGridPDF from "@/components/greens/GreenCardGridPDF";
-import { getPinSessions, confirmSession, PinSession } from "@/lib/pinSession";
+import {
+  getPinSessions,
+  confirmSession,
+  PinSession,
+  getPinSessionDetail,
+} from "@/lib/pinSession";
 import { HolePin } from "@/lib/greenCanvas.geometry";
-import api from "@/lib/axios";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 function formatDate(dateStr: string | null): string {
@@ -60,8 +64,8 @@ export default function StaffCoursePage({ course }: StaffCoursePageProps) {
           const latest = sessions[0];
           setSession(latest);
 
-          const res = await api.get(`/api/pin-sessions/${latest.id}`);
-          const sessionPins: HolePin[] = res.data.pins.map(
+          const detail = await getPinSessionDetail(latest.id);
+          const sessionPins: HolePin[] = detail.pins.map(
             (p: { hole_number: number; x: number; y: number }) => ({
               hole: p.hole_number,
               x: p.x,
