@@ -15,6 +15,11 @@ import Konva from "konva";
 import { Fragment } from "react";
 import { HOLE_CONFIGS } from "@/config/holes";
 import {
+  PAST_PIN_RESTRICTION_RADIUS,
+  BOUNDARY_BUFFER,
+  SLOPE_BUFFER,
+} from "@/config/constants";
+import {
   Pin,
   HoleData,
   getOffsetBoundary,
@@ -52,13 +57,6 @@ interface Props {
   showExitRoute?: boolean;
   isRainyDay?: boolean;
 }
-
-// 定数
-import {
-  PAST_PIN_RESTRICTION_RADIUS,
-  BOUNDARY_BUFFER,
-  SLOPE_BUFFER,
-} from "@/config/constants";
 
 export default function GreenCanvas({
   hole,
