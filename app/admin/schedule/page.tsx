@@ -85,25 +85,36 @@ export default function SchedulePage() {
     setSelectedDate(dateStr);
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!selectedDate) return;
     if (!eventName && !groupCount) return;
-    setSchedules((prev) => [
-      ...prev.filter((s) => s.date !== selectedDate),
-      {
-        id: "",
+
+    const existing = getExisting(selectedDate);
+    if (existing?.id) {
+      await api.put(`/api/schedules/${existing.id}`, {
+        event_name: eventName || null,
+        group_count: groupCount ? Number(groupCount) : null,
+      });
+    } else {
+      await api.post("/api/schedules", {
         date: selectedDate,
         event_name: eventName || null,
         group_count: groupCount ? Number(groupCount) : null,
-        notes: null,
-      },
-    ]);
+      });
+    }
+
+    await fetchSchedules();
     setSelectedDate(null);
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!selectedDate) return;
-    setSchedules((prev) => prev.filter((s) => s.date !== selectedDate));
+    const existing = getExisting(selectedDate);
+    if (existing?.id) {
+      await api.delete(`/api/schedules/${existing.id}`);
+    }
+
+    await fetchSchedules();
     setSelectedDate(null);
   }
 
