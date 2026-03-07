@@ -10,7 +10,6 @@ import {
   getPinSessionDetail,
 } from "@/lib/pinSession";
 import { HolePin } from "@/lib/greenCanvas.geometry";
-import api from "@/lib/axios";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 function formatDate(dateStr: string | null): string {
