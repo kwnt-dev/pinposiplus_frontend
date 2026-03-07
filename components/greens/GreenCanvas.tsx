@@ -33,6 +33,7 @@ import {
   scalePathToPixels,
   ydToPx,
 } from "@/lib/greenCanvas.convert";
+import { useHoleData } from "@/hooks/useHoleData";
 
 interface Props {
   hole: string;
@@ -80,15 +81,7 @@ export default function GreenCanvas({
   showExitRoute = true,
   isRainyDay = false,
 }: Props) {
-  const [holeData, setHoleData] = useState<HoleData | null>(null);
-
-  useEffect(() => {
-    const paddedHole = hole.padStart(2, "0");
-    fetch(`/greens/hole_${paddedHole}.json`)
-      .then((res) => res.json())
-      .then((data) => setHoleData(data))
-      .catch((err) => console.error("JSON読み込みエラー:", err));
-  }, [hole]);
+  const holeData = useHoleData(hole);
 
   if (!holeData) {
     return <div>読み込み中...</div>;
