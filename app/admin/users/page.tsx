@@ -84,7 +84,6 @@ export default function UsersPage() {
   }
 
   async function handleDelete() {
-    console.log("handleSave called", { email, name, password, role });
     if (!editingUser) return;
     await api.delete(`/api/users/${editingUser.id}`);
     setIsOpen(false);

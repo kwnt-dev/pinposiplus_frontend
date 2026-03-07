@@ -9,10 +9,8 @@ import PDFDocument from "@/components/pdf/PDFDocument";
 import {
   getPinSessions,
   sendSession,
-  PinSession,
   getPinSessionDetail,
 } from "@/lib/pinSession";
-import api from "@/lib/axios";
 import { PinResponse } from "@/types/api";
 
 const CARD_SIZE = 240;
