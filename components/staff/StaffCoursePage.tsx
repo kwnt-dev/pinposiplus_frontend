@@ -11,6 +11,7 @@ import {
 } from "@/lib/pinSession";
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { PinResponse } from "@/types/api";
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "";
@@ -65,13 +66,11 @@ export default function StaffCoursePage({ course }: StaffCoursePageProps) {
           setSession(latest);
 
           const detail = await getPinSessionDetail(latest.id);
-          const sessionPins: HolePin[] = detail.pins.map(
-            (p: { hole_number: number; x: number; y: number }) => ({
-              hole: p.hole_number,
-              x: p.x,
-              y: p.y,
-            }),
-          );
+          const sessionPins: HolePin[] = detail.pins.map((p: PinResponse) => ({
+            hole: p.hole_number,
+            x: p.x,
+            y: p.y,
+          }));
           setPins(sessionPins);
         }
       } catch (err) {
