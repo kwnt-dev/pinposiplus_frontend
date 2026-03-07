@@ -4,6 +4,11 @@ import {
   getOffsetSlope,
   isPointInPolygon,
 } from "@/lib/greenCanvas.geometry";
+import {
+  PAST_PIN_RESTRICTION_RADIUS,
+  BOUNDARY_BUFFER,
+  SLOPE_BUFFER,
+} from "@/config/constants";
 
 // 型定義
 
@@ -24,9 +29,6 @@ export interface Candidate {
 
 //定数
 
-const PAST_PIN_RESTRICTION_RADIUS = 7; // 過去ピン制限　半径yd
-const BOUNDARY_BUFFER = 3.5; // 外周制限距離（ヤード）
-const SLOPE_BUFFER = 3; // 傾斜制限バッファ（ヤード）
 const SAME_POSITION_THRESHOLD = 1; // 同一座標とみなす距離（ヤード）
 const ROUTE_OVERLAP_ANGLE = 10; // 導線被り判定角度（度）
 const RECENT_PIN_COUNT = 2; // 直近ピン制限の対象数（前回・前々回）
