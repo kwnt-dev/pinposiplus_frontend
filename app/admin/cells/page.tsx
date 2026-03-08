@@ -13,6 +13,7 @@ import {
   CellGroup,
 } from "@/lib/cellGroups";
 import { useContainerSize } from "@/hooks/useContainerSize";
+import { HelpButton } from "@/components/ui/HelpButton";
 
 type CellType = "damage" | "ban" | "rain";
 
@@ -185,7 +186,15 @@ export default function CellsEditPage() {
 
   return (
     <div className="h-full flex flex-col p-4">
-      <PageHeader icon={Grid3x3} title="セル設定" />
+      <PageHeader icon={Grid3x3} title="セル設定">
+        <HelpButton title="セル設定の使い方">
+          <p>グリーン上の傷み・禁止・雨天エリアをセルで管理します。</p>
+          <p>1. 上部のタブで傷み/禁止/雨天を切り替え</p>
+          <p>2. 左のグリッドでホールを選択</p>
+          <p>3. 右のキャンバスでセルをクリックして選択</p>
+          <p>4. コメントを入力して「保存」</p>
+        </HelpButton>
+      </PageHeader>
 
       <div className="flex-1 min-h-0 flex gap-4">
         {/* 左: グリッド */}

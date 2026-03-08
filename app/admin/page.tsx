@@ -10,6 +10,7 @@ import CourseGridPanel from "@/components/admin/CourseGridPanel";
 import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
 import { publishSession, PinSession } from "@/lib/pinSession";
+import { HelpButton } from "@/components/ui/HelpButton";
 
 function StatusBadge({ session }: { session: PinSession | null }) {
   if (!session) {
@@ -121,6 +122,13 @@ export default function DashboardPage() {
           <Send size={14} className="mr-1" />
           マスター室に送信
         </Button>
+        <HelpButton title="ダッシュボードの使い方">
+          <p>日付を選択し、自動提案を生成してピン位置を決定します。</p>
+          <p>1. 右パネルで日付・条件を設定して「自動提案生成」を押す</p>
+          <p>2. 3×3グリッドでピン位置を確認・編集</p>
+          <p>3. 「スタッフに公開」でスタッフが現場確認</p>
+          <p>4. スタッフ確認後「マスター室に送信」でPDF送信</p>
+        </HelpButton>
       </PageHeader>
 
       <div className="flex-1 min-h-0 flex gap-4">

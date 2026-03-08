@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import api from "@/lib/axios";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Calendar } from "lucide-react";
+import { HelpButton } from "@/components/ui/HelpButton";
 
 type Schedule = {
   id: string;
@@ -120,8 +121,12 @@ export default function SchedulePage() {
 
   return (
     <div className="p-4 h-full flex flex-col">
-      <PageHeader icon={Calendar} title="予定表" />
-
+      <PageHeader icon={Calendar} title="予定表">
+        <HelpButton title="予定表の使い方">
+          <p>日付をクリックしてイベント名と組数を登録します。</p>
+          <p>登録した情報は自動提案生成時に反映されます。</p>
+        </HelpButton>
+      </PageHeader>
       <div className="flex-1 min-h-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
         {/* ヘッダーバー: 月切り替え */}
         <div className="flex-shrink-0 h-[42px] px-4 bg-gray-800 flex items-center justify-center gap-3">
@@ -218,7 +223,6 @@ export default function SchedulePage() {
           })}
         </div>
       </div>
-
       <Dialog open={!!selectedDate} onOpenChange={() => setSelectedDate(null)}>
         <DialogContent>
           <DialogHeader>
