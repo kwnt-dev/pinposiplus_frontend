@@ -25,6 +25,7 @@ import api from "@/lib/axios";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Calendar } from "lucide-react";
 import { HelpButton } from "@/components/ui/HelpButton";
+import { toast } from "sonner";
 
 type Schedule = {
   id: string;
@@ -106,6 +107,7 @@ export default function SchedulePage() {
 
     await fetchSchedules();
     setSelectedDate(null);
+    toast.success("保存しました");
   }
 
   async function handleDelete() {
@@ -117,6 +119,7 @@ export default function SchedulePage() {
 
     await fetchSchedules();
     setSelectedDate(null);
+    toast.success("削除しました");
   }
 
   return (

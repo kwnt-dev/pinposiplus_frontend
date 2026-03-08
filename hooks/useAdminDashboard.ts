@@ -17,6 +17,7 @@ import {
 } from "@/lib/pinSession";
 import { format } from "date-fns";
 import api from "@/lib/axios";
+import { toast } from "sonner";
 
 export function useAdminDashboard() {
   const [course, setCourse] = useState<"out" | "in">("out");
@@ -330,6 +331,7 @@ export function useAdminDashboard() {
       y: pin.y,
       session_id: currentSession.id,
     });
+    toast.success("ピンを保存しました");
   };
 
   // ピン位置変更（ドラッグ）

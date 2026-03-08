@@ -11,6 +11,7 @@ import AutoSuggestPanel from "@/components/admin/AutoSuggestPanel";
 import PinEditPanel from "@/components/admin/PinEditPanel";
 import { publishSession, PinSession } from "@/lib/pinSession";
 import { HelpButton } from "@/components/ui/HelpButton";
+import { toast } from "sonner";
 
 function StatusBadge({ session }: { session: PinSession | null }) {
   if (!session) {
@@ -98,8 +99,10 @@ export default function DashboardPage() {
               await publishSession(outSession.id);
               await publishSession(inSession.id);
               await reloadSessions();
+              toast.success("スタッフに公開しました");
             } catch (err) {
               console.error("公開エラー:", err);
+              toast.error("公開に失敗しました");
             }
           }}
         >
