@@ -20,7 +20,7 @@ export function HelpButton({ title, children }: HelpButtonProps) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600 font-bold text-lg flex items-center justify-center transition-colors"
+        className="w-8 h-8 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-600 font-bold text-lg flex items-center justify-center transition-colors"
         aria-label="ヘルプ"
       >
         ?
