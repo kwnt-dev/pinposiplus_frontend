@@ -12,6 +12,7 @@ import {
   getPinSessionDetail,
 } from "@/lib/pinSession";
 import { PinResponse } from "@/types/api";
+import { toast } from "sonner";
 
 const CARD_SIZE = 240;
 
@@ -252,15 +253,14 @@ function PDFPreviewContent() {
     try {
       const blob = await generatePdfBlob(outRef, inRef);
       if (!blob) return;
-
       const base64 = await blobToBase64(blob);
-      // OUTにPDF付きで送信（S3にアップロードされる）
       await sendSession(sessionIds.out, base64);
-      // INはステータス変更のみ
       await sendSession(sessionIds.in);
+      toast.success("マスター室に送信しました");
       router.push("/admin");
     } catch (err) {
       console.error("送信エラー:", err);
+      toast.error("送信に失敗しました");
     } finally {
       setSending(false);
     }

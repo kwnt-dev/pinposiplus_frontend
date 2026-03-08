@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import api from "@/lib/axios";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Users } from "lucide-react";
+import { toast } from "sonner";
 
 type User = {
   id: string;
@@ -81,6 +82,7 @@ export default function UsersPage() {
 
     setIsOpen(false);
     fetchUsers();
+    toast.success("保存しました");
   }
 
   async function handleDelete() {
@@ -88,6 +90,7 @@ export default function UsersPage() {
     await api.delete(`/api/users/${editingUser.id}`);
     setIsOpen(false);
     fetchUsers();
+    toast.success("削除しました");
   }
 
   return (

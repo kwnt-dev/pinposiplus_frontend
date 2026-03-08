@@ -14,6 +14,7 @@ import {
 } from "@/lib/cellGroups";
 import { useContainerSize } from "@/hooks/useContainerSize";
 import { HelpButton } from "@/components/ui/HelpButton";
+import { toast } from "sonner";
 
 type CellType = "damage" | "ban" | "rain";
 
@@ -145,9 +146,10 @@ export default function CellsEditPage() {
       setCurrentGroups((prev) => [...prev, newGroup]);
       setNewCells([]);
       setComment("");
+      toast.success("保存しました");
     } catch (err) {
       console.error("保存エラー:", err);
-      alert("保存に失敗しました");
+      toast.error("保存に失敗しました");
     } finally {
       setSaving(false);
     }
@@ -160,9 +162,10 @@ export default function CellsEditPage() {
     try {
       await deleteCellGroup(cellMode, groupId);
       setCurrentGroups((prev) => prev.filter((g) => g.id !== groupId));
+      toast.success("削除しました");
     } catch (err) {
       console.error("削除エラー:", err);
-      alert("削除に失敗しました");
+      toast.error("削除に失敗しました");
     }
   };
 

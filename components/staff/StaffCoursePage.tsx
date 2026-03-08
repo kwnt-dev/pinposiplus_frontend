@@ -12,6 +12,7 @@ import {
 import { HolePin } from "@/lib/greenCanvas.geometry";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { PinResponse } from "@/types/api";
+import { toast } from "sonner";
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "";
@@ -84,13 +85,14 @@ export default function StaffCoursePage({ course }: StaffCoursePageProps) {
 
   const handleConfirm = async () => {
     if (!session) return;
-
     setIsConfirming(true);
     try {
       const updated = await confirmSession(session.id);
       setSession(updated);
+      toast.success("完了報告しました");
     } catch (err) {
       console.error("確認提出エラー:", err);
+      toast.error("完了報告に失敗しました");
     } finally {
       setIsConfirming(false);
     }
