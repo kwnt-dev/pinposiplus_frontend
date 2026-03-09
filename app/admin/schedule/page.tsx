@@ -26,6 +26,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Calendar } from "lucide-react";
 import { HelpButton } from "@/components/ui/HelpButton";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type Schedule = {
   id: string;
@@ -41,6 +42,7 @@ export default function SchedulePage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [eventName, setEventName] = useState("");
   const [groupCount, setGroupCount] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -116,9 +118,9 @@ export default function SchedulePage() {
     if (existing?.id) {
       await api.delete(`/api/schedules/${existing.id}`);
     }
-
     await fetchSchedules();
     setSelectedDate(null);
+    setShowDeleteConfirm(false);
     toast.success("削除しました");
   }
 
@@ -249,13 +251,25 @@ export default function SchedulePage() {
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSave}>保存</Button>
-              <Button variant="destructive" onClick={handleDelete}>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
                 削除
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="予定の削除"
+        description={`${selectedDate} の予定を削除しますか？`}
+        confirmText="削除"
+        variant="destructive"
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }
