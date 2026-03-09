@@ -13,6 +13,7 @@ import PinEditPanel from "@/components/admin/PinEditPanel";
 import { publishSession, PinSession } from "@/lib/pinSession";
 import { HelpButton } from "@/components/ui/HelpButton";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 function StatusBadge({ session }: { session: PinSession | null }) {
   if (!session) {
@@ -79,6 +80,7 @@ export default function DashboardPage() {
     handleHoleChange,
     handlePinSave,
     handlePinPlaced,
+    isGenerating,
   } = useAdminDashboard();
 
   return (
@@ -135,7 +137,15 @@ export default function DashboardPage() {
         </HelpButton>
       </PageHeader>
 
-      <div className="flex-1 min-h-0 flex gap-4">
+      <div className="flex-1 min-h-0 flex gap-4 relative">
+        {isGenerating && (
+          <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center rounded-xl">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="size-12 animate-spin text-white" />
+              <span className="text-white font-bold">自動提案を生成中...</span>
+            </div>
+          </div>
+        )}
         <CourseGridPanel
           course={course}
           onCourseChange={setCourse}

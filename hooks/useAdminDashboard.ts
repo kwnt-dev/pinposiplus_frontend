@@ -51,6 +51,7 @@ export function useAdminDashboard() {
     Record<number, { x: number; y: number }>
   >({});
   const [dirtyHole, setDirtyHole] = useState<number | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // 18ホール分のグリーンJSON読み込み
   useEffect(() => {
@@ -181,110 +182,115 @@ export function useAdminDashboard() {
 
   // 自動提案実行
   const handleCourseGenerate = async () => {
-    let eventName: string | undefined;
-    let groupsCount: number | undefined;
+    setIsGenerating(true);
     try {
-      const scheduleRes = await api.get(
-        `/api/schedules?start_date=${selectedDate}&end_date=${selectedDate}`,
-      );
-      if (scheduleRes.data.length > 0) {
-        eventName = scheduleRes.data[0].event_name || undefined;
-        groupsCount = scheduleRes.data[0].group_count ?? undefined;
-      }
-    } catch (err) {
-      console.error("予定表取得エラー:", err);
-    }
-
-    const newOutSession = await createPinSession({
-      course: "OUT",
-      target_date: selectedDate,
-      is_rainy: isRainyDay,
-      event_name: eventName,
-      groups_count: groupsCount,
-    });
-    const newInSession = await createPinSession({
-      course: "IN",
-      target_date: selectedDate,
-      is_rainy: isRainyDay,
-      event_name: eventName,
-      groups_count: groupsCount,
-    });
-    setOutSession(newOutSession);
-    setInSession(newInSession);
-
-    const outHoles = ["01", "02", "03", "04", "05", "06", "07", "08", "09"];
-    const inHoles = ["10", "11", "12", "13", "14", "15", "16", "17", "18"];
-
-    const generateHolePins = (holes: string[]) => {
-      const holeCandidates: HoleCandidates[] = holes.map((h) => {
-        const hData = allHoleData[h];
-        const config = HOLE_CONFIGS[h];
-        if (!hData || !config) {
-          return {
-            holeNumber: parseInt(h, 10),
-            candidates: [],
-            isShortHole: false,
-            cells: [],
-          };
+      let eventName: string | undefined;
+      let groupsCount: number | undefined;
+      try {
+        const scheduleRes = await api.get(
+          `/api/schedules?start_date=${selectedDate}&end_date=${selectedDate}`,
+        );
+        if (scheduleRes.data.length > 0) {
+          eventName = scheduleRes.data[0].event_name || undefined;
+          groupsCount = scheduleRes.data[0].group_count ?? undefined;
         }
+      } catch (err) {
+        console.error("予定表取得エラー:", err);
+      }
 
-        const holeNum = parseInt(h, 10);
-        const input: AutoProposalInput = {
-          holeData: hData,
-          exit: config.exit,
-          damageCells: damageCellsMap[holeNum] || [],
-          banCells: banCellsMap[holeNum] || [],
-          rainCells: rainCellsMap[holeNum] || [],
-          pastPins: pastPinsMap[holeNum] || [],
-          isRainyDay,
-        };
-
-        const candidates = generateProposals(input);
-        return {
-          holeNumber: holeNum,
-          candidates,
-          isShortHole: config.isShortHole,
-          cells: hData.cells,
-        };
+      const newOutSession = await createPinSession({
+        course: "OUT",
+        target_date: selectedDate,
+        is_rainy: isRainyDay,
+        event_name: eventName,
+        groups_count: groupsCount,
       });
-
-      const result = generateCourseProposal({
-        holes: holeCandidates,
-        courseDifficulty,
+      const newInSession = await createPinSession({
+        course: "IN",
+        target_date: selectedDate,
+        is_rainy: isRainyDay,
+        event_name: eventName,
+        groups_count: groupsCount,
       });
-      return result.holes.map((h) => ({
-        hole: h.holeNumber,
-        x: h.selectedPin.x,
-        y: h.selectedPin.y,
-      }));
-    };
+      setOutSession(newOutSession);
+      setInSession(newInSession);
 
-    const outPins = generateHolePins(outHoles);
-    const inPins = generateHolePins(inHoles);
+      const outHoles = ["01", "02", "03", "04", "05", "06", "07", "08", "09"];
+      const inHoles = ["10", "11", "12", "13", "14", "15", "16", "17", "18"];
 
-    for (const pin of outPins) {
-      await api.post("/api/pins", {
-        hole_number: pin.hole,
-        x: pin.x,
-        y: pin.y,
-        session_id: newOutSession.id,
-      });
+      const generateHolePins = (holes: string[]) => {
+        const holeCandidates: HoleCandidates[] = holes.map((h) => {
+          const hData = allHoleData[h];
+          const config = HOLE_CONFIGS[h];
+          if (!hData || !config) {
+            return {
+              holeNumber: parseInt(h, 10),
+              candidates: [],
+              isShortHole: false,
+              cells: [],
+            };
+          }
+
+          const holeNum = parseInt(h, 10);
+          const input: AutoProposalInput = {
+            holeData: hData,
+            exit: config.exit,
+            damageCells: damageCellsMap[holeNum] || [],
+            banCells: banCellsMap[holeNum] || [],
+            rainCells: rainCellsMap[holeNum] || [],
+            pastPins: pastPinsMap[holeNum] || [],
+            isRainyDay,
+          };
+
+          const candidates = generateProposals(input);
+          return {
+            holeNumber: holeNum,
+            candidates,
+            isShortHole: config.isShortHole,
+            cells: hData.cells,
+          };
+        });
+
+        const result = generateCourseProposal({
+          holes: holeCandidates,
+          courseDifficulty,
+        });
+        return result.holes.map((h) => ({
+          hole: h.holeNumber,
+          x: h.selectedPin.x,
+          y: h.selectedPin.y,
+        }));
+      };
+
+      const outPins = generateHolePins(outHoles);
+      const inPins = generateHolePins(inHoles);
+
+      for (const pin of outPins) {
+        await api.post("/api/pins", {
+          hole_number: pin.hole,
+          x: pin.x,
+          y: pin.y,
+          session_id: newOutSession.id,
+        });
+      }
+      for (const pin of inPins) {
+        await api.post("/api/pins", {
+          hole_number: pin.hole,
+          x: pin.x,
+          y: pin.y,
+          session_id: newInSession.id,
+        });
+      }
+
+      const allPins: HolePin[] = [...outPins, ...inPins];
+      setCoursePins(allPins);
+      setOutSession(newOutSession);
+      setInSession(newInSession);
+      setRightPanelMode("pin-edit");
+      setEditingHole(1);
+    } finally {
+      setIsGenerating(false);
     }
-    for (const pin of inPins) {
-      await api.post("/api/pins", {
-        hole_number: pin.hole,
-        x: pin.x,
-        y: pin.y,
-        session_id: newInSession.id,
-      });
-    }
-
-    const allPins: HolePin[] = [...outPins, ...inPins];
-    setCoursePins(allPins);
-    setOutSession(newOutSession);
-    setInSession(newInSession);
-    setRightPanelMode("pin-edit");
-    setEditingHole(1);
   };
 
   // ホール切り替え
@@ -379,5 +385,6 @@ export function useAdminDashboard() {
     handleHoleChange,
     handlePinSave,
     handlePinPlaced,
+    isGenerating,
   };
 }
