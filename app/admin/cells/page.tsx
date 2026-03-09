@@ -15,6 +15,7 @@ import {
 import { useContainerSize } from "@/hooks/useContainerSize";
 import { HelpButton } from "@/components/ui/HelpButton";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type CellType = "damage" | "ban" | "rain";
 
@@ -51,6 +52,7 @@ export default function CellsEditPage() {
   const [newCells, setNewCells] = useState<string[]>([]);
   const [comment, setComment] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   // グリッドサイズ
   const [gridContainerRef, gridContainerSize] = useContainerSize();
@@ -156,16 +158,17 @@ export default function CellsEditPage() {
   };
 
   // グループ削除
-  const handleDeleteGroup = async (groupId: string) => {
-    if (!confirm("このグループを削除しますか？")) return;
-
+  const handleDeleteGroup = async () => {
+    if (!deleteTarget) return;
     try {
-      await deleteCellGroup(cellMode, groupId);
-      setCurrentGroups((prev) => prev.filter((g) => g.id !== groupId));
+      await deleteCellGroup(cellMode, deleteTarget);
+      setCurrentGroups((prev) => prev.filter((g) => g.id !== deleteTarget));
       toast.success("削除しました");
     } catch (err) {
       console.error("削除エラー:", err);
       toast.error("削除に失敗しました");
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -373,7 +376,7 @@ export default function CellsEditPage() {
                         </span>
                       )}
                       <button
-                        onClick={() => handleDeleteGroup(group.id)}
+                        onClick={() => setDeleteTarget(group.id)}
                         className="text-red-500 hover:text-red-700"
                       >
                         ✕
@@ -400,6 +403,15 @@ export default function CellsEditPage() {
           </div>
         </div>
       </div>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="グループの削除"
+        description="このグループを削除しますか？"
+        confirmText="削除"
+        variant="destructive"
+        onConfirm={handleDeleteGroup}
+      />
     </div>
   );
 }
