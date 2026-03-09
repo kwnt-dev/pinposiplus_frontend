@@ -22,6 +22,7 @@ import api from "@/lib/axios";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Users } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type User = {
   id: string;
@@ -39,6 +40,7 @@ export default function UsersPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "staff">("staff");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     api.get("/api/users").then((response) => {
@@ -89,6 +91,7 @@ export default function UsersPage() {
     if (!editingUser) return;
     await api.delete(`/api/users/${editingUser.id}`);
     setIsOpen(false);
+    setShowDeleteConfirm(false);
     fetchUsers();
     toast.success("削除しました");
   }
@@ -199,7 +202,10 @@ export default function UsersPage() {
             <div className="flex gap-2">
               <Button onClick={handleSave}>保存</Button>
               {editingUser && (
-                <Button variant="destructive" onClick={handleDelete}>
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
                   削除
                 </Button>
               )}
@@ -207,6 +213,15 @@ export default function UsersPage() {
           </div>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="ユーザーの削除"
+        description={`${editingUser?.name} を削除しますか？`}
+        confirmText="削除"
+        variant="destructive"
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }
