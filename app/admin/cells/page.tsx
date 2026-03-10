@@ -197,8 +197,9 @@ export default function CellsEditPage() {
           <p>グリーン上の傷み・禁止・雨天エリアをセルで管理します。</p>
           <p>1. 上部のタブで傷み/禁止/雨天を切り替え</p>
           <p>2. 左のグリッドでホールを選択</p>
-          <p>3. 右のキャンバスでセルをクリックして選択</p>
-          <p>4. コメントを入力して「保存」</p>
+          <p>3. 右のキャンバスでセルをタップして選択・解除</p>
+          <p>4. ドラッグで連続してセルを塗れます</p>
+          <p>5. コメントを入力して「保存」</p>
         </HelpButton>
       </PageHeader>
 
@@ -395,6 +396,8 @@ export default function CellsEditPage() {
               banCells={cellMode === "ban" ? displayCells : []}
               rainCells={cellMode === "rain" ? displayCells : []}
               onCellClick={handleCellClick}
+              enablePaintMode={true}
+              activeCells={displayCells}
               showExit={false}
               showExitRoute={false}
               showBoundaryBuffer={false}
