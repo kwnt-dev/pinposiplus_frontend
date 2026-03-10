@@ -11,7 +11,7 @@ import {
   Rect,
 } from "react-konva";
 import Konva from "konva";
-import { Fragment } from "react";
+import { Fragment, useRef, useCallback } from "react";
 import { HOLE_CONFIGS } from "@/config/holes";
 import {
   PAST_PIN_RESTRICTION_RADIUS,
@@ -41,6 +41,10 @@ interface Props {
   banCells?: string[];
   rainCells?: string[];
   onCellClick?: (cellId: string) => void;
+  /** 長押しドラッグでの連続入力を有効にする（onCellClick必須） */
+  enablePaintMode?: boolean;
+  /** 連続入力時に「追加」か「削除」かを判定するための現在の選択済みセル */
+  activeCells?: string[];
   currentPin?: Pin;
   onPinPlaced?: (currentPin: Pin) => void;
   pastPins?: Pin[];
@@ -65,6 +69,8 @@ export default function GreenCanvas({
   banCells = [],
   rainCells = [],
   onCellClick,
+  enablePaintMode = false,
+  activeCells = [],
   currentPin,
   onPinPlaced,
   pastPins,
@@ -80,12 +86,124 @@ export default function GreenCanvas({
   isRainyDay = false,
 }: Props) {
   const holeData = useHoleData(hole);
+  const scale = width / CANVAS_SIZE;
+
+  // ペイントモード用（ドラッグでセル連続入力）
+  const isPaintingRef = useRef(false);
+  const paintedCellsRef = useRef<Set<string>>(new Set());
+  const lastCellRef = useRef<{ x: number; y: number } | null>(null);
+
+  // ピクセル座標 → セル座標に変換
+  const pixelToCell = useCallback(
+    (pos: { x: number; y: number }): { x: number; y: number } => ({
+      x: Math.floor(pos.x / scale / YD_TO_PX),
+      y: Math.floor(pos.y / scale / YD_TO_PX),
+    }),
+    [scale],
+  );
+
+  // セル座標 → セルID。グリーン外ならnull
+  const toCellId = useCallback(
+    (cell: { x: number; y: number }): string | null => {
+      if (!holeData) return null;
+      const id = `cell_${cell.x}_${cell.y}`;
+      return holeData.cells.find((c) => c.id === id) ? id : null;
+    },
+    [holeData],
+  );
+
+  // 1セルを塗る（1ストローク中の重複防止）
+  const paintCell = useCallback(
+    (cellId: string) => {
+      if (!onCellClick || paintedCellsRef.current.has(cellId)) return;
+      paintedCellsRef.current.add(cellId);
+      onCellClick(cellId);
+    },
+    [onCellClick],
+  );
+
+  // 2点間のセルを直線補間して塗る（高速ドラッグ時のコマ飛び防止）
+  const paintCellsBetween = useCallback(
+    (from: { x: number; y: number }, to: { x: number; y: number }) => {
+      let { x, y } = from;
+      const goalX = to.x;
+      const goalY = to.y;
+      const distX = Math.abs(goalX - x);
+      const distY = Math.abs(goalY - y);
+      const stepX = x < goalX ? 1 : -1;
+      const stepY = y < goalY ? 1 : -1;
+      let error = distX - distY;
+
+      while (true) {
+        const cellId = toCellId({ x, y });
+        if (cellId) paintCell(cellId);
+        if (x === goalX && y === goalY) break;
+        const doubleError = 2 * error;
+        if (doubleError > -distY) {
+          error -= distY;
+          x += stepX;
+        }
+        if (doubleError < distX) {
+          error += distX;
+          y += stepY;
+        }
+      }
+    },
+    [toCellId, paintCell],
+  );
+
+  // ペイント開始
+  const handlePaintStart = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+      const stage = e.target.getStage();
+      if (!stage) return;
+      const pos = stage.getPointerPosition();
+      if (!pos || !onCellClick || !enablePaintMode) return;
+
+      isPaintingRef.current = true;
+      paintedCellsRef.current.clear();
+
+      const cell = pixelToCell(pos);
+      lastCellRef.current = cell;
+
+      const cellId = toCellId(cell);
+      if (cellId) paintCell(cellId);
+    },
+    [onCellClick, enablePaintMode, pixelToCell, toCellId, paintCell],
+  );
+
+  // ドラッグ中（前回→現在のセル間を補間して塗る）
+  const handlePaintMove = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+      if (!isPaintingRef.current) return;
+
+      const stage = e.target.getStage();
+      if (!stage) return;
+      const pos = stage.getPointerPosition();
+      if (!pos) return;
+
+      const currentCell = pixelToCell(pos);
+
+      if (lastCellRef.current) {
+        paintCellsBetween(lastCellRef.current, currentCell);
+      }
+
+      lastCellRef.current = currentCell;
+    },
+    [pixelToCell, paintCellsBetween],
+  );
+
+  // ペイント終了
+  const handlePaintEnd = useCallback(() => {
+    isPaintingRef.current = false;
+    paintedCellsRef.current.clear();
+    lastCellRef.current = null;
+  }, []);
 
   if (!holeData) {
     return <div>読み込み中...</div>;
   }
 
-  const scale = width / CANVAS_SIZE;
   const config = HOLE_CONFIGS[hole.padStart(2, "0")];
 
   //外周制限を計算
@@ -99,8 +217,48 @@ export default function GreenCanvas({
     ? getOffsetSlope(holeData.slope.slope.d, SLOPE_BUFFER)
     : [];
 
-  // タッチ・クリック共通ハンドラ
-  const handleStageInteraction = (
+  // ピン配置処理
+  const handlePinPlacement = (pos: { x: number; y: number }) => {
+    if (!onPinPlaced || !currentPin) return;
+
+    const snappedX = Math.round(pos.x / scale / YD_TO_PX);
+    const snappedY = Math.round(pos.y / scale / YD_TO_PX);
+
+    const surroundingCellIds = [
+      `cell_${Math.floor(snappedX)}_${Math.floor(snappedY)}`,
+      `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY)}`,
+      `cell_${Math.floor(snappedX)}_${Math.floor(snappedY) - 1}`,
+      `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY) - 1}`,
+    ];
+
+    const isOnBanCell = surroundingCellIds.some((id) => banCells.includes(id));
+    const isOnDamageCell = surroundingCellIds.some((id) =>
+      damageCells.includes(id),
+    );
+    const isOnRainCell =
+      isRainyDay && surroundingCellIds.some((id) => rainCells.includes(id));
+
+    if (
+      isInsideGreen(
+        { id: currentPin.id, x: snappedX, y: snappedY },
+        holeData.cells,
+      ) &&
+      isPointInPolygon(snappedX, snappedY, boundaryBufferPoints) &&
+      !isPointInPolygon(snappedX, snappedY, slopeBufferPoints) &&
+      !isOnBanCell &&
+      !isOnDamageCell &&
+      !isOnRainCell
+    ) {
+      onPinPlaced({
+        id: currentPin.id,
+        x: snappedX,
+        y: snappedY,
+      });
+    }
+  };
+
+  // 単発タップ/クリック（ペイントモード無効時）
+  const handleTapOrClick = (
     e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
     const stage = e.target.getStage();
@@ -110,60 +268,35 @@ export default function GreenCanvas({
 
     // セルクリック処理
     if (onCellClick) {
-      const x = Math.floor(pos.x / scale / YD_TO_PX);
-      const y = Math.floor(pos.y / scale / YD_TO_PX);
-      const cellId = `cell_${x}_${y}`;
-      const cell = holeData.cells.find((c) => c.id === cellId);
-      if (cell) {
-        onCellClick(cellId);
-      }
+      const cellId = toCellId(pixelToCell(pos));
+      if (cellId) onCellClick(cellId);
       return;
     }
 
     // ピン配置処理
     if (onPinPlaced && currentPin) {
-      const snappedX = Math.round(pos.x / scale / YD_TO_PX);
-      const snappedY = Math.round(pos.y / scale / YD_TO_PX);
-
-      const surroundingCellIds = [
-        `cell_${Math.floor(snappedX)}_${Math.floor(snappedY)}`,
-        `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY)}`,
-        `cell_${Math.floor(snappedX)}_${Math.floor(snappedY) - 1}`,
-        `cell_${Math.floor(snappedX) - 1}_${Math.floor(snappedY) - 1}`,
-      ];
-
-      const isOnBanCell = surroundingCellIds.some((id) =>
-        banCells.includes(id),
-      );
-      const isOnDamageCell = surroundingCellIds.some((id) =>
-        damageCells.includes(id),
-      );
-      const isOnRainCell =
-        isRainyDay && surroundingCellIds.some((id) => rainCells.includes(id));
-
-      if (
-        isInsideGreen(
-          { id: currentPin.id, x: snappedX, y: snappedY },
-          holeData.cells,
-        ) &&
-        isPointInPolygon(snappedX, snappedY, boundaryBufferPoints) &&
-        !isPointInPolygon(snappedX, snappedY, slopeBufferPoints) &&
-        !isOnBanCell &&
-        !isOnDamageCell &&
-        !isOnRainCell
-      ) {
-        onPinPlaced({
-          id: currentPin.id,
-          x: snappedX,
-          y: snappedY,
-        });
-      }
+      handlePinPlacement(pos);
     }
   };
 
   return (
     <Stage width={width} height={height} scaleX={scale} scaleY={scale}>
-      <Layer onClick={handleStageInteraction} onTap={handleStageInteraction}>
+      {/* ペイントモード: ドラッグ塗り / 無効時: 単発操作 */}
+      <Layer
+        {...(enablePaintMode && onCellClick
+          ? {
+              onMouseDown: handlePaintStart,
+              onMouseMove: handlePaintMove,
+              onMouseUp: handlePaintEnd,
+              onTouchStart: handlePaintStart,
+              onTouchMove: handlePaintMove,
+              onTouchEnd: handlePaintEnd,
+            }
+          : {
+              onClick: handleTapOrClick,
+              onTap: handleTapOrClick,
+            })}
+      >
         {/* 背景レイヤー */}
         {holeData.layers.map((layer, index) => (
           <Path
