@@ -13,6 +13,7 @@ import {
   ydToPx,
 } from "@/lib/greenCanvas.convert";
 import { useHoleData } from "@/hooks/useHoleData";
+import { Loading } from "@/components/ui/Loading";
 
 interface Props {
   hole: string;
@@ -52,7 +53,7 @@ export default function GreenCardPDFExport({
   const holeData = useHoleData(hole);
 
   if (!holeData) {
-    return <div>読み込み中...</div>;
+    return <Loading />;
   }
 
   const scale = width / CANVAS_SIZE;
