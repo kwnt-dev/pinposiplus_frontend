@@ -96,6 +96,7 @@ export default function SchedulePage() {
     const existing = getExisting(selectedDate);
     if (existing?.id) {
       await api.put(`/api/schedules/${existing.id}`, {
+        date: selectedDate,
         event_name: eventName || null,
         group_count: groupCount ? Number(groupCount) : null,
       });
@@ -245,6 +246,7 @@ export default function SchedulePage() {
               <Label>組数</Label>
               <Input
                 type="number"
+                min="1"
                 value={groupCount}
                 onChange={(e) => setGroupCount(e.target.value)}
               />
