@@ -246,6 +246,7 @@ export default function SchedulePage() {
               <Label>組数</Label>
               <Input
                 type="number"
+                min="1"
                 value={groupCount}
                 onChange={(e) => setGroupCount(e.target.value)}
               />
