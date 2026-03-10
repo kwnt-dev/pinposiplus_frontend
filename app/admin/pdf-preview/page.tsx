@@ -13,6 +13,7 @@ import {
 } from "@/lib/pinSession";
 import { PinResponse } from "@/types/api";
 import { toast } from "sonner";
+import { Loading } from "@/components/ui/Loading";
 
 const CARD_SIZE = 240;
 
@@ -307,7 +308,7 @@ function PDFPreviewContent() {
 
 export default function PDFPreviewPage() {
   return (
-    <Suspense fallback={<div className="p-8">読み込み中...</div>}>
+    <Suspense fallback={<Loading />}>
       <PDFPreviewContent />
     </Suspense>
   );

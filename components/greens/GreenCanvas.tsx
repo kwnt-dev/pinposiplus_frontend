@@ -32,6 +32,7 @@ import {
   ydToPx,
 } from "@/lib/greenCanvas.convert";
 import { useHoleData } from "@/hooks/useHoleData";
+import { Loading } from "@/components/ui/Loading";
 
 interface Props {
   hole: string;
@@ -201,7 +202,7 @@ export default function GreenCanvas({
   }, []);
 
   if (!holeData) {
-    return <div>読み込み中...</div>;
+    return <Loading />;
   }
 
   const config = HOLE_CONFIGS[hole.padStart(2, "0")];
