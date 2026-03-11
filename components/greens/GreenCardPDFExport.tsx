@@ -194,20 +194,32 @@ export default function GreenCardPDFExport({
         />
 
         {/* 奥行き数字 */}
-        {currentPin && (
-          <Text
-            text={`${Math.round(holeData.origin.y - currentPin.y)}`}
-            fontSize={450}
-            x={currentPin.x <= 30 ? ydToPx(45) : ydToPx(15)}
-            y={ydToPx(currentPin.y)}
-            offsetY={100}
-            align="center"
-            width={600}
-            offsetX={300}
-            fontStyle="bold"
-            fill="#000000"
-          />
-        )}
+        {currentPin &&
+          (() => {
+            const depthFontSize = 450;
+            const baseY = ydToPx(currentPin.y);
+            // はみ出る分だけ上にずらしてキャンバス内に収める
+            const bottomEdge = baseY - 100 + depthFontSize;
+            const textY =
+              bottomEdge > CANVAS_SIZE
+                ? baseY - (bottomEdge - CANVAS_SIZE)
+                : baseY;
+
+            return (
+              <Text
+                text={`${Math.round(holeData.origin.y - currentPin.y)}`}
+                fontSize={depthFontSize}
+                x={currentPin.x <= 30 ? ydToPx(45) : ydToPx(15)}
+                y={textY}
+                offsetY={100}
+                align="center"
+                width={600}
+                offsetX={300}
+                fontStyle="bold"
+                fill="#000000"
+              />
+            );
+          })()}
 
         {/* 中心線上の表示「C」 */}
         {currentPin && currentPin.x === 30 && (
