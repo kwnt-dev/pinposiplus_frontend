@@ -242,6 +242,7 @@ function PDFPreviewContent() {
 
     link.click();
     URL.revokeObjectURL(downloadUrl);
+    toast.success("PDFダウンロードを開始しました");
   };
 
   /**
@@ -268,9 +269,14 @@ function PDFPreviewContent() {
   };
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex gap-4">
-        <button onClick={handleDownloadPDF}>PDFダウンロード</button>
+    <div className="p-8 flex flex-col items-center">
+      <div className="flex justify-end gap-4 mb-4 w-full">
+        <button
+          onClick={handleDownloadPDF}
+          className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
+        >
+          PDFダウンロード
+        </button>
         {/* ダッシュボードから?send=trueで遷移してきた場合のみ送信ボタンを表示 */}
         {isSendMode && sessionIds && (
           <button
