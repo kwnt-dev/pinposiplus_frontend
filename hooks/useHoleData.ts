@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { HoleData } from "@/lib/greenCanvas.geometry";
 
+/** ホール番号に対応するグリーンのJSON データを取得するフック */
 export function useHoleData(hole: string): HoleData | null {
   const [holeData, setHoleData] = useState<HoleData | null>(null);
 

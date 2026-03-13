@@ -24,6 +24,7 @@ import { Users } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
+/** ユーザーデータの型 */
 type User = {
   id: string;
   name: string;
@@ -32,6 +33,7 @@ type User = {
   created_at: string;
 };
 
+/** ユーザー管理ページ（一覧表示・新規追加・編集・削除） */
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isOpen, setIsOpen] = useState(false);

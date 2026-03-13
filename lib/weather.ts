@@ -2,11 +2,13 @@
  * Open-Meteo APIで5日間天気予報を取得（APIキー不要）
  */
 
+/** ゴルフ場の緯度経度（サンプル） */
 const LAT = 35.6762;
 const LON = 139.6503;
 
 const DAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
+/** 天気コードから絵文字とラベルに変換 */
 function getWeather(code: number): { emoji: string; label: string } {
   if (code <= 1) return { emoji: "☀️", label: "晴れ" };
   if (code <= 3) return { emoji: "☁️", label: "曇り" };
@@ -14,6 +16,7 @@ function getWeather(code: number): { emoji: string; label: string } {
   return { emoji: "🌨️", label: "雪" };
 }
 
+/** 1日分の天気予報データ */
 export interface DailyForecast {
   date: string;
   dayOfWeek: string;
@@ -24,6 +27,7 @@ export interface DailyForecast {
   precipProb: number;
 }
 
+/** 5日間の天気予報を取得 */
 export async function fetchWeatherForecast(): Promise<DailyForecast[]> {
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia/Tokyo&forecast_days=5`;

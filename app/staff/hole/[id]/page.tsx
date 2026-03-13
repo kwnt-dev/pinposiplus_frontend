@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { getPinSessionDetail } from "@/lib/pinSession";
 import { useContainerSize } from "@/hooks/useContainerSize";
 
+/** スタッフ用ホール個別編集ページ（ピン位置の確認・修正・保存） */
 export default function StaffHoleEditPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -100,6 +101,7 @@ export default function StaffHoleEditPage() {
     loadCells();
   }, [holeNumber]);
 
+  // ピン保存（既存ピンを削除→新しい位置で再作成）
   async function handleSave() {
     if (!pin || !sessionId) return;
 

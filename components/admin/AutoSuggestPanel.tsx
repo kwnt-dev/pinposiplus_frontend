@@ -26,6 +26,7 @@ interface AutoSuggestPanelProps {
   disabled?: boolean;
 }
 
+/** 自動提案設定パネル（右パネル、日付・天気・雨天モード・難易度・実行ボタン） */
 export default function AutoSuggestPanel({
   selectedDate,
   onDateChange,

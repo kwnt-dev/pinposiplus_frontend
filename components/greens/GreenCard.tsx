@@ -7,6 +7,7 @@ interface GreenCardProps {
   rainCells?: string[];
 }
 
+/** 1ホール分のグリーンカード（サムネイル表示用、操作なし） */
 export default function GreenCard({
   hole,
   damageCells = [],

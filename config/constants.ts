@@ -1,4 +1,4 @@
-// グリーン制約の共通定数
+/** グリーン制約の共通定数 */
 
 /** 過去ピン制限 半径（ヤード） */
 export const PAST_PIN_RESTRICTION_RADIUS = 7;

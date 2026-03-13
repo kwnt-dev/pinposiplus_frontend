@@ -15,6 +15,7 @@ import { HelpButton } from "@/components/ui/HelpButton";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+/** セッションステータスのバッジ表示（未作成/作成中/公開中/確認済み/送信済み） */
 function StatusBadge({ session }: { session: PinSession | null }) {
   if (!session) {
     return (
@@ -54,6 +55,7 @@ function StatusBadge({ session }: { session: PinSession | null }) {
   }
 }
 
+/** 管理者ダッシュボード（左: コースグリッド、右: 自動提案 or ピン編集の二画面構成） */
 export default function DashboardPage() {
   const router = useRouter();
   const {

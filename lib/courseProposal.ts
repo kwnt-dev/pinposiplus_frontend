@@ -1,10 +1,10 @@
 import { Candidate } from "./autoProposal";
 import { HOLE_CONFIGS } from "@/config/holes";
 
-// 型定義
-
+/** コース難易度 */
 export type CourseDifficulty = "easy" | "medium" | "hard";
 
+/** ホールごとのピン候補データ */
 export interface HoleCandidates {
   holeNumber: number;
   candidates: Candidate[];
@@ -12,11 +12,13 @@ export interface HoleCandidates {
   cells: { x: number; y: number; isInside: boolean }[];
 }
 
+/** コース提案の入力データ */
 export interface CourseProposalInput {
   holes: HoleCandidates[];
   courseDifficulty: CourseDifficulty;
 }
 
+/** コース提案の結果 */
 export interface CourseProposalResult {
   holes: {
     holeNumber: number;
@@ -24,12 +26,15 @@ export interface CourseProposalResult {
   }[];
 }
 
+/** 奥行き位置（奥・中央・手前） */
 type DepthPosition = "front" | "middle" | "back";
+/** 左右位置 */
 type HorizontalPosition = "left" | "center" | "right";
 
-//定数
-const GREEN_CENTER_X = 30; // グリーン中央X座標（ヤード）
+/** グリーン中央X座標（ヤード） */
+const GREEN_CENTER_X = 30;
 
+/** 難易度ごとの奥行き配分（9ホール中の目標数） */
 const DEPTH_DISTRIBUTION: Record<
   CourseDifficulty,
   { back: number; middle: number; front: number }
@@ -38,8 +43,6 @@ const DEPTH_DISTRIBUTION: Record<
   medium: { back: 3, middle: 3, front: 3 },
   easy: { back: 2, middle: 3, front: 4 },
 };
-
-//判定関数
 
 /**
  * 候補の奥行き位置を判定
@@ -87,8 +90,13 @@ function getHorizontalPosition(
   return "right";
 }
 
-//メイン関数
-
+/**
+ * 9ホール分のピン位置をコース全体のバランスで選定する
+ * ルール1: ショートホールの奥行き分散
+ * ルール2: 前ホールとの位置変化（奥行き・左右が異なる候補を優先）
+ * ルール3: 難易度に応じた奥行き配分の目標枠が空いてる位置を優先
+ * ルール4: グリーン中央に近い候補を選択
+ */
 export function generateCourseProposal(
   input: CourseProposalInput,
 ): CourseProposalResult {

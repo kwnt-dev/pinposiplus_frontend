@@ -1,5 +1,6 @@
 import axios from "@/lib/axios";
 
+/** 自動提案に必要なデータの型（セル情報・過去ピン） */
 export interface AutoSuggestData {
   damage_cells: Record<
     string,
@@ -19,6 +20,7 @@ export interface AutoSuggestData {
   >;
 }
 
+/** 自動提案用のセル・過去ピンデータを一括取得 */
 export async function getAutoSuggestData(): Promise<AutoSuggestData> {
   const res = await axios.get("/api/auto-suggest-data");
   return res.data;

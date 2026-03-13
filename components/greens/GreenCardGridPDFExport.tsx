@@ -9,6 +9,7 @@ interface Props {
   cardSize?: number;
 }
 
+/** 今日の日付と曜日を取得 */
 function getDateString(): { dateStr: string; dayStr: string } {
   const today = new Date();
   const dateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
@@ -17,6 +18,7 @@ function getDateString(): { dateStr: string; dayStr: string } {
   return { dateStr, dayStr };
 }
 
+/** PDF出力用の9ホールグリッド（ヘッダー付き、jsPDFで画像化して使用） */
 export default function GreenCardGridPDFExport({
   course,
   pins,

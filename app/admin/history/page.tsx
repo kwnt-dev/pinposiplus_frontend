@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import api from "@/lib/axios";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { History as HistoryIcon, FileText } from "lucide-react";
+/** 日付ごとの履歴データ */
 type DateGroup = {
   date: string;
   eventName: string | null;
@@ -23,6 +24,7 @@ type DateGroup = {
   pdfUrl: string | null;
 };
 
+/** ピン履歴ページ（日付別の履歴一覧、PDF表示） */
 export default function HistoryPage() {
   const [histories, setHistories] = useState<DateGroup[]>([]);
   const [searchTerm, setSearchTerm] = useState("");

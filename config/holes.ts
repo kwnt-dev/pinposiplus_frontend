@@ -1,11 +1,13 @@
-// ホール設定（v1から移植）
-
+/** ホールごとのグリーン設定 */
 export interface HoleConfig {
+  /** グリーンの出口位置 */
   exit: { x: number; y: number };
+  /** グリーンの中心線 */
   centerLineMarks: {
     front: { x: number; y: number };
     back: { x: number; y: number };
   };
+  /** ショートホールかどうか */
   isShortHole: boolean;
 }
 

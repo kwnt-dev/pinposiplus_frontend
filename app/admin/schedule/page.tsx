@@ -28,6 +28,7 @@ import { HelpButton } from "@/components/ui/HelpButton";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
+/** 予定データの型 */
 type Schedule = {
   id: string;
   date: string;
@@ -36,6 +37,7 @@ type Schedule = {
   notes: string | null;
 };
 
+/** 予定表ページ（カレンダー形式でイベント名・組数を管理） */
 export default function SchedulePage() {
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const [schedules, setSchedules] = useState<Schedule[]>([]);

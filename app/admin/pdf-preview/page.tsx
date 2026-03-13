@@ -119,6 +119,8 @@ async function exportGridToImage(
 
 /**
  * OUT/INグリッドからPDF Blobを生成する共通処理
+ * Blob: PDFファイルのバイナリデータをメモリ上に保持するオブジェクト（Web API）
+ * ダウンロード時はBlobからURL生成、送信時はBlobからBase64に変換して使う
  */
 async function generatePdfBlob(
   outRef: React.RefObject<HTMLDivElement | null>,
@@ -154,6 +156,7 @@ function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
+/** PDFプレビュー画面の本体（セッションからピン取得→OUT/INグリッド表示→PDF生成・送信） */
 function PDFPreviewContent() {
   const outRef = useRef<HTMLDivElement>(null);
   const inRef = useRef<HTMLDivElement>(null);
@@ -312,6 +315,7 @@ function PDFPreviewContent() {
   );
 }
 
+/** PDFプレビューページ（useSearchParams: URLのクエリパラメータを取得するNext.jsフック。Suspense境界が必要） */
 export default function PDFPreviewPage() {
   return (
     <Suspense fallback={<Loading />}>

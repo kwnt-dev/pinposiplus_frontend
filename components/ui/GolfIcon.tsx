@@ -3,6 +3,7 @@ interface GolfIconProps {
   className?: string;
 }
 
+/** アプリロゴ用のゴルフアイコン（SVG） */
 export function GolfIcon({ size = 24, className = "" }: GolfIconProps) {
   return (
     <svg viewBox="0 0 54 54" width={size} height={size} className={className}>

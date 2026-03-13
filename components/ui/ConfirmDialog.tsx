@@ -22,6 +22,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
 }
 
+/** 確認ダイアログ（削除・公開・送信などの操作前に表示） */
 export function ConfirmDialog({
   open,
   onOpenChange,
