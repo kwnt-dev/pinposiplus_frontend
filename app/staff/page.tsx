@@ -7,6 +7,7 @@ import { getPinSessions, PinSession } from "@/lib/pinSession";
 import { LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
+/** 日付文字列を「M/D（曜日）」形式に変換 */
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "";
   const date = new Date(dateStr + "T00:00:00");
@@ -17,6 +18,7 @@ function formatDate(dateStr: string | null): string {
   return `${month}/${day}（${weekday}）`;
 }
 
+/** スタッフホーム画面（OUT/INの選択画面） */
 export default function StaffPage() {
   const router = useRouter();
   const { user, logout } = useAuth();

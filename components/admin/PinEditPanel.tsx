@@ -20,6 +20,7 @@ interface PinEditPanelProps {
   isRainyDay?: boolean;
 }
 
+/** ピン編集パネル（右パネル、1ホール分のグリーンキャンバス+セル表示トグル+保存ボタン） */
 export default function PinEditPanel({
   editingHole,
   editingPin,

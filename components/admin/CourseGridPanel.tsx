@@ -3,7 +3,7 @@ import { HolePin } from "@/lib/greenCanvas.geometry";
 import { Button } from "@/components/ui/button";
 import { useContainerSize } from "@/hooks/useContainerSize";
 
-// GreenCardGridPDFの固定サイズ（240px × 3 + gap 16px × 2 = 752px）
+/** GreenCardGridPDFの固定サイズ（240px × 3 + gap 16px × 2 = 752px） */
 const GRID_INTRINSIC_WIDTH = 752;
 const GRID_INTRINSIC_HEIGHT = 880; // カード(240+40)×3 + gap×2
 
@@ -16,6 +16,7 @@ interface CourseGridPanelProps {
   onDateChange: (date: string) => void;
 }
 
+/** コースグリッドパネル（左パネル、日付選択+OUT/IN切替+9ホール一覧） */
 export default function CourseGridPanel({
   course,
   onCourseChange,
@@ -25,6 +26,7 @@ export default function CourseGridPanel({
   onDateChange,
 }: CourseGridPanelProps) {
   const [containerRef, containerSize] = useContainerSize();
+  // コンテナサイズに合わせてグリッドを縮小表示
   const scale =
     containerSize.width > 0
       ? Math.min(
@@ -35,7 +37,7 @@ export default function CourseGridPanel({
       : 0.65;
   return (
     <div className="flex-1 min-w-0 bg-card rounded-xl shadow-sm border overflow-hidden flex flex-col">
-      {/* ヘッダー: 日付ピッカー + ステータス */}
+      {/* ヘッダー: 日付ピッカー */}
       <div className="flex-shrink-0 h-[42px] px-4 bg-gray-800 flex items-center gap-3">
         <input
           type="date"

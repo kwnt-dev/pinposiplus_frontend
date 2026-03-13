@@ -1,5 +1,7 @@
-// 定数
+/** 1ヤードあたりのピクセル数 */
 export const YD_TO_PX = 20;
+
+/** キャンバスサイズ（60yd × 20px） */
 export const CANVAS_SIZE = 60 * YD_TO_PX;
 
 /** SVGパスの数値をヤード→ピクセルに変換する */

@@ -62,6 +62,10 @@ interface Props {
   isRainyDay?: boolean;
 }
 
+/** グリーンのキャンバス描画コンポーネント（react-konva）
+ * セル・ピン・制限エリア・グリッド等を重ね合わせて描画する
+ * ペイントモード（セル連続入力）とピン配置モードの2つの操作モードを持つ
+ */
 export default function GreenCanvas({
   hole,
   width = 600,
@@ -123,7 +127,7 @@ export default function GreenCanvas({
     [onCellClick],
   );
 
-  // 2点間のセルを直線補間して塗る（高速ドラッグ時のコマ飛び防止）
+  // 2点間のセルを直線補間して塗る（Bresenhamの線描画アルゴリズム、高速ドラッグ時のコマ飛び防止）
   const paintCellsBetween = useCallback(
     (from: { x: number; y: number }, to: { x: number; y: number }) => {
       let { x, y } = from;

@@ -1,7 +1,6 @@
 import ClipperLib from "clipper-lib";
 
-// 型定義
-
+/** グリーン上の1セル（1yd×1ydのグリッド単位） */
 export interface Cell {
   id: string;
   x: number;
@@ -11,6 +10,7 @@ export interface Cell {
   isInside: boolean;
 }
 
+/** ピン位置 */
 export interface Pin {
   id: string;
   x: number;
@@ -18,18 +18,21 @@ export interface Pin {
   date?: string;
 }
 
+/** ホールとピン位置の組み合わせ */
 export interface HolePin {
   hole: number;
   x: number;
   y: number;
 }
 
+/** SVGレイヤーデータ */
 export interface LayerData {
   type: string;
   d: string;
   fill: string;
 }
 
+/** 1ホール分のグリーンデータ（JSONから読み込む） */
 export interface HoleData {
   hole: string;
   boundary: { d: string };
@@ -157,7 +160,7 @@ export function svgPathToPoints(
   return pts;
 }
 
-/** 境界線から内側にオフセットした境界を生成する */
+/** 境界線から内側にオフセットした境界を生成する（clipper-lib使用） */
 export function getOffsetBoundary(
   boundaryD: string,
   offsetYd: number,
@@ -165,6 +168,7 @@ export function getOffsetBoundary(
   const polygon = svgPathToPoints(boundaryD, 80);
   if (polygon.length < 3) return [];
 
+  // clipper-libは整数座標のみ対応するため、SCALEで拡大→計算→縮小する
   const SCALE = 1000;
   const clipperPath: ClipperLib.IntPoint[] = polygon.map((p) => ({
     X: Math.round(p.x * SCALE),
@@ -189,7 +193,7 @@ export function getOffsetBoundary(
   }));
 }
 
-/** 傾斜線から両側にオフセットした境界を生成する */
+/** 傾斜線から両側にオフセットした境界を生成する（clipper-lib使用） */
 export function getOffsetSlope(
   slopeD: string,
   offsetYd: number,
@@ -221,7 +225,7 @@ export function getOffsetSlope(
   }));
 }
 
-/** ポリゴン内に点があるか判定する */
+/** ポリゴン内に点があるか判定する（clipper-lib使用） */
 export function isPointInPolygon(
   x: number,
   y: number,

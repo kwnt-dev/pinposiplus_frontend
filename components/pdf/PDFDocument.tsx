@@ -2,6 +2,7 @@
 
 import { Document, Page, Image, View, StyleSheet } from "@react-pdf/renderer";
 
+/** A4用紙レイアウト（上半分OUT、下半分IN、中央に折り線） */
 // A4: 210mm x 297mm
 // 半分: 148.5mm
 const styles = StyleSheet.create({
@@ -34,6 +35,7 @@ interface Props {
   inImageUrl: string;
 }
 
+/** PDF出力用ドキュメント（react-pdf、OUT/INの画像をA4に配置） */
 const PDFDoc: React.FC<Props> = ({ outImageUrl, inImageUrl }) => (
   <Document>
     <Page size="A4" style={styles.page}>

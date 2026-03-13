@@ -6,6 +6,7 @@ interface PageHeaderProps {
   children?: React.ReactNode;
 }
 
+/** 各ページ共通のヘッダー（アイコン+タイトル+右側に任意の要素を配置可能） */
 export function PageHeader({ icon: Icon, title, children }: PageHeaderProps) {
   return (
     <header className="flex items-center justify-between mb-4">

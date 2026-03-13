@@ -19,14 +19,14 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type CellType = "damage" | "ban" | "rain";
 
-// 登録済みセルをcellId形式に変換（表示用）
+/** 登録済みセルをcellId形式に変換（表示用） */
 function groupsToCellIds(groups: CellGroup[], holeNumber: number): string[] {
   return groups
     .filter((g) => g.hole_number === holeNumber)
     .flatMap((g) => g.cells.map((c) => `cell_${c.x}_${c.y}`));
 }
 
-// 全ホールの登録済みセルマップ（GreenCardGrid用）
+/** 全ホールの登録済みセルマップ（GreenCardGrid用） */
 function groupsToCellsMap(groups: CellGroup[]): Record<number, string[]> {
   const map: Record<number, string[]> = {};
   groups.forEach((g) => {
@@ -38,6 +38,7 @@ function groupsToCellsMap(groups: CellGroup[]): Record<number, string[]> {
   return map;
 }
 
+/** セル設定ページ（左: 9ホール一覧、右: セル編集キャンバス） */
 export default function CellsEditPage() {
   const [course, setCourse] = useState<"out" | "in">("out");
   const [selectedHole, setSelectedHole] = useState<number>(1);
@@ -397,7 +398,6 @@ export default function CellsEditPage() {
               rainCells={cellMode === "rain" ? displayCells : []}
               onCellClick={handleCellClick}
               enablePaintMode={true}
-              activeCells={displayCells}
               showExit={false}
               showExitRoute={false}
               showBoundaryBuffer={false}

@@ -25,6 +25,7 @@ import {
 import { GolfIcon } from "@/components/ui/GolfIcon";
 import { useAuth } from "@/hooks/useAuth";
 
+/** サイドバーのメニュー項目 */
 const menuItems: { icon: LucideIcon; label: string; href: string }[] = [
   { icon: BarChart3, label: "ダッシュボード", href: "/admin" },
   { icon: Grid3x3, label: "セル設定", href: "/admin/cells" },
@@ -33,6 +34,7 @@ const menuItems: { icon: LucideIcon; label: string; href: string }[] = [
   { icon: Users, label: "ユーザー管理", href: "/admin/users" },
 ];
 
+/** 管理者画面のサイドバー（ナビゲーション+ユーザー情報+ログアウト） */
 export function AdminSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();

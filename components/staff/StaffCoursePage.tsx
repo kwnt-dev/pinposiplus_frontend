@@ -14,6 +14,7 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { PinResponse } from "@/types/api";
 import { toast } from "sonner";
 
+/** 日付文字列を「M月D日（曜日）」形式に変換 */
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "";
   const date = new Date(dateStr + "T00:00:00");
@@ -28,6 +29,7 @@ interface StaffCoursePageProps {
   course: "OUT" | "IN";
 }
 
+/** スタッフ用コースページ（OUT/IN共通、9ホール一覧表示+完了報告） */
 export default function StaffCoursePage({ course }: StaffCoursePageProps) {
   const router = useRouter();
   const gridCourse = course.toLowerCase() as "out" | "in";

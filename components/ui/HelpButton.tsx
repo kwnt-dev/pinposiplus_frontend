@@ -13,6 +13,7 @@ interface HelpButtonProps {
   children: React.ReactNode;
 }
 
+/** ヘルプボタン（?マーク、クリックでダイアログ表示） */
 export function HelpButton({ title, children }: HelpButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
 

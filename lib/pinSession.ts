@@ -1,6 +1,6 @@
 import api from "@/lib/axios";
 
-// セッション型定義
+/** ピンセッションの型定義 */
 export interface PinSession {
   id: string;
   course: string;
@@ -19,7 +19,7 @@ export interface PinSession {
   pdf_url: string | null;
 }
 
-// セッション作成（自動提案実行時にOUT/INそれぞれ作成）
+/** セッション作成（自動提案実行時にOUT/INそれぞれ作成） */
 export async function createPinSession(data: {
   course: "OUT" | "IN";
   target_date?: string;
@@ -31,7 +31,7 @@ export async function createPinSession(data: {
   return res.data;
 }
 
-// セッション一覧取得（ステータス・コース・日付でフィルタ可能）
+/** セッション一覧取得（ステータス・コース・日付でフィルタ可能） */
 export async function getPinSessions(params?: {
   status?: string | string[];
   course?: string;
@@ -41,10 +41,8 @@ export async function getPinSessions(params?: {
   return res.data;
 }
 
-// セッション詳細取得（pins付き）
-export async function getPinSessionDetail(
-  id: string,
-): Promise<
+/** セッション詳細取得（pins付き） */
+export async function getPinSessionDetail(id: string): Promise<
   PinSession & {
     pins: { id: string; hole_number: number; x: number; y: number }[];
   }
@@ -53,22 +51,22 @@ export async function getPinSessionDetail(
   return res.data;
 }
 
-// スタッフに公開 → published
+/** スタッフに公開 → published */
 export async function publishSession(id: string): Promise<PinSession> {
   const res = await api.patch(`/api/pin-sessions/${id}/publish`);
   return res.data;
 }
 
-// スタッフが確認提出 → confirmed
+/** スタッフが確認提出 → confirmed */
 export async function confirmSession(id: string): Promise<PinSession> {
   const res = await api.patch(`/api/pin-sessions/${id}/confirm`);
   return res.data;
 }
 
-// マスター室に送信 → sent（PDF付き）
+/** マスター室に送信 → sent（PDF付き） */
 export async function sendSession(
   id: string,
-  pdfBase64?: string,
+  pdfBase64?: string, // PDFファイルをBase64エンコードした文字列（メール添付用）
 ): Promise<PinSession> {
   const res = await api.patch(`/api/pin-sessions/${id}/send`, {
     pdf_base64: pdfBase64,

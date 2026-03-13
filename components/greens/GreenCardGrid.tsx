@@ -8,6 +8,7 @@ interface GreenCardGridProps {
   holeRainCells?: { hole: number; cellIds: string[] }[];
 }
 
+/** 9ホール分のグリーンカードを3×3グリッドで一覧表示するコンポーネント */
 export default function GreenCardGrid({
   course,
   onCardClick,

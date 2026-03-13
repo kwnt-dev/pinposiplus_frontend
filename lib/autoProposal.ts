@@ -10,8 +10,7 @@ import {
   SLOPE_BUFFER,
 } from "@/config/constants";
 
-// 型定義
-
+/** 自動提案の入力データ */
 export interface AutoProposalInput {
   holeData: HoleData;
   exit: { x: number; y: number };
@@ -22,25 +21,29 @@ export interface AutoProposalInput {
   isRainyDay: boolean;
 }
 
+/** ピン候補の座標 */
 export interface Candidate {
   x: number;
   y: number;
 }
 
-//定数
-
+/** 自動提案ロジックの定数 */
 const SAME_POSITION_THRESHOLD = 1; // 同一座標とみなす距離（ヤード）
 const ROUTE_OVERLAP_ANGLE = 10; // 導線被り判定角度（度）
 const RECENT_PIN_COUNT = 2; // 直近ピン制限の対象数（前回・前々回）
 const MEDIUM_PAST_START = 2; // 中期ピンの開始インデックス（3回前）
 const MEDIUM_PAST_END = 4; // 中期ピンの終了インデックス（5回前）
 
-//メイン関数
-
+/**
+ * 1ホール分のピン候補を生成する
+ * Step1: グリッド交点から全候補を生成
+ * Step2: 各種制約で除外フィルタ（禁止→雨天→傷み→傾斜→外周→過去ピン→導線）
+ * Step3: 候補が0件ならフォールバック（過去ピン・導線の除外をスキップ）
+ */
 export function generateProposals(input: AutoProposalInput): Candidate[] {
   // Step 1: 候補生成
 
-  // グリッド交点を全部候補にする。
+  // グリッド交点を全部候補にする
   const { holeData } = input;
   const insideCells = holeData.cells.filter((c) => c.isInside);
 
@@ -62,7 +65,7 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
   }
   // Step 2: 除外フィルタ
 
-  // 2-1 禁止セル
+  // 2-1 禁止セル（候補の周囲4セルに禁止セルがあれば除外）
   const excludedBan = candidates.filter((c) => {
     const surroundingCells = [
       `cell_${Math.floor(c.x)}_${Math.floor(c.y)}`,
@@ -73,7 +76,7 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
     return !surroundingCells.some((id) => input.banCells.includes(id));
   });
 
-  // 2-2 雨天禁止セル
+  // 2-2 雨天禁止セル（雨天時のみ適用）
   const excludedRain = input.isRainyDay
     ? excludedBan.filter((c) => {
         const surroundingCells = [
@@ -97,7 +100,7 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
     return !surroundingCells.some((id) => input.damageCells.includes(id));
   });
 
-  // 2-4 傾斜制限
+  // 2-4 傾斜制限（傾斜線の両側バッファ内を除外）
   const slopeBufferPoints = holeData.slope
     ? getOffsetSlope(holeData.slope.slope.d, SLOPE_BUFFER)
     : [];
@@ -108,7 +111,7 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
         )
       : excludedDamage;
 
-  // 2-5 外周制限
+  // 2-5 外周制限（外周からバッファ距離以上内側のみ残す）
   const boundaryBufferPoints = getOffsetBoundary(
     holeData.boundary.d,
     BOUNDARY_BUFFER,
@@ -140,7 +143,7 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
     return true;
   });
 
-  // 2-7 導線被り
+  // 2-7 導線被り（出口への角度が直近ピンと近すぎる候補を除外）
   const excludedRoute = excludedPastPin.filter((c) => {
     if (input.pastPins.length === 0) return true;
 
@@ -160,9 +163,8 @@ export function generateProposals(input: AutoProposalInput): Candidate[] {
     return true;
   });
 
-  // Step 3: フォールバック
+  // Step 3: フォールバック（候補が0件なら過去ピン・導線の除外をスキップ）
   if (excludedRoute.length === 0) {
-    // 過去ピン・導線の除外をスキップして返す
     return excludedBoundary.map((c) => ({ x: c.x, y: c.y }));
   }
 

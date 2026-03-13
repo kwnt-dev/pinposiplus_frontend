@@ -1,6 +1,6 @@
 import api from "@/lib/axios";
 
-// セルグループ型定義
+/** セルグループの型定義 */
 export interface CellGroup {
   id: string;
   hole_number: number;
@@ -9,13 +9,15 @@ export interface CellGroup {
   cells: { id: string; x: number; y: number }[];
 }
 
+/** セルの種別（傷み・禁止・雨天禁止） */
 type CellType = "damage" | "ban" | "rain";
 
+/** セル種別に対応するAPIエンドポイントを返す */
 function getEndpoint(type: CellType): string {
   return `${type}-cell-groups`;
 }
 
-// グループ一覧取得（ホール番号でフィルタ可能）
+/** グループ一覧取得（ホール番号でフィルタ可能） */
 export async function getCellGroups(
   type: CellType,
   holeNumber?: number,
@@ -26,7 +28,7 @@ export async function getCellGroups(
   return res.data;
 }
 
-// グループ作成（セル配列ごと一括保存）
+/** グループ作成（セル配列ごと一括保存） */
 export async function createCellGroup(
   type: CellType,
   data: {
@@ -40,7 +42,7 @@ export async function createCellGroup(
   return res.data;
 }
 
-// グループ削除（子セルも連鎖削除）
+/** グループ削除（子セルも連鎖削除） */
 export async function deleteCellGroup(
   type: CellType,
   groupId: string,

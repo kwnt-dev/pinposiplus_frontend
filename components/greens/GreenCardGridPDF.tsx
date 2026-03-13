@@ -7,6 +7,7 @@ interface GreenCardGridPDFProps {
   pins?: HolePin[];
 }
 
+/** 9ホール分のPDF用グリーンカードを3×3グリッドで一覧表示するコンポーネント */
 export default function GreenCardGridPDF({
   course,
   onCardClick,

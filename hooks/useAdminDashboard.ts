@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { generateProposals, AutoProposalInput } from "@/lib/autoProposal";
 import {
   generateCourseProposal,
@@ -11,7 +11,6 @@ import { getAutoSuggestData } from "@/lib/autoSuggest";
 import {
   createPinSession,
   getPinSessions,
-  publishSession,
   getPinSessionDetail,
   PinSession,
 } from "@/lib/pinSession";
@@ -19,7 +18,9 @@ import { format } from "date-fns";
 import api from "@/lib/axios";
 import { toast } from "sonner";
 
+/** 管理者ダッシュボードの状態管理・操作ロジックを集約したフック */
 export function useAdminDashboard() {
+  // --- コース・日付・条件 ---
   const [course, setCourse] = useState<"out" | "in">("out");
   const [selectedDate, setSelectedDate] = useState<string>(
     format(new Date(), "yyyy-MM-dd"),
@@ -28,6 +29,7 @@ export function useAdminDashboard() {
   const [courseDifficulty, setCourseDifficulty] =
     useState<CourseDifficulty>("medium");
 
+  // --- グリーンデータ ---
   const [allHoleData, setAllHoleData] = useState<Record<string, HoleData>>({});
   const [coursePins, setCoursePins] = useState<HolePin[]>([]);
   const [rightPanelMode, setRightPanelMode] = useState<
@@ -35,9 +37,11 @@ export function useAdminDashboard() {
   >("auto-suggest");
   const [editingHole, setEditingHole] = useState<number>(1);
 
+  // --- セッション ---
   const [outSession, setOutSession] = useState<PinSession | null>(null);
   const [inSession, setInSession] = useState<PinSession | null>(null);
 
+  // --- セル・過去ピン ---
   const [damageCellsMap, setDamageCellsMap] = useState<
     Record<number, string[]>
   >({});
@@ -47,6 +51,7 @@ export function useAdminDashboard() {
   );
   const [pastPinsMap, setPastPinsMap] = useState<Record<number, Pin[]>>({});
 
+  // --- ピン編集状態 ---
   const [savedPins, setSavedPins] = useState<
     Record<number, { x: number; y: number }>
   >({});
@@ -72,8 +77,9 @@ export function useAdminDashboard() {
     loadAll();
   }, []);
 
-  // セッション読み込み（useEffectから呼ぶ用）
+  // 選択日のセッション読み込み（OUT/INそれぞれ取得→ピン一覧をセット）
   useEffect(() => {
+    // クリーンアップ: 日付変更で前のリクエストが返ってきても無視する
     let cancelled = false;
 
     async function loadSessions() {
@@ -86,6 +92,7 @@ export function useAdminDashboard() {
         setOutSession(out || null);
         setInSession(in_ || null);
 
+        // OUT/INセッションのピンを結合
         const allPins: HolePin[] = [];
         if (out) {
           const outDetail = await getPinSessionDetail(out.id);
@@ -114,6 +121,7 @@ export function useAdminDashboard() {
 
         if (cancelled) return;
         setCoursePins(allPins);
+        // 送信済みでなければピン編集モード、それ以外は自動提案モード
         const isSent = out?.status === "sent" || in_?.status === "sent";
         if (allPins.length > 0 && !isSent) {
           setRightPanelMode("pin-edit");
@@ -131,7 +139,7 @@ export function useAdminDashboard() {
     };
   }, [selectedDate]);
 
-  // 外部から呼ぶ用（公開・確認後のリロード）
+  // 公開・確認後にセッションを再読み込み
   const reloadSessions = async () => {
     const sessions = await getPinSessions({ target_date: selectedDate });
     const out = sessions.find((s) => s.course === "OUT");
@@ -140,7 +148,7 @@ export function useAdminDashboard() {
     setInSession(in_ || null);
   };
 
-  // セルデータ・過去ピン取得
+  // セルデータ（傷み・禁止・雨天）と過去ピンを取得
   useEffect(() => {
     const loadCells = async () => {
       try {
@@ -180,10 +188,11 @@ export function useAdminDashboard() {
     loadCells();
   }, [selectedDate]);
 
-  // 自動提案実行
+  // 自動提案実行（OUT/INセッション作成→各ホールのピン候補生成→API保存）
   const handleCourseGenerate = async () => {
     setIsGenerating(true);
     try {
+      // 予定表からイベント名・組数を取得
       let eventName: string | undefined;
       let groupsCount: number | undefined;
       try {
@@ -198,6 +207,7 @@ export function useAdminDashboard() {
         console.error("予定表取得エラー:", err);
       }
 
+      // OUT/INのセッションを作成
       const newOutSession = await createPinSession({
         course: "OUT",
         target_date: selectedDate,
@@ -218,6 +228,7 @@ export function useAdminDashboard() {
       const outHoles = ["01", "02", "03", "04", "05", "06", "07", "08", "09"];
       const inHoles = ["10", "11", "12", "13", "14", "15", "16", "17", "18"];
 
+      // ホールごとにピン候補を生成し、コース全体のバランスで最終選定
       const generateHolePins = (holes: string[]) => {
         const holeCandidates: HoleCandidates[] = holes.map((h) => {
           const hData = allHoleData[h];
@@ -265,6 +276,7 @@ export function useAdminDashboard() {
       const outPins = generateHolePins(outHoles);
       const inPins = generateHolePins(inHoles);
 
+      // 生成したピンをAPIに保存
       for (const pin of outPins) {
         await api.post("/api/pins", {
           hole_number: pin.hole,
@@ -293,8 +305,9 @@ export function useAdminDashboard() {
     }
   };
 
-  // ホール切り替え
+  // ホール切り替え（未保存のピン変更があれば元に戻す）
   const handleHoleChange = (holeId: number) => {
+    // dirtyHole: ピンをドラッグしたが未保存のホール番号
     if (dirtyHole !== null && savedPins[dirtyHole]) {
       setCoursePins((prev) =>
         prev.map((p) =>
@@ -309,7 +322,7 @@ export function useAdminDashboard() {
     setRightPanelMode("pin-edit");
   };
 
-  // ピン保存
+  // ピン保存（既存ピンを削除→新しい位置で再作成）
   const handlePinSave = async () => {
     const pin = coursePins.find((p) => p.hole === editingHole);
     if (!pin) return;
@@ -323,6 +336,7 @@ export function useAdminDashboard() {
     }));
     setDirtyHole(null);
 
+    // 既存ピンを削除してから新しい位置で保存
     const existing = await api.get(`/api/pins?hole_number=${editingHole}`);
     const sessionPins = existing.data.filter(
       (p: { session_id: string }) => p.session_id === currentSession.id,
@@ -340,8 +354,9 @@ export function useAdminDashboard() {
     toast.success("ピンを保存しました");
   };
 
-  // ピン位置変更（ドラッグ）
+  // ピン位置変更（ドラッグ時、未保存状態を記録）
   const handlePinPlaced = (pin: { id: string; x: number; y: number }) => {
+    // 初回変更時に元の位置を保存
     if (dirtyHole !== editingHole) {
       const original = coursePins.find((p) => p.hole === editingHole);
       if (original) {

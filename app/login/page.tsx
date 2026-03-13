@@ -18,6 +18,7 @@ import api from "@/lib/axios";
 import { GolfIcon } from "@/components/ui/GolfIcon";
 import { RotateCcw } from "lucide-react";
 
+/** ログインページ */
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,6 +27,7 @@ export default function LoginPage() {
   const [resetting, setResetting] = useState(false);
   const [resetMessage, setResetMessage] = useState("");
 
+  // デモデータリセット（全データを初期状態に戻す）
   async function handleDemoReset() {
     if (resetting) return;
 
@@ -53,6 +55,7 @@ export default function LoginPage() {
     }
   }
 
+  // ログイン処理（成功後、roleに応じて管理者/スタッフ画面に遷移）
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/axios";
 
+/** ログインユーザーの型 */
 type User = {
   id: number;
   name: string;
@@ -9,6 +10,7 @@ type User = {
   role: string;
 };
 
+/** 認証状態の管理・ログアウト処理を提供するフック */
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
