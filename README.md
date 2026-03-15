@@ -148,7 +148,9 @@
 | 認証 | Laravel Sanctum |
 | ストレージ | Amazon S3 |
 | メール | Amazon SES |
+| テスト | PHPUnit / Vitest |
 | インフラ | AWS EC2 / Cloudflare |
+| IaC | Terraform |
 | 環境構築 | Docker |
 | CI/CD | GitHub Actions |
 | PDF生成 | jsPDF |
