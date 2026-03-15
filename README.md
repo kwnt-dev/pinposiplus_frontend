@@ -105,20 +105,20 @@
 
 ### ピン位置自動提案
 
-![自動提案動画](https://github.com/user-attachments/assets/5024bed9-4324-494b-86e4-a4bc88f27e4d)
+![自動提案動画](https://github.com/user-attachments/assets/c233d160-419d-4b47-b76e-597d61f3ca9d)
 
 
 条件（雨天・難易度）を設定し、18ホール分のピン位置を一括自動提案。提案後は個別に手動調整が可能。
 
 ### セル編集（傷み・禁止・雨天エリア）
 
-![セル編集動画](https://github.com/user-attachments/assets/1bd3ec19-d02a-48d6-84bc-6734d5359e87)
+![セル編集動画](https://github.com/user-attachments/assets/c9bbc88f-4681-426c-8be3-afb026915a08)
 
 グリーン上のセルをタップして傷みエリア・禁止エリア・雨天禁止エリアを登録。自動提案時にこれらのエリアを回避する。
 
 ### PDF出力・送信
 
-![PDF生成動画](https://github.com/user-attachments/assets/f7646ceb-7523-4771-b237-225e5141ce18)
+![PDF生成動画](https://github.com/user-attachments/assets/2a12ee31-2118-40f0-b76d-ad447ae386d9)
 
 ピン位置をPDFで確認し、マスター室にPDFを添付して自動メール送信。
 
