@@ -18,7 +18,6 @@ import api from "@/lib/axios";
 import { GolfIcon } from "@/components/ui/GolfIcon";
 import { RotateCcw } from "lucide-react";
 
-/** ログインページ */
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +26,6 @@ export default function LoginPage() {
   const [resetting, setResetting] = useState(false);
   const [resetMessage, setResetMessage] = useState("");
 
-  // デモデータリセット（全データを初期状態に戻す）
   async function handleDemoReset() {
     if (resetting) return;
 
@@ -55,7 +53,6 @@ export default function LoginPage() {
     }
   }
 
-  // ログイン処理（成功後、roleに応じて管理者/スタッフ画面に遷移）
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -72,6 +69,22 @@ export default function LoginPage() {
       }
     } catch (err) {
       setError("メールアドレスまたはパスワードが正しくありません");
+    }
+  }
+
+  async function handleTestLogin(role: "admin" | "staff") {
+    setError("");
+    try {
+      const credentials =
+        role === "admin"
+          ? { email: "admin@gmail.com", password: "admin" }
+          : { email: "staff@gmail.com", password: "staff" };
+
+      const response = await api.post("/api/login", credentials);
+      localStorage.setItem("token", response.data.token);
+      router.push(role === "admin" ? "/admin" : "/staff");
+    } catch (err) {
+      setError("ログインに失敗しました。デモデータをリセットしてください。");
     }
   }
   return (
@@ -124,6 +137,28 @@ export default function LoginPage() {
               ログイン
             </Button>
           </form>
+
+          <div className="mt-4 space-y-2">
+            <p className="text-xs text-muted-foreground text-center">
+              テストログイン
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => handleTestLogin("admin")}
+              >
+                管理者
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => handleTestLogin("staff")}
+              >
+                スタッフ
+              </Button>
+            </div>
+          </div>
         </CardContent>
         <div className="px-6 pb-6">
           <div className="p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
