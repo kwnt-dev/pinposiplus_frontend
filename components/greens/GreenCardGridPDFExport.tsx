@@ -18,7 +18,7 @@ function getDateString(): { dateStr: string; dayStr: string } {
   return { dateStr, dayStr };
 }
 
-/** PDF出力用の9ホールグリッド（ヘッダー付き、jsPDFで画像化して使用） */
+/** PDF出力用の9ホールグリッド（ヘッダー付き、Canvas APIで画像化→react-pdfでA4配置） */
 export default function GreenCardGridPDFExport({
   course,
   pins,
