@@ -8,6 +8,8 @@ import api from "@/lib/axios";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { getPinSessionDetail } from "@/lib/pinSession";
 import { useContainerSize } from "@/hooks/useContainerSize";
+import { useHoleData } from "@/hooks/useHoleData";
+import { getBoundaryIntersectionY } from "@/lib/greenCanvas.geometry";
 
 /** スタッフ用ホール個別編集ページ（ピン位置の確認・修正・保存） */
 export default function StaffHoleEditPage() {
@@ -38,6 +40,21 @@ export default function StaffHoleEditPage() {
   const [containerRef, containerSize] = useContainerSize();
   const canvasSize =
     Math.floor(Math.min(containerSize.width, containerSize.height)) || 400;
+  const holeData = useHoleData(holeId);
+
+  // ゴルフ場座標（PDF版と同じ: 奥行き + グリーンエッジからの左右距離）
+  const pinLabel = (() => {
+    if (!pin || !holeData) return null;
+    const depth = Math.round(holeData.origin.y - pin.y);
+    if (pin.x === 30) return `奥${depth}yd 中心`;
+    const edges = getBoundaryIntersectionY(holeData.boundary.d, pin.y);
+    if (!edges) return `奥${depth}yd`;
+    const side = pin.x < 30 ? "左" : "右";
+    const dist = Math.round(
+      pin.x < 30 ? pin.x - edges.left : edges.right - pin.x,
+    );
+    return `奥${depth}yd ${side}${dist}yd`;
+  })();
 
   useEffect(() => {
     if (!sessionId) return;
@@ -125,29 +142,36 @@ export default function StaffHoleEditPage() {
 
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
-      <header className="flex-shrink-0 h-14 px-4 bg-card border-b flex items-center justify-between">
+      <header className="flex-shrink-0 min-h-14 py-1 px-4 bg-card border-b flex items-center justify-between">
         <button
           onClick={() => router.push(isOut ? "/staff/out" : "/staff/in")}
           className="text-sm font-medium text-muted-foreground"
         >
           ← 戻る
         </button>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => hasPrev && navigateHole(holeNumber - 1)}
-            disabled={!hasPrev}
-            className="p-1 rounded disabled:opacity-30"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <h1 className="text-lg font-bold">Hole {holeId}</h1>
-          <button
-            onClick={() => hasNext && navigateHole(holeNumber + 1)}
-            disabled={!hasNext}
-            className="p-1 rounded disabled:opacity-30"
-          >
-            <ChevronRight size={20} />
-          </button>
+        <div className="flex flex-col items-center">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => hasPrev && navigateHole(holeNumber - 1)}
+              disabled={!hasPrev}
+              className="p-1 rounded disabled:opacity-30"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <h1 className="text-lg font-bold">Hole {holeId}</h1>
+            <button
+              onClick={() => hasNext && navigateHole(holeNumber + 1)}
+              disabled={!hasNext}
+              className="p-1 rounded disabled:opacity-30"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+          {pinLabel && (
+            <span className="text-sm font-semibold text-foreground">
+              {pinLabel}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
