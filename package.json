@@ -14,6 +14,7 @@
     "@fullcalendar/interaction": "^6.1.20",
     "@fullcalendar/react": "^6.1.20",
     "@holiday-jp/holiday_jp": "^2.5.1",
+    "@next/third-parties": "^16.2.4",
     "@react-pdf/renderer": "^4.3.2",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.13.5",
