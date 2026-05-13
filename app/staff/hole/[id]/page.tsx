@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import GreenCanvas from "@/components/greens/GreenCanvas";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import api from "@/lib/axios";
@@ -26,7 +27,7 @@ export default function StaffHoleEditPage() {
   const hasPrev = holeNumber > minHole;
   const hasNext = holeNumber < maxHole;
 
-  const [pin, setPin] = useState<
+  const [pin, setPin] = useState
     { id: string; x: number; y: number } | undefined
   >(undefined);
   const [pinDbId, setPinDbId] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export default function StaffHoleEditPage() {
   const [banCells, setBanCells] = useState<string[]>([]);
   const [damageCells, setDamageCells] = useState<string[]>([]);
   const [rainCells, setRainCells] = useState<string[]>([]);
-  const [pastPins, setPastPins] = useState<
+  const [pastPins, setPastPins] = useState
     { id: string; x: number; y: number; date?: string }[]
   >([]);
   const [containerRef, containerSize] = useContainerSize();
@@ -122,16 +123,22 @@ export default function StaffHoleEditPage() {
   async function handleSave() {
     if (!pin || !sessionId) return;
 
-    if (pinDbId) {
-      await api.delete(`/api/pins/${pinDbId}`);
+    try {
+      if (pinDbId) {
+        await api.delete(`/api/pins/${pinDbId}`);
+      }
+      const response = await api.post("/api/pins", {
+        hole_number: holeNumber,
+        x: pin.x,
+        y: pin.y,
+        session_id: sessionId,
+      });
+      setPinDbId(response.data.id);
+      toast.success("ピンを保存しました");
+    } catch (err) {
+      console.error("ピン保存エラー:", err);
+      toast.error("保存に失敗しました");
     }
-    const response = await api.post("/api/pins", {
-      hole_number: holeNumber,
-      x: pin.x,
-      y: pin.y,
-      session_id: sessionId,
-    });
-    setPinDbId(response.data.id);
   }
 
   function navigateHole(hole: number) {
