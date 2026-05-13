@@ -27,7 +27,7 @@ export default function StaffHoleEditPage() {
   const hasPrev = holeNumber > minHole;
   const hasNext = holeNumber < maxHole;
 
-  const [pin, setPin] = useState
+  const [pin, setPin] = useState<
     { id: string; x: number; y: number } | undefined
   >(undefined);
   const [pinDbId, setPinDbId] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export default function StaffHoleEditPage() {
   const [banCells, setBanCells] = useState<string[]>([]);
   const [damageCells, setDamageCells] = useState<string[]>([]);
   const [rainCells, setRainCells] = useState<string[]>([]);
-  const [pastPins, setPastPins] = useState
+  const [pastPins, setPastPins] = useState<
     { id: string; x: number; y: number; date?: string }[]
   >([]);
   const [containerRef, containerSize] = useContainerSize();
